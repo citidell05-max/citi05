@@ -237,6 +237,51 @@ body {
   color: var(--neon-magenta);
 }
 
+.vip-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.vip-lock {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.05rem;
+  line-height: 1;
+}
+
+.vip-lock .lock-icon {
+  display: block;
+}
+
+.vip-toggle.is-locked {
+  border-color: rgba(255, 180, 70, 0.45);
+  background: rgba(255, 180, 70, 0.08);
+  color: #ffc857;
+}
+
+.vip-toggle.is-locked .vip-lock {
+  animation: lock-pulse 1.8s ease-in-out infinite;
+}
+
+.vip-toggle.is-locked .lock-open {
+  display: none;
+}
+
+.vip-toggle:not(.is-locked) .lock-closed {
+  display: none;
+}
+
+.vip-toggle:not(.is-locked) .lock-open {
+  display: block;
+}
+
+@keyframes lock-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.12); opacity: 0.75; }
+}
+
 .mod-toggle {
   border-color: rgba(184, 255, 60, 0.45);
   background: rgba(184, 255, 60, 0.1);

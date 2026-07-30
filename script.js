@@ -65,6 +65,7 @@
     toast: document.getElementById("toast"),
     sfxToggle: document.getElementById("sfx-toggle"),
     vipToggle: document.getElementById("vip-toggle"),
+    vipLabel: document.getElementById("vip-label"),
     modToggle: document.getElementById("mod-toggle"),
     modPanel: document.getElementById("mod-panel"),
     modCode: document.getElementById("mod-code"),
@@ -399,14 +400,16 @@
   function renderVipToggle() {
     if (!vipUnlocked) {
       const have = state.tokens || 0;
-      els.vipToggle.textContent = `VIP: ${have.toLocaleString()} / ${VIP_COST.toLocaleString()}`;
+      els.vipLabel.textContent = `VIP: ${have.toLocaleString()} / ${VIP_COST.toLocaleString()}`;
+      els.vipToggle.classList.add("is-locked");
       els.vipToggle.setAttribute("aria-pressed", "false");
-      els.vipToggle.title = `Spend ${VIP_COST.toLocaleString()} Tokens to unlock VIP`;
+      els.vipToggle.title = `Locked — spend ${VIP_COST.toLocaleString()} Tokens to unlock VIP`;
       return;
     }
-    els.vipToggle.textContent = vipEnabled ? "VIP: On" : "VIP: Off";
+    els.vipToggle.classList.remove("is-locked");
+    els.vipLabel.textContent = vipEnabled ? "VIP: On" : "VIP: Off";
     els.vipToggle.setAttribute("aria-pressed", String(vipEnabled));
-    els.vipToggle.title = "Toggle VIP mode for gem rewards";
+    els.vipToggle.title = "VIP unlocked — toggle gem rewards";
   }
 
   function unlockFreeVip(source) {
