@@ -69,7 +69,7 @@ body {
 .bg-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(8, 16, 12, 0.12);
+  background: rgba(12, 4, 28, 0.2);
   pointer-events: none;
   z-index: 0;
 }
