@@ -422,8 +422,7 @@
 
   function unlockFreeVip(source) {
     if (source !== "moderator") {
-      showToast("Enter the moderator code to unlock VIP");
-      openModeratorSearch();
+      showToast("VIP stays locked until the moderator code is entered");
       return;
     }
     vipUnlocked = true;
@@ -622,10 +621,10 @@
   els.vipToggle.addEventListener("click", () => {
     ensureAudio();
 
+    // Stay locked until moderator code unlocks VIP — do not open anything here
     if (!vipUnlocked) {
       playSfx("click");
-      showToast("VIP is locked — enter the moderator code");
-      openModeratorSearch();
+      showToast("VIP is locked — use Moderator Only and enter the code");
       return;
     }
 
