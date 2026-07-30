@@ -40,7 +40,7 @@ body {
 .bg-city {
   position: fixed;
   inset: 0;
-  background-image: url("assets/city-bg.jpg");
+  background-image: url("assets/forest-bg.jpg");
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
