@@ -399,11 +399,10 @@
 
   function renderVipToggle() {
     if (!vipUnlocked) {
-      const have = state.tokens || 0;
-      els.vipLabel.textContent = `VIP: ${have.toLocaleString()} / ${VIP_COST.toLocaleString()}`;
+      els.vipLabel.textContent = "VIP Locked";
       els.vipToggle.classList.add("is-locked");
       els.vipToggle.setAttribute("aria-pressed", "false");
-      els.vipToggle.title = `Locked — spend ${VIP_COST.toLocaleString()} Tokens to unlock VIP`;
+      els.vipToggle.title = "Locked — enter moderator code to unlock VIP";
       return;
     }
     els.vipToggle.classList.remove("is-locked");
@@ -412,7 +411,21 @@
     els.vipToggle.title = "VIP unlocked — toggle gem rewards";
   }
 
+  function openModeratorSearch() {
+    els.modPanel.removeAttribute("hidden");
+    els.modToggle.setAttribute("aria-expanded", "true");
+    requestAnimationFrame(() => {
+      els.modCode.focus();
+      els.modCode.select();
+    });
+  }
+
   function unlockFreeVip(source) {
+    if (source !== "moderator") {
+      showToast("Enter the moderator code to unlock VIP");
+      openModeratorSearch();
+      return;
+    }
     vipUnlocked = true;
     vipEnabled = true;
     state.vipUnlocked = true;
@@ -421,11 +434,7 @@
     renderWallet();
     renderVipToggle();
     playSfx("levelup");
-    showToast(
-      source === "moderator"
-        ? "Moderator code accepted — free VIP unlocked"
-        : "VIP unlocked! You can now earn Gems"
-    );
+    showToast("Moderator code accepted — VIP unlocked");
     els.modPanel.setAttribute("hidden", "");
     els.modToggle.setAttribute("aria-expanded", "false");
     els.modCode.value = "";
@@ -614,15 +623,9 @@
     ensureAudio();
 
     if (!vipUnlocked) {
-      const have = state.tokens || 0;
-      if (have < VIP_COST) {
-        playSfx("click");
-        showToast(`Need ${(VIP_COST - have).toLocaleString()} more Tokens for VIP`);
-        return;
-      }
-
-      state.tokens = have - VIP_COST;
-      unlockFreeVip("tokens");
+      playSfx("click");
+      showToast("VIP is locked — enter the moderator code");
+      openModeratorSearch();
       return;
     }
 
