@@ -1,8 +1,21 @@
 (() => {
   const STORAGE_KEY = "arcane-horizon-v1";
   const SFX_STORAGE_KEY = "arcane-horizon-v1-sfx";
-  const BG_STORAGE_KEY = "arcane-horizon-v5-bg";
-  const BG_DEFAULT = "assets/city-bg.jpg?v=5";
+  const THEME_STORAGE_KEY = "arcane-horizon-theme-id";
+  const BG_STORAGE_KEY = "arcane-horizon-v6-bg";
+  const THEMES = [
+    { id: "sunset", name: "Sunset Palm", src: "assets/themes/01-sunset.jpg?v=1", accent: "#ff8c42", accent2: "#ff4fd8", overlay: "rgba(40, 10, 30, 0.18)" },
+    { id: "cyberpunk", name: "Cyber Purple", src: "assets/themes/02-cyberpunk.jpg?v=1", accent: "#7af0ff", accent2: "#ff71ce", overlay: "rgba(12, 4, 28, 0.22)" },
+    { id: "forest", name: "Forest Mist", src: "assets/themes/03-forest.jpg?v=1", accent: "#8cff9a", accent2: "#6ad1ff", overlay: "rgba(8, 20, 12, 0.2)" },
+    { id: "ocean", name: "Deep Ocean", src: "assets/themes/04-ocean.jpg?v=1", accent: "#4fd2ff", accent2: "#2b7cff", overlay: "rgba(4, 20, 40, 0.28)" },
+    { id: "aurora", name: "Aurora", src: "assets/themes/05-aurora.jpg?v=1", accent: "#7dffb0", accent2: "#6ecbff", overlay: "rgba(4, 16, 28, 0.24)" },
+    { id: "volcano", name: "Volcano", src: "assets/themes/06-volcano.jpg?v=1", accent: "#ff7a3c", accent2: "#ff3d5a", overlay: "rgba(30, 8, 8, 0.28)" },
+    { id: "ice", name: "Ice Cavern", src: "assets/themes/07-ice.jpg?v=1", accent: "#9fe9ff", accent2: "#d8f6ff", overlay: "rgba(8, 24, 36, 0.22)" },
+    { id: "desert", name: "Desert Dusk", src: "assets/themes/08-desert.jpg?v=1", accent: "#ffb347", accent2: "#ff6f91", overlay: "rgba(36, 16, 8, 0.22)" },
+    { id: "space", name: "Cosmic Nebula", src: "assets/themes/09-space.jpg?v=1", accent: "#b388ff", accent2: "#66e0ff", overlay: "rgba(10, 4, 28, 0.26)" },
+    { id: "neonrain", name: "Neon Rain", src: "assets/themes/10-neonrain.jpg?v=1", accent: "#ff4fd8", accent2: "#4de1ff", overlay: "rgba(16, 4, 24, 0.3)" },
+  ];
+  const BG_DEFAULT = THEMES[0].src;
   const QUEST_XP = 40;
   const FOCUS_XP = 55;
   const QUEST_TOKENS = 10;
@@ -66,6 +79,11 @@
     sfxToggle: document.getElementById("sfx-toggle"),
     musicToggle: document.getElementById("music-toggle"),
     bgMusic: document.getElementById("bg-music"),
+    themeToggle: document.getElementById("theme-toggle"),
+    themePanel: document.getElementById("theme-panel"),
+    themeGrid: document.getElementById("theme-grid"),
+    bgPhoto: document.getElementById("bg-photo"),
+    bgOverlay: document.querySelector(".bg-overlay"),
     vipToggle: document.getElementById("vip-toggle"),
     vipLabel: document.getElementById("vip-label"),
     modToggle: document.getElementById("mod-toggle"),
@@ -76,6 +94,8 @@
   };
 
   const state = loadState();
+  let currentThemeId = localStorage.getItem(THEME_STORAGE_KEY) || "sunset";
+  if (!THEMES.some((t) => t.id === currentThemeId)) currentThemeId = "sunset";
   let sessionXp = Number(state.sessionXp) || 0;
   let timerId = null;
   let remaining = Number.isFinite(state.timer.remaining)
@@ -209,33 +229,72 @@
     return { ...SFX_DEFAULTS };
   }
 
-  function applyBackgroundFromStorage() {
-    // Always force the current forest background (clear old city caches)
-    const bg = BG_DEFAULT;
-    try {
-      [
-        "arcane-horizon-v1-bg",
-        "arcane-horizon-v2-bg",
-        "arcane-horizon-v3-bg",
-        "arcane-horizon-v4-bg",
-        BG_STORAGE_KEY,
-      ].forEach((key) => localStorage.removeItem(key));
-      localStorage.setItem(BG_STORAGE_KEY, bg);
-    } catch {
-      /* ignore storage errors */
-    }
+  function getTheme(id) {
+    return THEMES.find((t) => t.id === id) || THEMES[0];
+  }
 
-    const photo = document.querySelector(".bg-photo");
-    if (photo) {
-      photo.src = bg;
-    }
+  function applyTheme(id, { persist = true, toast = false } = {}) {
+    const theme = getTheme(id);
+    currentThemeId = theme.id;
 
+    if (els.bgPhoto) {
+      els.bgPhoto.src = theme.src;
+    }
     const scene = document.querySelector(".bg-scene");
     if (scene) {
-      scene.style.backgroundImage = `url("${bg}")`;
+      scene.style.backgroundImage = `url("${theme.src}")`;
       scene.style.backgroundSize = "cover";
       scene.style.backgroundPosition = "center";
     }
+    if (els.bgOverlay) {
+      els.bgOverlay.style.background = theme.overlay;
+    }
+
+    document.documentElement.style.setProperty("--neon-cyan", theme.accent);
+    document.documentElement.style.setProperty("--neon-magenta", theme.accent2);
+
+    if (persist) {
+      try {
+        localStorage.setItem(THEME_STORAGE_KEY, theme.id);
+        localStorage.setItem(BG_STORAGE_KEY, theme.src);
+        [
+          "arcane-horizon-v1-bg",
+          "arcane-horizon-v2-bg",
+          "arcane-horizon-v3-bg",
+          "arcane-horizon-v4-bg",
+          "arcane-horizon-v5-bg",
+        ].forEach((key) => localStorage.removeItem(key));
+      } catch {
+        /* ignore */
+      }
+    }
+
+    renderThemeGrid();
+    window.dispatchEvent(new CustomEvent("arcane-theme-change", { detail: { theme } }));
+    if (toast) showToast(`Theme: ${theme.name}`);
+  }
+
+  function renderThemeGrid() {
+    if (!els.themeGrid) return;
+    els.themeGrid.innerHTML = "";
+    THEMES.forEach((theme) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = `theme-card${theme.id === currentThemeId ? " is-active" : ""}`;
+      btn.setAttribute("role", "option");
+      btn.setAttribute("aria-selected", String(theme.id === currentThemeId));
+      btn.title = theme.name;
+      btn.innerHTML = `<img src="${theme.src}" alt="" loading="lazy" /><span>${theme.name}</span>`;
+      btn.addEventListener("click", () => {
+        applyTheme(theme.id, { toast: true });
+        playSfx("click");
+      });
+      els.themeGrid.appendChild(btn);
+    });
+  }
+
+  function applyBackgroundFromStorage() {
+    applyTheme(currentThemeId, { persist: true, toast: false });
   }
 
   function ensureAudio() {
@@ -702,6 +761,19 @@
     saveState();
     renderSfxToggle();
     if (sfxEnabled) playSfx("add");
+  });
+
+  els.themeToggle.addEventListener("click", () => {
+    const willOpen = els.themePanel.hasAttribute("hidden");
+    if (willOpen) {
+      els.themePanel.removeAttribute("hidden");
+      els.themeToggle.setAttribute("aria-expanded", "true");
+      renderThemeGrid();
+    } else {
+      els.themePanel.setAttribute("hidden", "");
+      els.themeToggle.setAttribute("aria-expanded", "false");
+    }
+    playSfx("click");
   });
 
   els.musicToggle.addEventListener("click", () => {

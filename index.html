@@ -8,11 +8,11 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;800&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
-  <link rel="preload" as="image" href="assets/city-bg.jpg?v=5" />
+  <link rel="preload" as="image" href="assets/themes/01-sunset.jpg?v=1" />
 </head>
 <body>
   <div class="bg-scene" aria-hidden="true">
-    <img class="bg-photo" src="assets/city-bg.jpg?v=5" alt="" />
+    <img class="bg-photo" id="bg-photo" src="assets/themes/01-sunset.jpg?v=1" alt="" />
   </div>
   <canvas class="bg-birds" id="bg-birds" aria-hidden="true"></canvas>
   <div class="bg-overlay" aria-hidden="true"></div>
@@ -39,6 +39,9 @@
       </div>
 
       <div class="header-actions">
+        <button type="button" class="theme-toggle" id="theme-toggle" aria-expanded="false" title="Choose a theme">
+          Themes
+        </button>
         <button type="button" class="vip-toggle is-locked" id="vip-toggle" aria-pressed="false" title="Locked — enter moderator code to unlock VIP">
           <span class="vip-lock" aria-hidden="true">
             <svg class="lock-icon lock-closed" viewBox="0 0 24 24" width="14" height="14">
@@ -59,6 +62,11 @@
         <button type="button" class="music-toggle" id="music-toggle" aria-pressed="true" title="Toggle background music">
           Music: On
         </button>
+      </div>
+
+      <div class="theme-panel" id="theme-panel" hidden>
+        <p class="theme-panel-title">Choose Theme</p>
+        <div class="theme-grid" id="theme-grid" role="listbox" aria-label="Background themes"></div>
       </div>
 
       <form class="mod-search" id="mod-panel" hidden autocomplete="off" role="search">

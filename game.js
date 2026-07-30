@@ -17,7 +17,10 @@
     }
 
     const sceneBg = new Image();
-    sceneBg.src = "assets/city-bg.jpg?v=5";
+    sceneBg.src = "assets/themes/01-sunset.jpg?v=1";
+    window.addEventListener("arcane-theme-change", (e) => {
+      if (e.detail?.theme?.src) sceneBg.src = e.detail.theme.src;
+    });
     sceneBg.decoding = "async";
 
     const W = canvas.width;
