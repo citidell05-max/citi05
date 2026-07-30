@@ -199,7 +199,8 @@ body {
 
 .sfx-toggle,
 .vip-toggle,
-.mod-toggle {
+.mod-toggle,
+.music-toggle {
   margin-top: 0;
   font-family: var(--font-display);
   font-size: 0.68rem;
@@ -217,7 +218,8 @@ body {
 
 .sfx-toggle:hover,
 .vip-toggle:hover,
-.mod-toggle:hover {
+.mod-toggle:hover,
+.music-toggle:hover {
   background: rgba(0, 229, 255, 0.16);
 }
 
@@ -228,10 +230,17 @@ body {
   color: var(--text-muted);
 }
 
-.vip-toggle[aria-pressed="true"] {
+.vip-toggle[aria-pressed="true"],
+.music-toggle[aria-pressed="true"] {
   border-color: rgba(255, 113, 206, 0.55);
   background: rgba(255, 113, 206, 0.14);
   color: var(--neon-magenta);
+}
+
+.music-toggle[aria-pressed="true"] {
+  border-color: rgba(122, 240, 255, 0.55);
+  background: rgba(122, 240, 255, 0.14);
+  color: var(--neon-cyan);
 }
 
 .vip-toggle {

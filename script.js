@@ -64,6 +64,7 @@
     sessionXp: document.getElementById("session-xp"),
     toast: document.getElementById("toast"),
     sfxToggle: document.getElementById("sfx-toggle"),
+    musicToggle: document.getElementById("music-toggle"),
     vipToggle: document.getElementById("vip-toggle"),
     vipLabel: document.getElementById("vip-label"),
     modToggle: document.getElementById("mod-toggle"),
@@ -83,6 +84,7 @@
   let toastTimer = null;
   let audioCtx = null;
   let sfxEnabled = state.sfxEnabled;
+  let musicEnabled = !!state.musicEnabled;
   let vipEnabled = !!state.vipEnabled && state.vipUnlockSource === "moderator";
   let vipUnlocked = !!state.vipUnlocked && state.vipUnlockSource === "moderator";
   let vipUnlockSource = state.vipUnlockSource === "moderator" ? "moderator" : null;
@@ -112,6 +114,7 @@
       vipUnlocked: false,
       vipUnlockSource: null,
       sfxEnabled: true,
+      musicEnabled: false,
       timer: {
         mode: "focus",
         minutes: 25,
@@ -138,6 +141,7 @@
           vipUnlocked: !!parsed.vipUnlocked && parsed.vipUnlockSource === "moderator",
           vipUnlockSource: parsed.vipUnlockSource === "moderator" ? "moderator" : null,
           sfxEnabled: parsed.sfxEnabled !== false,
+          musicEnabled: !!parsed.musicEnabled,
           timer: {
             mode: parsed.timer?.mode || "focus",
             minutes,
@@ -154,6 +158,7 @@
   function saveState() {
     state.sessionXp = sessionXp;
     state.sfxEnabled = sfxEnabled;
+    state.musicEnabled = musicEnabled;
     state.vipEnabled = vipEnabled;
     state.vipUnlocked = vipUnlocked;
     state.vipUnlockSource = vipUnlockSource;
@@ -171,6 +176,7 @@
         vipUnlocked,
         vipUnlockSource,
         sfxEnabled,
+        musicEnabled,
         timer: {
           mode: state.timer.mode,
           minutes: state.timer.minutes,
@@ -310,6 +316,30 @@
   function renderSfxToggle() {
     els.sfxToggle.textContent = sfxEnabled ? "Sound: On" : "Sound: Off";
     els.sfxToggle.setAttribute("aria-pressed", String(sfxEnabled));
+  }
+
+  const bgMusic = new Audio("sounds/speed-song.mp3");
+  bgMusic.loop = true;
+  bgMusic.preload = "auto";
+  bgMusic.volume = 0.45;
+
+  function renderMusicToggle() {
+    els.musicToggle.textContent = musicEnabled ? "Music: On" : "Music: Off";
+    els.musicToggle.setAttribute("aria-pressed", String(musicEnabled));
+  }
+
+  function syncBackgroundMusic() {
+    if (!musicEnabled) {
+      bgMusic.pause();
+      return;
+    }
+    ensureAudio();
+    const playPromise = bgMusic.play();
+    if (playPromise && typeof playPromise.catch === "function") {
+      playPromise.catch(() => {
+        showToast("Click Music again to start the Speed song");
+      });
+    }
   }
 
   function showToast(message) {
@@ -625,6 +655,20 @@
     if (sfxEnabled) playSfx("add");
   });
 
+  els.musicToggle.addEventListener("click", () => {
+    ensureAudio();
+    musicEnabled = !musicEnabled;
+    state.musicEnabled = musicEnabled;
+    saveState();
+    renderMusicToggle();
+    syncBackgroundMusic();
+    if (musicEnabled) {
+      showToast("Speed song playing");
+    } else {
+      showToast("Music off");
+    }
+  });
+
   els.vipToggle.addEventListener("click", () => {
     ensureAudio();
 
@@ -710,8 +754,17 @@
   els.ring.style.strokeDasharray = String(CIRCUMFERENCE);
 
   renderSfxToggle();
+  renderMusicToggle();
   renderVipToggle();
   renderWallet();
+  if (musicEnabled) {
+    // browsers require a gesture; wait for first click
+    const startMusicOnce = () => {
+      syncBackgroundMusic();
+      document.removeEventListener("pointerdown", startMusicOnce);
+    };
+    document.addEventListener("pointerdown", startMusicOnce);
+  }
   renderQuests();
   renderXp();
   renderTimer();
