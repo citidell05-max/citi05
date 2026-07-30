@@ -165,6 +165,21 @@
           <li>Unlock VIP → enter the moderator code (VIP stays locked until then)</li>
         </ul>
       </section>
+
+      <section class="panel game-panel" aria-labelledby="game-heading">
+        <div class="panel-head">
+          <h2 id="game-heading">Horizon Dash</h2>
+          <span class="panel-meta" id="game-meta">Best: 0</span>
+        </div>
+        <p class="game-help">Geometry Dash vibes · Flappy Bird character · Click / Space / Tap to flap</p>
+        <div class="game-wrap">
+          <canvas id="dash-canvas" width="960" height="360" aria-label="Horizon Dash game"></canvas>
+          <div class="game-hud">
+            <span id="game-score">Score: 0</span>
+            <button type="button" class="btn btn-primary" id="game-start">Play</button>
+          </div>
+        </div>
+      </section>
     </main>
   </div>
 
@@ -176,5 +191,6 @@
   </p>
 
   <script src="script.js"></script>
+  <script src="game.js"></script>
 </body>
 </html>

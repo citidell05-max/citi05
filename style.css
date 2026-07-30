@@ -401,13 +401,15 @@ body {
   grid-template-columns: 1.15fr 0.95fr;
   grid-template-areas:
     "quest timer"
-    "xp xp";
+    "xp xp"
+    "game game";
   gap: 1.25rem;
 }
 
 .quest-panel { grid-area: quest; }
 .timer-panel { grid-area: timer; }
 .xp-panel { grid-area: xp; }
+.game-panel { grid-area: game; }
 
 .panel {
   background: rgba(255, 255, 255, 0.04);
@@ -422,12 +424,14 @@ body {
 
 .quest-panel,
 .timer-panel,
-.xp-panel {
+.xp-panel,
+.game-panel {
   background: rgba(12, 6, 24, 0.12);
 }
 
 .timer-panel { animation-delay: 0.08s; }
 .xp-panel { animation-delay: 0.16s; }
+.game-panel { animation-delay: 0.22s; }
 
 @keyframes rise-in {
   from {
@@ -877,7 +881,8 @@ body {
     grid-template-areas:
       "timer"
       "quest"
-      "xp";
+      "xp"
+      "game";
   }
 
   .quest-list {
@@ -933,6 +938,47 @@ body {
 
 .music-credit a:hover {
   text-decoration: underline;
+}
+
+.game-help {
+  margin: -0.35rem 0 0.85rem;
+  color: var(--text-muted);
+  font-size: 1rem;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
+}
+
+.game-wrap {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(6, 4, 16, 0.35);
+}
+
+#dash-canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.game-hud {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.7rem 0.85rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(8, 4, 18, 0.35);
+}
+
+#game-score {
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  color: var(--neon-lime);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
 }
 
 @media (prefers-reduced-motion: reduce) {
