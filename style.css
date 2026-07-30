@@ -54,7 +54,7 @@ body {
 .bg-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(8, 2, 18, 0.12);
+  background: rgba(8, 16, 12, 0.18);
   pointer-events: none;
   z-index: 0;
 }
