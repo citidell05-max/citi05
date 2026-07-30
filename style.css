@@ -55,8 +55,8 @@ body {
   position: fixed;
   inset: 0;
   background:
-    linear-gradient(180deg, rgba(12, 4, 24, 0.55) 0%, rgba(12, 4, 24, 0.35) 35%, rgba(12, 4, 24, 0.72) 100%),
-    radial-gradient(ellipse at center, transparent 20%, rgba(8, 2, 18, 0.55) 100%);
+    linear-gradient(180deg, rgba(12, 4, 24, 0.35) 0%, rgba(12, 4, 24, 0.18) 35%, rgba(12, 4, 24, 0.45) 100%),
+    radial-gradient(ellipse at center, transparent 25%, rgba(8, 2, 18, 0.35) 100%);
   pointer-events: none;
   z-index: 0;
 }
@@ -721,8 +721,10 @@ body {
   letter-spacing: 0.04em;
   padding: 0.4rem 0.75rem;
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   color: var(--text-muted);
   cursor: pointer;
   transition: border-color 0.2s, color 0.2s, background 0.2s;
@@ -816,10 +818,12 @@ body {
 .xp-bar {
   height: 14px;
   border-radius: 999px;
-  background: var(--track);
+  background: rgba(255, 255, 255, 0.1);
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   margin-bottom: 1rem;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
 }
 
 .xp-fill {
