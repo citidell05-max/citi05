@@ -1,8 +1,8 @@
 (() => {
   const STORAGE_KEY = "arcane-horizon-v1";
   const SFX_STORAGE_KEY = "arcane-horizon-v1-sfx";
-  const BG_STORAGE_KEY = "arcane-horizon-v4-bg";
-  const BG_DEFAULT = "assets/forest-bg.jpg?v=4";
+  const BG_STORAGE_KEY = "arcane-horizon-v5-bg";
+  const BG_DEFAULT = "assets/city-bg.jpg?v=5";
   const QUEST_XP = 40;
   const FOCUS_XP = 55;
   const QUEST_TOKENS = 10;
@@ -217,6 +217,7 @@
         "arcane-horizon-v1-bg",
         "arcane-horizon-v2-bg",
         "arcane-horizon-v3-bg",
+        "arcane-horizon-v4-bg",
         BG_STORAGE_KEY,
       ].forEach((key) => localStorage.removeItem(key));
       localStorage.setItem(BG_STORAGE_KEY, bg);

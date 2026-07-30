@@ -16,9 +16,9 @@
       return;
     }
 
-    const forestBg = new Image();
-    forestBg.src = "assets/forest-bg.jpg?v=4";
-    forestBg.decoding = "async";
+    const sceneBg = new Image();
+    sceneBg.src = "assets/city-bg.jpg?v=5";
+    sceneBg.decoding = "async";
 
     const W = canvas.width;
     const H = canvas.height;
@@ -268,12 +268,12 @@
     }
 
     function drawBackground() {
-      if (forestBg.complete && forestBg.naturalWidth) {
+      if (sceneBg.complete && sceneBg.naturalWidth) {
         const scroll = (state.tick * state.speed * 0.35) % W;
         // Parallax draw twice for seamless scroll
-        ctx.drawImage(forestBg, -scroll, 0, W, H);
-        ctx.drawImage(forestBg, W - scroll, 0, W, H);
-        ctx.fillStyle = "rgba(6, 10, 18, 0.28)";
+        ctx.drawImage(sceneBg, -scroll, 0, W, H);
+        ctx.drawImage(sceneBg, W - scroll, 0, W, H);
+        ctx.fillStyle = "rgba(12, 4, 24, 0.35)";
         ctx.fillRect(0, 0, W, GROUND);
       } else {
         ctx.fillStyle = "#0b0716";
@@ -297,9 +297,9 @@
         ctx.restore();
       });
 
-      ctx.fillStyle = "rgba(20, 28, 18, 0.92)";
+      ctx.fillStyle = "rgba(18, 10, 28, 0.92)";
       ctx.fillRect(0, GROUND, W, H - GROUND);
-      ctx.fillStyle = "#7dff9a";
+      ctx.fillStyle = "#ff71ce";
       ctx.fillRect(0, GROUND, W, 4);
       ctx.fillStyle = "rgba(255,255,255,0.35)";
       ctx.fillRect(0, GROUND + 4, W, 2);
