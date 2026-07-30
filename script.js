@@ -9,6 +9,7 @@
   const FOCUS_TOKENS = 15;
   const QUEST_GEMS = 2;
   const FOCUS_GEMS = 3;
+  const VIP_COST = 25000;
   const CIRCUMFERENCE = 552.92;
 
   const RANKS = [
@@ -78,6 +79,7 @@
   let audioCtx = null;
   let sfxEnabled = state.sfxEnabled;
   let vipEnabled = !!state.vipEnabled;
+  let vipUnlocked = !!state.vipUnlocked || vipEnabled;
 
   const sfxData = loadSfxFromStorage();
   const sfxBuffers = {};
@@ -101,6 +103,7 @@
       tokens: 0,
       gems: 0,
       vipEnabled: false,
+      vipUnlocked: false,
       sfxEnabled: true,
       timer: {
         mode: "focus",
@@ -125,6 +128,7 @@
           tokens: Number(parsed.tokens) || 0,
           gems: Number(parsed.gems) || 0,
           vipEnabled: !!parsed.vipEnabled,
+          vipUnlocked: !!parsed.vipUnlocked || !!parsed.vipEnabled,
           sfxEnabled: parsed.sfxEnabled !== false,
           timer: {
             mode: parsed.timer?.mode || "focus",
@@ -143,6 +147,7 @@
     state.sessionXp = sessionXp;
     state.sfxEnabled = sfxEnabled;
     state.vipEnabled = vipEnabled;
+    state.vipUnlocked = vipUnlocked;
     state.timer.remaining = remaining;
     localStorage.setItem(
       STORAGE_KEY,
@@ -154,6 +159,7 @@
         tokens: state.tokens,
         gems: state.gems,
         vipEnabled,
+        vipUnlocked,
         sfxEnabled,
         timer: {
           mode: state.timer.mode,
@@ -387,8 +393,16 @@
   }
 
   function renderVipToggle() {
+    if (!vipUnlocked) {
+      const have = state.tokens || 0;
+      els.vipToggle.textContent = `VIP: ${have.toLocaleString()} / ${VIP_COST.toLocaleString()}`;
+      els.vipToggle.setAttribute("aria-pressed", "false");
+      els.vipToggle.title = `Spend ${VIP_COST.toLocaleString()} Tokens to unlock VIP`;
+      return;
+    }
     els.vipToggle.textContent = vipEnabled ? "VIP: On" : "VIP: Off";
     els.vipToggle.setAttribute("aria-pressed", String(vipEnabled));
+    els.vipToggle.title = "Toggle VIP mode for gem rewards";
   }
 
   function gainRewards({ xp, tokens, gems = 0, reason }) {
@@ -411,6 +425,7 @@
     saveState();
     renderXp();
     renderWallet();
+    renderVipToggle();
 
     if (leveled) {
       els.levelBadge.classList.remove("is-levelup");
@@ -571,6 +586,28 @@
 
   els.vipToggle.addEventListener("click", () => {
     ensureAudio();
+
+    if (!vipUnlocked) {
+      const have = state.tokens || 0;
+      if (have < VIP_COST) {
+        playSfx("click");
+        showToast(`Need ${(VIP_COST - have).toLocaleString()} more Tokens for VIP`);
+        return;
+      }
+
+      state.tokens = have - VIP_COST;
+      vipUnlocked = true;
+      vipEnabled = true;
+      state.vipUnlocked = true;
+      state.vipEnabled = true;
+      saveState();
+      renderWallet();
+      renderVipToggle();
+      playSfx("levelup");
+      showToast("VIP unlocked! You can now earn Gems");
+      return;
+    }
+
     vipEnabled = !vipEnabled;
     state.vipEnabled = vipEnabled;
     saveState();
