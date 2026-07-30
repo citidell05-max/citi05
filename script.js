@@ -748,6 +748,17 @@
   document.addEventListener("pointerdown", unlockAudio);
   document.addEventListener("keydown", unlockAudio);
 
+
+  window.addEventListener("arcane-game-reward", (event) => {
+    const tokens = Number(event.detail?.tokens) || 0;
+    if (tokens <= 0) return;
+    state.tokens = (state.tokens || 0) + tokens;
+    saveState();
+    renderWallet();
+    renderVipToggle();
+    showToast(`Dash reward +${tokens} Tokens`);
+  });
+
   window.addEventListener("beforeunload", saveState);
 
   applyBackgroundFromStorage();
