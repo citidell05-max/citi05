@@ -10,6 +10,7 @@
   const QUEST_GEMS = 2;
   const FOCUS_GEMS = 3;
   const VIP_COST = 25000;
+  const MOD_VIP_CODE = "ONLY4VIP";
   const CIRCUMFERENCE = 552.92;
 
   const RANKS = [
@@ -64,6 +65,9 @@
     toast: document.getElementById("toast"),
     sfxToggle: document.getElementById("sfx-toggle"),
     vipToggle: document.getElementById("vip-toggle"),
+    modToggle: document.getElementById("mod-toggle"),
+    modPanel: document.getElementById("mod-panel"),
+    modCode: document.getElementById("mod-code"),
     tokenCount: document.getElementById("token-count"),
     gemCount: document.getElementById("gem-count"),
   };
@@ -405,6 +409,25 @@
     els.vipToggle.title = "Toggle VIP mode for gem rewards";
   }
 
+  function unlockFreeVip(source) {
+    vipUnlocked = true;
+    vipEnabled = true;
+    state.vipUnlocked = true;
+    state.vipEnabled = true;
+    saveState();
+    renderWallet();
+    renderVipToggle();
+    playSfx("levelup");
+    showToast(
+      source === "moderator"
+        ? "Moderator code accepted — free VIP unlocked"
+        : "VIP unlocked! You can now earn Gems"
+    );
+    els.modPanel.hidden = true;
+    els.modToggle.setAttribute("aria-expanded", "false");
+    els.modCode.value = "";
+  }
+
   function gainRewards({ xp, tokens, gems = 0, reason }) {
     state.xp += xp;
     sessionXp += xp;
@@ -596,15 +619,7 @@
       }
 
       state.tokens = have - VIP_COST;
-      vipUnlocked = true;
-      vipEnabled = true;
-      state.vipUnlocked = true;
-      state.vipEnabled = true;
-      saveState();
-      renderWallet();
-      renderVipToggle();
-      playSfx("levelup");
-      showToast("VIP unlocked! You can now earn Gems");
+      unlockFreeVip("tokens");
       return;
     }
 
@@ -614,6 +629,31 @@
     renderVipToggle();
     playSfx("click");
     showToast(vipEnabled ? "VIP on — earn Gems from quests & focus" : "VIP off — Tokens only");
+  });
+
+  els.modToggle.addEventListener("click", () => {
+    ensureAudio();
+    const open = els.modPanel.hidden;
+    els.modPanel.hidden = !open;
+    els.modToggle.setAttribute("aria-expanded", String(open));
+    playSfx("click");
+    if (open) {
+      els.modCode.focus();
+    }
+  });
+
+  els.modPanel.addEventListener("submit", (e) => {
+    e.preventDefault();
+    ensureAudio();
+    const code = els.modCode.value.trim();
+    if (code === MOD_VIP_CODE) {
+      unlockFreeVip("moderator");
+      return;
+    }
+    playSfx("delete");
+    showToast("Invalid moderator code");
+    els.modCode.focus();
+    els.modCode.select();
   });
 
   els.timerToggle.addEventListener("click", () => {

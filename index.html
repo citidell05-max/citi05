@@ -38,10 +38,28 @@
         <button type="button" class="vip-toggle" id="vip-toggle" aria-pressed="false" title="Unlock VIP for 25,000 Tokens to earn Gems">
           VIP: 0 / 25,000
         </button>
+        <button type="button" class="mod-toggle" id="mod-toggle" aria-expanded="false" title="Moderator free VIP unlock">
+          Moderator Only
+        </button>
         <button type="button" class="sfx-toggle" id="sfx-toggle" aria-pressed="true" title="Toggle sound effects">
           Sound: On
         </button>
       </div>
+
+      <form class="mod-panel" id="mod-panel" hidden autocomplete="off">
+        <label class="mod-label" for="mod-code">Moderator code</label>
+        <div class="mod-row">
+          <input
+            type="password"
+            id="mod-code"
+            class="mod-input"
+            placeholder="Enter code"
+            maxlength="32"
+            aria-label="Moderator VIP code"
+          />
+          <button type="submit" class="btn btn-primary">Unlock Free VIP</button>
+        </div>
+      </form>
     </header>
 
     <main class="layout">

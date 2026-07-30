@@ -201,7 +201,8 @@ body {
 }
 
 .sfx-toggle,
-.vip-toggle {
+.vip-toggle,
+.mod-toggle {
   margin-top: 0;
   font-family: var(--font-display);
   font-size: 0.68rem;
@@ -218,7 +219,8 @@ body {
 }
 
 .sfx-toggle:hover,
-.vip-toggle:hover {
+.vip-toggle:hover,
+.mod-toggle:hover {
   background: rgba(0, 229, 255, 0.16);
 }
 
@@ -233,6 +235,67 @@ body {
   border-color: rgba(255, 113, 206, 0.55);
   background: rgba(255, 113, 206, 0.14);
   color: var(--neon-magenta);
+}
+
+.mod-toggle {
+  border-color: rgba(184, 255, 60, 0.45);
+  background: rgba(184, 255, 60, 0.1);
+  color: var(--neon-lime);
+}
+
+.mod-toggle:hover,
+.mod-toggle[aria-expanded="true"] {
+  background: rgba(184, 255, 60, 0.18);
+}
+
+.mod-panel {
+  width: min(420px, 100%);
+  margin: 0.85rem auto 0;
+  padding: 0.85rem 0.95rem;
+  border-radius: 12px;
+  border: 1px solid rgba(184, 255, 60, 0.28);
+  background: rgba(10, 6, 20, 0.78);
+  backdrop-filter: blur(10px);
+  text-align: left;
+}
+
+.mod-label {
+  display: block;
+  margin-bottom: 0.45rem;
+  font-family: var(--font-display);
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--neon-lime);
+}
+
+.mod-row {
+  display: flex;
+  gap: 0.55rem;
+}
+
+.mod-input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.65rem 0.8rem;
+  border: 1px solid rgba(184, 255, 60, 0.3);
+  border-radius: 10px;
+  background: rgba(4, 10, 20, 0.75);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 1.05rem;
+  outline: none;
+}
+
+.mod-input:focus {
+  border-color: var(--neon-lime);
+  box-shadow: 0 0 0 3px rgba(184, 255, 60, 0.15);
+}
+
+@media (max-width: 480px) {
+  .mod-row {
+    flex-direction: column;
+  }
 }
 
 .layout {
