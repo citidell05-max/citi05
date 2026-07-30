@@ -17,7 +17,7 @@
     }
 
     const forestBg = new Image();
-    forestBg.src = "assets/forest-bg.jpg";
+    forestBg.src = "assets/forest-bg.jpg?v=4";
     forestBg.decoding = "async";
 
     const W = canvas.width;

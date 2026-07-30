@@ -1,8 +1,8 @@
 (() => {
   const STORAGE_KEY = "arcane-horizon-v1";
   const SFX_STORAGE_KEY = "arcane-horizon-v1-sfx";
-  const BG_STORAGE_KEY = "arcane-horizon-v3-bg";
-  const BG_DEFAULT = "assets/forest-bg.jpg";
+  const BG_STORAGE_KEY = "arcane-horizon-v4-bg";
+  const BG_DEFAULT = "assets/forest-bg.jpg?v=4";
   const QUEST_XP = 40;
   const FOCUS_XP = 55;
   const QUEST_TOKENS = 10;
@@ -210,27 +210,30 @@
   }
 
   function applyBackgroundFromStorage() {
-    let bg = BG_DEFAULT;
+    // Always force the current forest background (clear old city caches)
+    const bg = BG_DEFAULT;
     try {
-      const saved = localStorage.getItem(BG_STORAGE_KEY);
-      if (saved && (saved.startsWith("data:image") || saved.startsWith("assets/"))) {
-        bg = saved;
-      } else {
-        localStorage.setItem(BG_STORAGE_KEY, BG_DEFAULT);
-        bg = BG_DEFAULT;
-      }
+      [
+        "arcane-horizon-v1-bg",
+        "arcane-horizon-v2-bg",
+        "arcane-horizon-v3-bg",
+        BG_STORAGE_KEY,
+      ].forEach((key) => localStorage.removeItem(key));
+      localStorage.setItem(BG_STORAGE_KEY, bg);
     } catch {
-      try {
-        localStorage.setItem(BG_STORAGE_KEY, BG_DEFAULT);
-      } catch {
-        /* quota / private mode — fall back to file URL via CSS */
-        return;
-      }
+      /* ignore storage errors */
     }
 
-    const city = document.querySelector(".bg-city");
-    if (city) {
-      city.style.backgroundImage = `url("${bg}")`;
+    const photo = document.querySelector(".bg-photo");
+    if (photo) {
+      photo.src = bg;
+    }
+
+    const scene = document.querySelector(".bg-scene");
+    if (scene) {
+      scene.style.backgroundImage = `url("${bg}")`;
+      scene.style.backgroundSize = "cover";
+      scene.style.backgroundPosition = "center";
     }
   }
 
