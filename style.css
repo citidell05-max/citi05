@@ -377,7 +377,6 @@ body {
 }
 
 .ring-progress {
-  stroke: url(#unused);
   stroke: var(--neon-cyan);
   stroke-linecap: round;
   stroke-dasharray: var(--ring-circumference);
