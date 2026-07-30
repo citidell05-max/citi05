@@ -46,19 +46,21 @@
         </button>
       </div>
 
-      <form class="mod-panel" id="mod-panel" hidden autocomplete="off">
-        <label class="mod-label" for="mod-code">Moderator code</label>
-        <div class="mod-row">
+      <form class="mod-search" id="mod-panel" hidden autocomplete="off" role="search">
+        <div class="mod-search-bar">
+          <span class="mod-search-icon" aria-hidden="true">⌕</span>
           <input
-            type="password"
+            type="search"
             id="mod-code"
-            class="mod-input"
-            placeholder="Enter code"
+            class="mod-search-input"
+            placeholder="Type ONLY4VIP here…"
             maxlength="32"
-            aria-label="Moderator VIP code"
+            enterkeyhint="go"
+            aria-label="Moderator VIP code search"
           />
-          <button type="submit" class="btn btn-primary">Unlock Free VIP</button>
+          <button type="submit" class="mod-search-btn">Unlock</button>
         </div>
+        <p class="mod-search-hint">Moderator search — enter the VIP access code</p>
       </form>
     </header>
 

@@ -423,7 +423,7 @@
         ? "Moderator code accepted — free VIP unlocked"
         : "VIP unlocked! You can now earn Gems"
     );
-    els.modPanel.hidden = true;
+    els.modPanel.setAttribute("hidden", "");
     els.modToggle.setAttribute("aria-expanded", "false");
     els.modCode.value = "";
   }
@@ -633,12 +633,19 @@
 
   els.modToggle.addEventListener("click", () => {
     ensureAudio();
-    const open = els.modPanel.hidden;
-    els.modPanel.hidden = !open;
-    els.modToggle.setAttribute("aria-expanded", String(open));
-    playSfx("click");
-    if (open) {
-      els.modCode.focus();
+    const willOpen = els.modPanel.hasAttribute("hidden");
+    if (willOpen) {
+      els.modPanel.removeAttribute("hidden");
+      els.modToggle.setAttribute("aria-expanded", "true");
+      playSfx("click");
+      requestAnimationFrame(() => {
+        els.modCode.focus();
+        els.modCode.select();
+      });
+    } else {
+      els.modPanel.setAttribute("hidden", "");
+      els.modToggle.setAttribute("aria-expanded", "false");
+      playSfx("click");
     }
   });
 
@@ -646,7 +653,7 @@
     e.preventDefault();
     ensureAudio();
     const code = els.modCode.value.trim();
-    if (code === MOD_VIP_CODE) {
+    if (code.toUpperCase() === MOD_VIP_CODE) {
       unlockFreeVip("moderator");
       return;
     }
