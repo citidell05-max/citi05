@@ -37,11 +37,23 @@
       bird: { x: 130, y: H * 0.42, vy: 0, r: 16, rot: 0 },
       obstacles: [],
       particles: [],
+      skyBirds: [],
     };
 
     metaEl.textContent = `Best: ${state.best}`;
     startBtn.textContent = "Play";
     scoreEl.textContent = "Score: 0";
+
+    for (let i = 0; i < 4; i += 1) {
+      state.skyBirds.push({
+        x: Math.random() * W,
+        y: 30 + Math.random() * 90,
+        speed: 0.6 + Math.random() * 1.1,
+        dir: Math.random() > 0.5 ? 1 : -1,
+        wing: Math.random() * 10,
+        size: 8 + Math.random() * 6,
+      });
+    }
 
     function ellipse(x, y, rx, ry) {
       if (typeof ctx.ellipse === "function") {
@@ -246,6 +258,13 @@
         p.life -= 1;
       });
       state.particles = state.particles.filter((p) => p.life > 0);
+
+      state.skyBirds.forEach((b) => {
+        b.x += b.speed * b.dir;
+        b.wing += 0.25;
+        if (b.x < -40) b.x = W + 40;
+        if (b.x > W + 40) b.x = -40;
+      });
     }
 
     function drawBackground() {
@@ -260,6 +279,23 @@
         ctx.fillStyle = "#0b0716";
         ctx.fillRect(0, 0, W, H);
       }
+
+      state.skyBirds.forEach((b) => {
+        const flap = Math.sin(b.wing);
+        ctx.save();
+        ctx.translate(b.x, b.y);
+        if (b.dir < 0) ctx.scale(-1, 1);
+        ctx.fillStyle = "rgba(15, 12, 10, 0.8)";
+        ctx.beginPath();
+        ellipse(0, 0, b.size * 0.8, b.size * 0.35);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(-2, 0);
+        ctx.quadraticCurveTo(4, -b.size * (0.8 + flap * 0.4), b.size * 0.6, -2);
+        ctx.quadraticCurveTo(2, 0, -2, 0);
+        ctx.fill();
+        ctx.restore();
+      });
 
       ctx.fillStyle = "rgba(20, 28, 18, 0.92)";
       ctx.fillRect(0, GROUND, W, H - GROUND);

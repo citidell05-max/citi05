@@ -1,7 +1,7 @@
 (() => {
   const STORAGE_KEY = "arcane-horizon-v1";
   const SFX_STORAGE_KEY = "arcane-horizon-v1-sfx";
-  const BG_STORAGE_KEY = "arcane-horizon-v2-bg";
+  const BG_STORAGE_KEY = "arcane-horizon-v3-bg";
   const BG_DEFAULT = "assets/forest-bg.jpg";
   const QUEST_XP = 40;
   const FOCUS_XP = 55;
