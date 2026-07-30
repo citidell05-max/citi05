@@ -1,18 +1,25 @@
 (() => {
   const STORAGE_KEY = "arcane-horizon-v1";
-  const QUEST_XP = 25;
-  const FOCUS_XP = 40;
+  const QUEST_XP = 40;
+  const FOCUS_XP = 55;
   const CIRCUMFERENCE = 552.92;
 
   const RANKS = [
-    "Novice Seeker",
+    "Wanderer",
+    "Arcane Initiate",
     "Rune Apprentice",
-    "Horizon Scout",
-    "Arcane Adept",
-    "Focus Warden",
-    "Mythic Scholar",
+    "Mystic Guardian",
+    "Astral Knight",
+    "Eternal Paragon",
     "Void Walker",
     "Horizon Master",
+    "Storm Weaver",
+    "Celestial Warden",
+    "Dragon Sage",
+    "Eclipse Lord",
+    "Arcane Sovereign",
+    "Mythic Ascendant",
+    "Horizon Phoenix",
   ];
 
   const els = {
@@ -37,6 +44,7 @@
     xpBar: document.getElementById("xp-bar"),
     sessionXp: document.getElementById("session-xp"),
     toast: document.getElementById("toast"),
+    sfxToggle: document.getElementById("sfx-toggle"),
   };
 
   const state = loadState();
@@ -45,6 +53,8 @@
   let remaining = state.timer.minutes * 60;
   let running = false;
   let toastTimer = null;
+  let audioCtx = null;
+  let sfxEnabled = state.sfxEnabled;
 
   function xpForLevel(level) {
     return 100 + (level - 1) * 50;
@@ -59,6 +69,7 @@
           quests: Array.isArray(parsed.quests) ? parsed.quests : [],
           level: Number(parsed.level) || 1,
           xp: Number(parsed.xp) || 0,
+          sfxEnabled: parsed.sfxEnabled !== false,
           timer: {
             mode: parsed.timer?.mode || "focus",
             minutes: Number(parsed.timer?.minutes) || 25,
@@ -72,6 +83,7 @@
       quests: [],
       level: 1,
       xp: 0,
+      sfxEnabled: true,
       timer: { mode: "focus", minutes: 25 },
     };
   }
@@ -83,9 +95,83 @@
         quests: state.quests,
         level: state.level,
         xp: state.xp,
+        sfxEnabled,
         timer: state.timer,
       })
     );
+  }
+
+  function ensureAudio() {
+    if (!audioCtx) {
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!Ctx) return null;
+      audioCtx = new Ctx();
+    }
+    if (audioCtx.state === "suspended") {
+      audioCtx.resume().catch(() => {});
+    }
+    return audioCtx;
+  }
+
+  function playTone(freq, duration, type = "sine", gainValue = 0.08, when = 0) {
+    const ctx = ensureAudio();
+    if (!ctx || !sfxEnabled) return;
+
+    const t0 = ctx.currentTime + when;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, t0);
+    gain.gain.setValueAtTime(0.0001, t0);
+    gain.gain.exponentialRampToValueAtTime(gainValue, t0 + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t0 + duration);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(t0);
+    osc.stop(t0 + duration + 0.02);
+  }
+
+  function playSfx(name) {
+    if (!sfxEnabled) return;
+
+    switch (name) {
+      case "add":
+        playTone(520, 0.1, "triangle", 0.07);
+        playTone(780, 0.12, "triangle", 0.05, 0.07);
+        break;
+      case "complete":
+        playTone(440, 0.1, "sine", 0.08);
+        playTone(554, 0.12, "sine", 0.07, 0.08);
+        playTone(659, 0.16, "sine", 0.06, 0.16);
+        break;
+      case "delete":
+        playTone(320, 0.12, "square", 0.035);
+        playTone(220, 0.14, "square", 0.03, 0.06);
+        break;
+      case "timer":
+        playTone(660, 0.12, "sawtooth", 0.05);
+        playTone(880, 0.14, "sawtooth", 0.045, 0.12);
+        playTone(990, 0.18, "triangle", 0.05, 0.24);
+        break;
+      case "levelup":
+        playTone(523, 0.12, "triangle", 0.08);
+        playTone(659, 0.12, "triangle", 0.07, 0.1);
+        playTone(784, 0.12, "triangle", 0.07, 0.2);
+        playTone(1046, 0.22, "sine", 0.08, 0.32);
+        break;
+      case "click":
+        playTone(700, 0.05, "square", 0.025);
+        break;
+      default:
+        break;
+    }
+  }
+
+  function renderSfxToggle() {
+    els.sfxToggle.textContent = sfxEnabled ? "Sound: On" : "Sound: Off";
+    els.sfxToggle.setAttribute("aria-pressed", String(sfxEnabled));
   }
 
   function showToast(message) {
@@ -148,6 +234,7 @@
     });
     saveState();
     renderQuests();
+    playSfx("add");
   }
 
   function toggleQuest(id) {
@@ -159,6 +246,7 @@
       gainXp(QUEST_XP, "Quest complete");
     } else {
       quest.done = false;
+      playSfx("click");
     }
     saveState();
     renderQuests();
@@ -168,6 +256,7 @@
     state.quests = state.quests.filter((q) => q.id !== id);
     saveState();
     renderQuests();
+    playSfx("delete");
   }
 
   function gainXp(amount, reason) {
@@ -189,8 +278,10 @@
       els.levelBadge.classList.remove("is-levelup");
       void els.levelBadge.offsetWidth;
       els.levelBadge.classList.add("is-levelup");
+      playSfx("levelup");
       showToast(`Level up! You are now LVL ${state.level}`);
     } else {
+      playSfx(reason === "Focus session complete" ? "timer" : "complete");
       showToast(`+${amount} XP — ${reason}`);
     }
   }
@@ -249,6 +340,7 @@
     if (state.timer.mode === "focus") {
       gainXp(FOCUS_XP, "Focus session complete");
     } else {
+      playSfx("timer");
       showToast("Break over — time to refocus");
     }
 
@@ -270,12 +362,14 @@
     running = true;
     timerId = setInterval(tick, 1000);
     renderTimer();
+    playSfx("click");
   }
 
   function toggleTimer() {
     if (running) {
       stopTimer();
       renderTimer();
+      playSfx("click");
     } else {
       startTimer();
     }
@@ -285,6 +379,7 @@
     stopTimer();
     remaining = state.timer.minutes * 60;
     renderTimer();
+    playSfx("click");
   }
 
   function setMode(mode, minutes) {
@@ -297,10 +392,12 @@
       btn.classList.toggle("is-active", btn.dataset.mode === mode);
     });
     renderTimer();
+    playSfx("click");
   }
 
   els.form.addEventListener("submit", (e) => {
     e.preventDefault();
+    ensureAudio();
     const title = els.input.value.trim();
     if (!title) return;
     addQuest(title);
@@ -308,11 +405,27 @@
     els.input.focus();
   });
 
-  els.timerToggle.addEventListener("click", toggleTimer);
-  els.timerReset.addEventListener("click", resetTimer);
+  els.sfxToggle.addEventListener("click", () => {
+    ensureAudio();
+    sfxEnabled = !sfxEnabled;
+    state.sfxEnabled = sfxEnabled;
+    saveState();
+    renderSfxToggle();
+    if (sfxEnabled) playSfx("click");
+  });
+
+  els.timerToggle.addEventListener("click", () => {
+    ensureAudio();
+    toggleTimer();
+  });
+  els.timerReset.addEventListener("click", () => {
+    ensureAudio();
+    resetTimer();
+  });
 
   els.modeBtns.forEach((btn) => {
     btn.addEventListener("click", () => {
+      ensureAudio();
       setMode(btn.dataset.mode, Number(btn.dataset.minutes));
     });
   });
@@ -321,8 +434,17 @@
     btn.classList.toggle("is-active", btn.dataset.mode === state.timer.mode);
   });
 
+  const unlockAudio = () => {
+    ensureAudio();
+    document.removeEventListener("pointerdown", unlockAudio);
+    document.removeEventListener("keydown", unlockAudio);
+  };
+  document.addEventListener("pointerdown", unlockAudio);
+  document.addEventListener("keydown", unlockAudio);
+
   els.ring.style.strokeDasharray = String(CIRCUMFERENCE);
 
+  renderSfxToggle();
   renderQuests();
   renderXp();
   renderTimer();
