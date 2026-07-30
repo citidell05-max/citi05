@@ -40,12 +40,11 @@ body {
 .bg-city {
   position: fixed;
   inset: 0;
-  background-image: url("assets/city-bg.png");
+  background-image: url("assets/city-bg.jpg");
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
-  image-rendering: pixelated;
-  image-rendering: crisp-edges;
+  image-rendering: auto;
   transform: scale(1.02);
   pointer-events: none;
   z-index: 0;
