@@ -56,6 +56,23 @@
   let audioCtx = null;
   let sfxEnabled = state.sfxEnabled;
 
+  const sfxFiles = {
+    add: "sounds/quest-add.wav",
+    complete: "sounds/quest-complete.wav",
+    delete: "sounds/quest-delete.wav",
+    timer: "sounds/timer-done.wav",
+    levelup: "sounds/level-up.wav",
+    click: "sounds/click.wav",
+  };
+
+  const sfxBuffers = {};
+  Object.entries(sfxFiles).forEach(([name, src]) => {
+    const audio = new Audio(src);
+    audio.preload = "auto";
+    audio.volume = 0.7;
+    sfxBuffers[name] = audio;
+  });
+
   function xpForLevel(level) {
     return 100 + (level - 1) * 50;
   }
@@ -136,33 +153,52 @@
   function playSfx(name) {
     if (!sfxEnabled) return;
 
+    const clip = sfxBuffers[name];
+    if (clip) {
+      try {
+        clip.pause();
+        clip.currentTime = 0;
+        const playPromise = clip.play();
+        if (playPromise && typeof playPromise.catch === "function") {
+          playPromise.catch(() => playSfxFallback(name));
+        }
+        return;
+      } catch {
+        /* fall through to synthesized tones */
+      }
+    }
+
+    playSfxFallback(name);
+  }
+
+  function playSfxFallback(name) {
     switch (name) {
       case "add":
-        playTone(520, 0.1, "triangle", 0.07);
-        playTone(780, 0.12, "triangle", 0.05, 0.07);
+        playTone(520, 0.1, "triangle", 0.12);
+        playTone(780, 0.12, "triangle", 0.1, 0.07);
         break;
       case "complete":
-        playTone(440, 0.1, "sine", 0.08);
-        playTone(554, 0.12, "sine", 0.07, 0.08);
-        playTone(659, 0.16, "sine", 0.06, 0.16);
+        playTone(440, 0.1, "sine", 0.12);
+        playTone(554, 0.12, "sine", 0.1, 0.08);
+        playTone(659, 0.16, "sine", 0.1, 0.16);
         break;
       case "delete":
-        playTone(320, 0.12, "square", 0.035);
-        playTone(220, 0.14, "square", 0.03, 0.06);
+        playTone(320, 0.12, "square", 0.06);
+        playTone(220, 0.14, "square", 0.05, 0.06);
         break;
       case "timer":
-        playTone(660, 0.12, "sawtooth", 0.05);
-        playTone(880, 0.14, "sawtooth", 0.045, 0.12);
-        playTone(990, 0.18, "triangle", 0.05, 0.24);
+        playTone(660, 0.12, "sawtooth", 0.08);
+        playTone(880, 0.14, "sawtooth", 0.07, 0.12);
+        playTone(990, 0.18, "triangle", 0.08, 0.24);
         break;
       case "levelup":
-        playTone(523, 0.12, "triangle", 0.08);
-        playTone(659, 0.12, "triangle", 0.07, 0.1);
-        playTone(784, 0.12, "triangle", 0.07, 0.2);
-        playTone(1046, 0.22, "sine", 0.08, 0.32);
+        playTone(523, 0.12, "triangle", 0.12);
+        playTone(659, 0.12, "triangle", 0.1, 0.1);
+        playTone(784, 0.12, "triangle", 0.1, 0.2);
+        playTone(1046, 0.22, "sine", 0.12, 0.32);
         break;
       case "click":
-        playTone(700, 0.05, "square", 0.025);
+        playTone(700, 0.05, "square", 0.05);
         break;
       default:
         break;
@@ -411,7 +447,7 @@
     state.sfxEnabled = sfxEnabled;
     saveState();
     renderSfxToggle();
-    if (sfxEnabled) playSfx("click");
+    if (sfxEnabled) playSfx("add");
   });
 
   els.timerToggle.addEventListener("click", () => {
