@@ -83,8 +83,9 @@
   let toastTimer = null;
   let audioCtx = null;
   let sfxEnabled = state.sfxEnabled;
-  let vipEnabled = !!state.vipEnabled;
-  let vipUnlocked = !!state.vipUnlocked || vipEnabled;
+  let vipEnabled = !!state.vipEnabled && state.vipUnlockSource === "moderator";
+  let vipUnlocked = !!state.vipUnlocked && state.vipUnlockSource === "moderator";
+  let vipUnlockSource = state.vipUnlockSource === "moderator" ? "moderator" : null;
 
   const sfxData = loadSfxFromStorage();
   const sfxBuffers = {};
@@ -109,6 +110,7 @@
       gems: 0,
       vipEnabled: false,
       vipUnlocked: false,
+      vipUnlockSource: null,
       sfxEnabled: true,
       timer: {
         mode: "focus",
@@ -132,8 +134,9 @@
           sessionXp: Number(parsed.sessionXp) || 0,
           tokens: Number(parsed.tokens) || 0,
           gems: Number(parsed.gems) || 0,
-          vipEnabled: !!parsed.vipEnabled,
-          vipUnlocked: !!parsed.vipUnlocked || !!parsed.vipEnabled,
+          vipEnabled: !!parsed.vipEnabled && parsed.vipUnlockSource === "moderator",
+          vipUnlocked: !!parsed.vipUnlocked && parsed.vipUnlockSource === "moderator",
+          vipUnlockSource: parsed.vipUnlockSource === "moderator" ? "moderator" : null,
           sfxEnabled: parsed.sfxEnabled !== false,
           timer: {
             mode: parsed.timer?.mode || "focus",
@@ -153,6 +156,7 @@
     state.sfxEnabled = sfxEnabled;
     state.vipEnabled = vipEnabled;
     state.vipUnlocked = vipUnlocked;
+    state.vipUnlockSource = vipUnlockSource;
     state.timer.remaining = remaining;
     localStorage.setItem(
       STORAGE_KEY,
@@ -165,6 +169,7 @@
         gems: state.gems,
         vipEnabled,
         vipUnlocked,
+        vipUnlockSource,
         sfxEnabled,
         timer: {
           mode: state.timer.mode,
@@ -427,8 +432,10 @@
     }
     vipUnlocked = true;
     vipEnabled = true;
+    vipUnlockSource = "moderator";
     state.vipUnlocked = true;
     state.vipEnabled = true;
+    state.vipUnlockSource = "moderator";
     saveState();
     renderWallet();
     renderVipToggle();
