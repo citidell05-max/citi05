@@ -84,7 +84,7 @@
   let toastTimer = null;
   let audioCtx = null;
   let sfxEnabled = state.sfxEnabled;
-  let musicEnabled = !!state.musicEnabled;
+  let musicEnabled = state.musicEnabled !== false;
   let vipEnabled = !!state.vipEnabled && state.vipUnlockSource === "moderator";
   let vipUnlocked = !!state.vipUnlocked && state.vipUnlockSource === "moderator";
   let vipUnlockSource = state.vipUnlockSource === "moderator" ? "moderator" : null;
@@ -114,7 +114,7 @@
       vipUnlocked: false,
       vipUnlockSource: null,
       sfxEnabled: true,
-      musicEnabled: false,
+      musicEnabled: true,
       timer: {
         mode: "focus",
         minutes: 25,
@@ -141,7 +141,7 @@
           vipUnlocked: !!parsed.vipUnlocked && parsed.vipUnlockSource === "moderator",
           vipUnlockSource: parsed.vipUnlockSource === "moderator" ? "moderator" : null,
           sfxEnabled: parsed.sfxEnabled !== false,
-          musicEnabled: !!parsed.musicEnabled,
+          musicEnabled: parsed.musicEnabled !== false,
           timer: {
             mode: parsed.timer?.mode || "focus",
             minutes,
@@ -741,6 +741,7 @@
 
   const unlockAudio = () => {
     ensureAudio();
+    if (musicEnabled) syncBackgroundMusic();
     document.removeEventListener("pointerdown", unlockAudio);
     document.removeEventListener("keydown", unlockAudio);
   };
