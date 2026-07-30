@@ -915,6 +915,26 @@ body {
   }
 }
 
+.music-credit {
+  position: relative;
+  z-index: 1;
+  margin: 0 auto 1.25rem;
+  width: min(1100px, calc(100% - 2rem));
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.75);
+}
+
+.music-credit a {
+  color: var(--neon-cyan);
+  text-decoration: none;
+}
+
+.music-credit a:hover {
+  text-decoration: underline;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
