@@ -65,6 +65,7 @@
     toast: document.getElementById("toast"),
     sfxToggle: document.getElementById("sfx-toggle"),
     musicToggle: document.getElementById("music-toggle"),
+    bgMusic: document.getElementById("bg-music"),
     vipToggle: document.getElementById("vip-toggle"),
     vipLabel: document.getElementById("vip-label"),
     modToggle: document.getElementById("mod-toggle"),
@@ -84,7 +85,13 @@
   let toastTimer = null;
   let audioCtx = null;
   let sfxEnabled = state.sfxEnabled;
+  // Force music available; users can still turn it off
   let musicEnabled = state.musicEnabled !== false;
+  if (localStorage.getItem("arcane-horizon-music-v2") !== "1") {
+    musicEnabled = true;
+    state.musicEnabled = true;
+    localStorage.setItem("arcane-horizon-music-v2", "1");
+  }
   let vipEnabled = !!state.vipEnabled && state.vipUnlockSource === "moderator";
   let vipUnlocked = !!state.vipUnlocked && state.vipUnlockSource === "moderator";
   let vipUnlockSource = state.vipUnlockSource === "moderator" ? "moderator" : null;
@@ -319,29 +326,66 @@
     els.sfxToggle.setAttribute("aria-pressed", String(sfxEnabled));
   }
 
-  const bgMusic = new Audio("sounds/speed-song.mp3");
+  const bgMusic = els.bgMusic || new Audio("sounds/speed-song.mp3");
   bgMusic.loop = true;
   bgMusic.preload = "auto";
-  bgMusic.volume = 0.45;
+  bgMusic.volume = 0.85;
+  try {
+    bgMusic.setAttribute("playsinline", "");
+  } catch {}
+
+  let musicStarted = false;
 
   function renderMusicToggle() {
-    els.musicToggle.textContent = musicEnabled ? "Music: On" : "Music: Off";
-    els.musicToggle.setAttribute("aria-pressed", String(musicEnabled));
+    const playing = musicEnabled && !bgMusic.paused;
+    els.musicToggle.textContent = playing ? "Music: On" : musicEnabled ? "Music: Start" : "Music: Off";
+    els.musicToggle.setAttribute("aria-pressed", String(playing));
   }
 
-  function syncBackgroundMusic() {
+  function syncBackgroundMusic(fromGesture = false) {
     if (!musicEnabled) {
       bgMusic.pause();
-      return;
+      musicStarted = false;
+      renderMusicToggle();
+      return Promise.resolve(false);
     }
+
     ensureAudio();
+    try {
+      bgMusic.muted = false;
+      bgMusic.volume = 0.85;
+      if (bgMusic.readyState < 2) {
+        bgMusic.load();
+      }
+    } catch {}
+
     const playPromise = bgMusic.play();
-    if (playPromise && typeof playPromise.catch === "function") {
-      playPromise.catch(() => {
-        showToast("Click Music again to start the Speed song");
-      });
+    if (playPromise && typeof playPromise.then === "function") {
+      return playPromise
+        .then(() => {
+          musicStarted = true;
+          renderMusicToggle();
+          if (fromGesture) showToast("Speed song playing");
+          return true;
+        })
+        .catch((err) => {
+          musicStarted = false;
+          renderMusicToggle();
+          console.warn("Music play blocked/failed", err);
+          showToast("Press Music: Start to play the song");
+          return false;
+        });
     }
+
+    musicStarted = !bgMusic.paused;
+    renderMusicToggle();
+    return Promise.resolve(musicStarted);
   }
+
+  bgMusic.addEventListener("error", () => {
+    showToast("Music file failed to load");
+    console.error("bg music error", bgMusic.error);
+  });
 
   function showToast(message) {
     els.toast.hidden = false;
@@ -658,15 +702,25 @@
 
   els.musicToggle.addEventListener("click", () => {
     ensureAudio();
+
+    // If enabled but not actually playing, this click starts it
+    if (musicEnabled && bgMusic.paused) {
+      syncBackgroundMusic(true);
+      return;
+    }
+
     musicEnabled = !musicEnabled;
     state.musicEnabled = musicEnabled;
     saveState();
     renderMusicToggle();
-    syncBackgroundMusic();
+
     if (musicEnabled) {
-      showToast("Speed song playing");
+      syncBackgroundMusic(true);
     } else {
+      bgMusic.pause();
+      musicStarted = false;
       showToast("Music off");
+      renderMusicToggle();
     }
   });
 
@@ -742,9 +796,7 @@
 
   const unlockAudio = () => {
     ensureAudio();
-    if (musicEnabled) syncBackgroundMusic();
-    document.removeEventListener("pointerdown", unlockAudio);
-    document.removeEventListener("keydown", unlockAudio);
+    if (musicEnabled) syncBackgroundMusic(true);
   };
   document.addEventListener("pointerdown", unlockAudio);
   document.addEventListener("keydown", unlockAudio);
@@ -770,13 +822,9 @@
   renderMusicToggle();
   renderVipToggle();
   renderWallet();
+  // Keep trying to start music on first interactions
   if (musicEnabled) {
-    // browsers require a gesture; wait for first click
-    const startMusicOnce = () => {
-      syncBackgroundMusic();
-      document.removeEventListener("pointerdown", startMusicOnce);
-    };
-    document.addEventListener("pointerdown", startMusicOnce);
+    showToast("Tap Music: Start if you don't hear the song");
   }
   renderQuests();
   renderXp();
