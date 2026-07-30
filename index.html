@@ -20,9 +20,28 @@
         <h1 class="brand-title">Arcane Horizon</h1>
       </div>
       <p class="tagline">Gamified Study Companion</p>
-      <button type="button" class="sfx-toggle" id="sfx-toggle" aria-pressed="true" title="Toggle sound effects">
-        Sound: On
-      </button>
+
+      <div class="wallet" aria-label="Currency wallet">
+        <div class="wallet-chip token-chip" title="Free currency">
+          <span class="wallet-label">Tokens</span>
+          <strong id="token-count">0</strong>
+          <span class="wallet-tag">Free</span>
+        </div>
+        <div class="wallet-chip gem-chip" title="VIP currency">
+          <span class="wallet-label">Gems</span>
+          <strong id="gem-count">0</strong>
+          <span class="wallet-tag">VIP</span>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button type="button" class="vip-toggle" id="vip-toggle" aria-pressed="false" title="Toggle VIP mode for gem rewards">
+          VIP: Off
+        </button>
+        <button type="button" class="sfx-toggle" id="sfx-toggle" aria-pressed="true" title="Toggle sound effects">
+          Sound: On
+        </button>
+      </div>
     </header>
 
     <main class="layout">
@@ -110,8 +129,8 @@
         </div>
 
         <ul class="xp-hints">
-          <li>Complete a quest → <strong>+40 XP</strong></li>
-          <li>Finish a focus session → <strong>+55 XP</strong></li>
+          <li>Complete a quest → <strong>+40 XP</strong> · <strong>+10 Tokens</strong> · VIP <strong>+2 Gems</strong></li>
+          <li>Finish a focus session → <strong>+55 XP</strong> · <strong>+15 Tokens</strong> · VIP <strong>+3 Gems</strong></li>
         </ul>
       </section>
     </main>
