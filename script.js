@@ -1121,10 +1121,14 @@
 
   els.historyClear?.addEventListener("click", () => {
     state.history = [];
+    state.streak = 0;
+    state.bestStreak = 0;
+    state.lastActiveDate = null;
     saveState();
     renderHistory();
+    renderStreak();
     playSfx("click");
-    showToast("History cleared — streak kept");
+    showToast("History & streak reset");
   });
 
   window.addEventListener("beforeunload", saveState);
