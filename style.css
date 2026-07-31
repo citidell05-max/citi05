@@ -1407,27 +1407,12 @@ body[data-theme="vipcrystal"] .theme-orb-2 {
 
 .daily-attachment-text {
   margin: 0;
-  font-size: 0.98rem;
+  font-family: var(--font-display);
+  font-size: clamp(1.05rem, 2.8vw, 1.45rem);
   line-height: 1.35;
+  letter-spacing: 0.02em;
   color: #f2e9ff;
-}
-
-.daily-attachment-dismiss {
-  appearance: none;
-  align-self: flex-start;
-  width: 2rem;
-  height: 2rem;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  background: rgba(255, 255, 255, 0.06);
-  color: #ffe6ff;
-  font-size: 1.1rem;
-  line-height: 1;
-  cursor: pointer;
-}
-
-.daily-attachment-dismiss:hover {
-  border-color: rgba(255, 150, 220, 0.55);
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.45);
 }
 
 @keyframes attachment-in {

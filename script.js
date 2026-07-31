@@ -125,7 +125,6 @@
     leaderboardMeta: document.getElementById("leaderboard-meta"),
     dailyAttachment: document.getElementById("daily-attachment"),
     dailyNoteText: document.getElementById("daily-note-text"),
-    dailyNoteDismiss: document.getElementById("daily-note-dismiss"),
     guideFab: document.getElementById("guide-fab"),
     guideDrawer: document.getElementById("guide-drawer"),
     guideClose: document.getElementById("guide-close"),
@@ -154,25 +153,24 @@
   if (!Array.isArray(state.ownedGames)) state.ownedGames = [];
   let currentThemeId = localStorage.getItem(THEME_STORAGE_KEY) || "";
   if (currentThemeId && !THEMES.some((t) => t.id === currentThemeId)) currentThemeId = "";
-  // Lock all themes behind Tokens — start dark until a theme is bought
-  if (localStorage.getItem("arcane-horizon-theme-shop-v2") !== "1") {
-    state.ownedThemes = [];
-    currentThemeId = "";
+  // Themes are free — unlock every theme (including VIP looks)
+  if (localStorage.getItem("arcane-horizon-theme-free-v1") !== "1") {
+    state.ownedThemes = THEMES.map((t) => t.id);
+    localStorage.setItem("arcane-horizon-theme-free-v1", "1");
     localStorage.setItem("arcane-horizon-theme-shop-v2", "1");
-    try {
-      localStorage.removeItem(THEME_STORAGE_KEY);
-      localStorage.removeItem(BG_STORAGE_KEY);
-    } catch {
-      /* ignore */
-    }
+  } else if (!Array.isArray(state.ownedThemes) || state.ownedThemes.length < THEMES.length) {
+    state.ownedThemes = THEMES.map((t) => t.id);
   }
   // Lock all games behind Tokens until purchased
   if (localStorage.getItem("arcane-horizon-game-shop-v1") !== "1") {
     state.ownedGames = [];
     localStorage.setItem("arcane-horizon-game-shop-v1", "1");
   }
-  if (currentThemeId && !state.ownedThemes.includes(currentThemeId)) {
-    currentThemeId = "";
+  // Always re-show today's positive words after this update
+  try {
+    localStorage.removeItem("arcane-horizon-daily-note-hide");
+  } catch {
+    /* ignore */
   }
   let sessionXp = Number(state.sessionXp) || 0;
   let timerId = null;
@@ -364,17 +362,15 @@
   }
 
   function ownsTheme(themeId) {
-    if (!Array.isArray(state.ownedThemes)) state.ownedThemes = [];
-    return !!themeId && state.ownedThemes.includes(themeId);
+    return !!themeId && THEMES.some((t) => t.id === themeId);
   }
 
-  function themePriceLabel(theme) {
-    if (ownsTheme(theme.id)) return "Owned";
-    return `${THEME_TOKEN_COST} Tokens`;
+  function themePriceLabel() {
+    return "Free";
   }
 
   function canUseTheme(theme) {
-    return ownsTheme(theme?.id);
+    return !!theme;
   }
 
   function applyDarkBackdrop() {
@@ -402,27 +398,13 @@
   }
 
   function tryBuyTheme(theme) {
-    if (ownsTheme(theme.id)) return { ok: true, bought: false };
-
-    if (isVipTheme(theme) && !vipUnlocked) {
-      return { ok: false, reason: "VIP themes need VIP unlock first — then 100 Tokens" };
+    if (!theme) return { ok: false, reason: "Theme not found" };
+    if (!Array.isArray(state.ownedThemes)) state.ownedThemes = [];
+    if (!state.ownedThemes.includes(theme.id)) {
+      state.ownedThemes.push(theme.id);
+      saveState();
     }
-
-    if ((state.tokens || 0) < THEME_TOKEN_COST) {
-      return { ok: false, reason: `Need ${THEME_TOKEN_COST} Tokens to unlock ${theme.name}` };
-    }
-    state.tokens -= THEME_TOKEN_COST;
-    state.ownedThemes.push(theme.id);
-    addHistory({
-      type: "theme",
-      text: `Unlocked theme: ${theme.name}`,
-      tokens: -THEME_TOKEN_COST,
-    });
-    saveState();
-    renderWallet();
-    renderHistory();
-    renderLeaderboard();
-    return { ok: true, bought: true, currency: "tokens", amount: THEME_TOKEN_COST };
+    return { ok: true, bought: false };
   }
 
   function applyTheme(id, { persist = true, toast = false } = {}) {
@@ -438,7 +420,7 @@
       return;
     }
     if (!canUseTheme(theme)) {
-      showToast(`Theme locked — costs ${THEME_TOKEN_COST} Tokens`);
+      showToast("Theme unavailable");
       playSfx("click");
       return;
     }
@@ -503,33 +485,20 @@
     const syncCard = (btn, theme) => {
       if (!theme) return;
       const active = theme.id === currentThemeId;
-      const owned = ownsTheme(theme.id);
-      const locked = !owned;
-      const price = themePriceLabel(theme);
       btn.classList.toggle("is-active", active);
       btn.classList.toggle("is-vip", isVipTheme(theme));
-      btn.classList.toggle("is-locked", locked);
+      btn.classList.remove("is-locked");
       btn.setAttribute("aria-selected", String(active));
       btn.setAttribute("aria-disabled", "false");
       btn.setAttribute("role", "option");
-      btn.title = owned
-        ? theme.name
-        : isVipTheme(theme) && !vipUnlocked
-          ? `${theme.name} — VIP unlock + ${THEME_TOKEN_COST} Tokens`
-          : `${theme.name} — ${THEME_TOKEN_COST} Tokens`;
+      btn.title = theme.name;
 
       const img = btn.querySelector("img");
       if (img) {
-        if (owned) {
-          img.hidden = false;
-          if (img.getAttribute("src") !== theme.src) {
-            img.src = theme.src;
-            img.alt = theme.name;
-          }
-        } else {
-          img.hidden = true;
-          img.removeAttribute("src");
-          img.alt = "";
+        img.hidden = false;
+        if (img.getAttribute("src") !== theme.src) {
+          img.src = theme.src;
+          img.alt = theme.name;
         }
       }
 
@@ -538,13 +507,7 @@
         label = document.createElement("span");
         btn.appendChild(label);
       }
-      if (owned) {
-        label.textContent = isVipTheme(theme) ? `${theme.name} · VIP` : theme.name;
-      } else if (isVipTheme(theme) && !vipUnlocked) {
-        label.textContent = `${theme.name} · VIP Locked`;
-      } else {
-        label.textContent = `${theme.name} · ${THEME_TOKEN_COST} Tokens`;
-      }
+      label.textContent = isVipTheme(theme) ? `${theme.name} · VIP` : theme.name;
 
       let badge = btn.querySelector(".theme-vip-badge");
       if (!badge) {
@@ -552,14 +515,9 @@
         badge.className = "theme-vip-badge";
         btn.appendChild(badge);
       }
-      if (owned) {
-        badge.textContent = active ? "ACTIVE" : "OWNED";
-        badge.classList.toggle("is-price", false);
-      } else {
-        badge.textContent = `${THEME_TOKEN_COST} TOKENS`;
-        badge.classList.toggle("is-price", true);
-      }
-      void price;
+      badge.textContent = active ? "ACTIVE" : "FREE";
+      badge.classList.toggle("is-price", false);
+      void themePriceLabel;
     };
 
     // Prefer the pictures already in HTML — sync active state + fresh URLs
@@ -591,10 +549,8 @@
   }
 
   function applyBackgroundFromStorage() {
-    if (!currentThemeId || !ownsTheme(currentThemeId)) {
-      applyDarkBackdrop();
-      renderThemeGrid();
-      return;
+    if (!currentThemeId || !getTheme(currentThemeId)) {
+      currentThemeId = "sunrise";
     }
     applyTheme(currentThemeId, { persist: true, toast: false });
   }
@@ -656,15 +612,10 @@
     );
   }
 
-  function freeThemePool() {
-    return THEMES.filter((theme) => !theme.vip && !ownsTheme(theme.id));
-  }
-
   function renderThemeChest() {
     if (!els.themeChest) return;
     const claimed = !!state.themeChestClaimed;
-    const pool = freeThemePool();
-    const ready = !claimed && pool.length > 0;
+    const ready = !claimed;
     els.themeChest.classList.toggle("is-ready", ready);
     els.themeChest.classList.toggle("is-claimed", !ready);
     els.themeChest.disabled = !ready;
@@ -672,17 +623,11 @@
       els.themeChestLabel.textContent = claimed ? "Theme Claimed" : "Theme Chest";
     }
     if (els.themeChestMeta) {
-      els.themeChestMeta.textContent = claimed
-        ? "Already opened"
-        : pool.length
-          ? "+1 Free Theme"
-          : "All free themes owned";
+      els.themeChestMeta.textContent = claimed ? "Already opened" : "+50 Tokens";
     }
     els.themeChest.title = ready
-      ? "Open for 1 free theme"
-      : claimed
-        ? "Theme chest already opened"
-        : "You already own every free theme";
+      ? "Open for +50 Tokens and a random theme equip"
+      : "Theme chest already opened";
     els.themeChest.setAttribute("aria-disabled", String(!ready));
   }
 
@@ -692,22 +637,16 @@
       playSfx("click");
       return;
     }
-    const pool = freeThemePool();
-    if (!pool.length) {
-      state.themeChestClaimed = true;
-      saveState();
-      renderThemeChest();
-      showToast("You already own every free theme");
-      playSfx("click");
-      return;
-    }
-    const theme = pool[Math.floor(Math.random() * pool.length)];
-    if (!Array.isArray(state.ownedThemes)) state.ownedThemes = [];
-    state.ownedThemes.push(theme.id);
+    // Themes are free now — chest gives Tokens + equips a random look
+    const bonus = 50;
+    state.tokens = (state.tokens || 0) + bonus;
     state.themeChestClaimed = true;
+    const picks = THEMES.filter((t) => !t.vip);
+    const theme = picks[Math.floor(Math.random() * picks.length)] || THEMES[0];
     addHistory({
       type: "chest",
-      text: `Theme chest — unlocked ${theme.name}`,
+      text: `Theme chest — +${bonus} Tokens · equipped ${theme.name}`,
+      tokens: bonus,
     });
     saveState();
     renderWallet();
@@ -717,7 +656,7 @@
     renderLeaderboard();
     applyTheme(theme.id, { persist: true, toast: false });
     playSfx("levelup");
-    showToast(`Theme chest opened — free theme: ${theme.name}`);
+    showToast(`Theme chest opened — +${bonus} Tokens · ${theme.name}`);
   }
 
   function hashSeed(str) {
@@ -1162,10 +1101,7 @@
     const note = dailyAffirmationFor();
     if (els.dailyNoteText) els.dailyNoteText.textContent = note;
     if (els.guideDailyText) els.guideDailyText.textContent = note;
-    if (!els.dailyAttachment) return;
-    const today = todayKey();
-    const hidden = localStorage.getItem("arcane-horizon-daily-note-hide") === today;
-    els.dailyAttachment.hidden = hidden;
+    if (els.dailyAttachment) els.dailyAttachment.hidden = false;
   }
 
   function setGuideOpen(open) {
@@ -1221,10 +1157,13 @@
       return `Gems are VIP currency. You have ${gems}. Open the Daily Chest for +100 Gems, and earn more from quests/focus when VIP is on.`;
     }
     if (/theme chest|free theme/.test(msg)) {
-      return "The purple Theme Chest gives one free non-VIP theme — one time. Open it, then it auto-equips your new look.";
+      return "The purple Theme Chest is a one-time bonus: +50 Tokens and it equips a random theme for you.";
     }
     if (/theme|background/.test(msg)) {
-      return "Open Themes to buy a look for 100 Tokens. Everything starts locked/dark until you own one. VIP themes also need the moderator VIP unlock.";
+      return "All themes are free now — open Themes and tap any look to equip it instantly. No locks, no Token cost.";
+    }
+    if (/positive|affirmation|daily attachment|daily note/.test(msg)) {
+      return `Today’s positive words: “${dailyAffirmationFor()}” A new note appears every day at the top of the app.`;
     }
     if (/game|mini-?game|unlock game/.test(msg)) {
       return "Each mini-game costs 150 Tokens to unlock. While a Focus timer is running, games stay locked so studying wins. Breaks are fair game time.";
@@ -1739,20 +1678,9 @@
     if (!card) return;
     const theme = getTheme(card.dataset.theme);
     if (!theme) return;
-    const purchase = tryBuyTheme(theme);
-    if (!purchase.ok) {
-      showToast(purchase.reason);
-      playSfx("click");
-      renderThemeGrid();
-      return;
-    }
-    applyTheme(theme.id, { toast: !purchase.bought });
-    if (purchase.bought) {
-      playSfx("levelup");
-      showToast(`Unlocked ${theme.name} for ${purchase.amount} Tokens`);
-    } else {
-      playSfx("click");
-    }
+    tryBuyTheme(theme);
+    applyTheme(theme.id, { toast: true });
+    playSfx("click");
     renderThemeGrid();
   });
 
@@ -1994,13 +1922,6 @@
   renderXp();
   renderTimer();
   renderGameLocks();
-
-  els.dailyNoteDismiss?.addEventListener("click", () => {
-    ensureAudio();
-    localStorage.setItem("arcane-horizon-daily-note-hide", todayKey());
-    if (els.dailyAttachment) els.dailyAttachment.hidden = true;
-    playSfx("click");
-  });
 
   function runSplashScreen() {
     const splash = document.getElementById("splash-screen");
