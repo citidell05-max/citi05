@@ -1348,10 +1348,107 @@ body[data-theme="vipcrystal"] .theme-orb-2 {
   }
 }
 
+.daily-attachment {
+  position: relative;
+  width: min(920px, calc(100% - 2rem));
+  margin: 0.35rem auto 1.1rem;
+  z-index: 3;
+}
+
+.daily-attachment[hidden] {
+  display: none !important;
+}
+
+.daily-attachment-clip {
+  position: absolute;
+  top: -10px;
+  left: 1.4rem;
+  width: 18px;
+  height: 34px;
+  border-radius: 4px;
+  background: linear-gradient(180deg, #cfd8e6, #8a93a5);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.35);
+  transform: rotate(-8deg);
+  z-index: 2;
+}
+
+.daily-attachment-clip::after {
+  content: "";
+  position: absolute;
+  inset: 7px 4px auto;
+  height: 10px;
+  border-radius: 999px;
+  border: 2px solid rgba(40, 44, 56, 0.55);
+}
+
+.daily-attachment-card {
+  position: relative;
+  padding: 1.15rem 1.25rem 1.05rem;
+  border-radius: 4px 14px 14px 14px;
+  border: 1px solid rgba(255, 214, 170, 0.45);
+  background:
+    linear-gradient(135deg, rgba(255, 236, 200, 0.96), rgba(255, 214, 170, 0.92));
+  color: #3a2412;
+  box-shadow:
+    0 10px 28px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.65);
+  transform: rotate(-0.6deg);
+  animation: attachment-drop 0.7s ease-out both;
+}
+
+.daily-attachment-label {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 0.62rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(90, 48, 18, 0.7);
+}
+
+.daily-attachment-date {
+  margin: 0.2rem 0 0.55rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: rgba(70, 40, 16, 0.75);
+}
+
+.daily-attachment-text {
+  margin: 0;
+  font-family: var(--font-body, Rajdhani, sans-serif);
+  font-size: clamp(1.05rem, 2.4vw, 1.28rem);
+  line-height: 1.35;
+  font-weight: 600;
+  color: #2c180c;
+}
+
+.daily-attachment-dismiss {
+  appearance: none;
+  margin-top: 0.75rem;
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid rgba(90, 48, 18, 0.28);
+  background: rgba(255, 255, 255, 0.45);
+  color: #5a3012;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.daily-attachment-dismiss:hover {
+  background: rgba(255, 255, 255, 0.7);
+}
+
+@keyframes attachment-drop {
+  from { opacity: 0; transform: translateY(-16px) rotate(-2deg); }
+  to { opacity: 1; transform: translateY(0) rotate(-0.6deg); }
+}
+
 .layout {
   display: grid;
   grid-template-columns: 1.15fr 0.95fr;
   grid-template-areas:
+    "guide guide"
     "quest timer"
     "xp xp"
     "history history"
@@ -1364,6 +1461,7 @@ body[data-theme="vipcrystal"] .theme-orb-2 {
   gap: 1.25rem;
 }
 
+.guide-panel { grid-area: guide; }
 .quest-panel { grid-area: quest; }
 .timer-panel { grid-area: timer; }
 .xp-panel { grid-area: xp; }
@@ -1374,6 +1472,101 @@ body[data-theme="vipcrystal"] .theme-orb-2 {
 .bloons-panel { grid-area: bloons; }
 .cup-panel { grid-area: cup; }
 .royale-panel { grid-area: royale; }
+
+.guide-intro {
+  margin: 0 0 0.75rem;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+.guide-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-bottom: 0.85rem;
+}
+
+.guide-chip {
+  appearance: none;
+  padding: 0.4rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid rgba(122, 240, 255, 0.35);
+  background: rgba(122, 240, 255, 0.1);
+  color: #d8f7ff;
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+}
+
+.guide-chip:hover {
+  border-color: rgba(255, 210, 240, 0.55);
+  background: rgba(255, 113, 206, 0.14);
+}
+
+.guide-chat {
+  display: grid;
+  gap: 0.55rem;
+  max-height: 260px;
+  overflow: auto;
+  padding: 0.75rem;
+  margin-bottom: 0.85rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(6, 4, 14, 0.45);
+}
+
+.guide-bubble {
+  max-width: 92%;
+  padding: 0.65rem 0.8rem;
+  border-radius: 12px;
+  font-size: 0.92rem;
+  line-height: 1.4;
+}
+
+.guide-bubble.is-ai {
+  justify-self: start;
+  background: rgba(122, 240, 255, 0.12);
+  border: 1px solid rgba(122, 240, 255, 0.22);
+  color: #e8fbff;
+}
+
+.guide-bubble.is-user {
+  justify-self: end;
+  background: rgba(255, 113, 206, 0.16);
+  border: 1px solid rgba(255, 113, 206, 0.28);
+  color: #ffe6f7;
+}
+
+.guide-bubble strong {
+  display: block;
+  margin-bottom: 0.2rem;
+  font-family: var(--font-display);
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.75;
+}
+
+.guide-form {
+  display: flex;
+  gap: 0.55rem;
+}
+
+.guide-input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.7rem 0.85rem;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(8, 6, 18, 0.65);
+  color: var(--text);
+  font: inherit;
+}
+
+.guide-input:focus {
+  outline: 2px solid rgba(122, 240, 255, 0.45);
+  outline-offset: 1px;
+}
 
 .panel {
   background: rgba(255, 255, 255, 0.04);
@@ -1386,6 +1579,7 @@ body[data-theme="vipcrystal"] .theme-orb-2 {
   animation: rise-in 0.75s ease-out both;
 }
 
+.guide-panel,
 .quest-panel,
 .timer-panel,
 .xp-panel,
@@ -1399,6 +1593,7 @@ body[data-theme="vipcrystal"] .theme-orb-2 {
   background: rgba(12, 6, 24, 0.12);
 }
 
+.guide-panel { animation-delay: 0.04s; }
 .timer-panel { animation-delay: 0.08s; }
 .xp-panel { animation-delay: 0.16s; }
 .history-panel { animation-delay: 0.18s; }
@@ -2020,6 +2215,7 @@ body.is-study-lock .royale-panel.is-game-owned::after {
   .layout {
     grid-template-columns: 1fr;
     grid-template-areas:
+      "guide"
       "timer"
       "quest"
       "xp"

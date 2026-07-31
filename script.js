@@ -123,6 +123,14 @@
     themeChestMeta: document.getElementById("theme-chest-meta"),
     leaderboardList: document.getElementById("leaderboard-list"),
     leaderboardMeta: document.getElementById("leaderboard-meta"),
+    dailyAttachment: document.getElementById("daily-attachment"),
+    dailyNoteDate: document.getElementById("daily-note-date"),
+    dailyNoteText: document.getElementById("daily-note-text"),
+    dailyNoteDismiss: document.getElementById("daily-note-dismiss"),
+    guideChat: document.getElementById("guide-chat"),
+    guideForm: document.getElementById("guide-form"),
+    guideInput: document.getElementById("guide-input"),
+    guideChips: document.getElementById("guide-chips"),
   };
 
   const AI_RIVALS = [
@@ -1107,6 +1115,178 @@
     return `${y}-${m}-${d}`;
   }
 
+  const DAILY_AFFIRMATIONS = [
+    "You showed up — that already puts you ahead of yesterday.",
+    "Small focused steps beat perfect plans you never start.",
+    "Your future self is cheering for the work you do today.",
+    "Progress is quiet at first. Keep going anyway.",
+    "One focused session can change the whole day.",
+    "You are allowed to begin again, right now.",
+    "Discipline is self-respect in motion.",
+    "Curiosity is your superpower — feed it today.",
+    "Rest is part of the grind. Breaks make focus sharper.",
+    "You don’t need to finish everything — just the next quest.",
+    "Consistency builds realms. One day at a time.",
+    "Doubt is loud. Action is louder.",
+    "Your streak starts with a single honest minute of focus.",
+    "Learning compounds. Every note, every quest, every win.",
+    "Be kind to your brain — then ask it for one more try.",
+    "You are building a habit stronger than motivation.",
+    "Today’s effort is tomorrow’s easy mode.",
+    "Mistakes are just loading screens for mastery.",
+    "Protect your focus like it’s treasure — because it is.",
+    "You belong in rooms you’re still growing into.",
+    "Clear one quest. Celebrate. Then clear another.",
+    "The horizon moves closer every time you study.",
+    "Brave people feel nervous too — they start anyway.",
+    "Your energy returns when you finish what you start.",
+    "A calm mind unlocks harder levels.",
+    "You are not behind. You are becoming.",
+    "Make today a +1 day. That’s enough.",
+    "Focus is a skill — and you’re training it now.",
+    "Let today’s positive note be your warm-up quest.",
+    "You’ve survived every hard day so far. Keep going.",
+    "Your goals don’t need perfection. They need presence.",
+  ];
+
+  function dailyAffirmationFor(date = new Date()) {
+    const key = todayKey(date);
+    const idx = hashSeed(key + ":affirm") % DAILY_AFFIRMATIONS.length;
+    return DAILY_AFFIRMATIONS[idx];
+  }
+
+  function renderDailyAttachment() {
+    if (!els.dailyAttachment) return;
+    const today = todayKey();
+    const hidden = localStorage.getItem("arcane-horizon-daily-note-hide") === today;
+    els.dailyAttachment.hidden = hidden;
+    if (els.dailyNoteDate) {
+      els.dailyNoteDate.textContent = new Date().toLocaleDateString(undefined, {
+        weekday: "long",
+        month: "short",
+        day: "numeric",
+      });
+    }
+    if (els.dailyNoteText) {
+      els.dailyNoteText.textContent = dailyAffirmationFor();
+    }
+  }
+
+  function appendGuideBubble(role, text) {
+    if (!els.guideChat) return;
+    const bubble = document.createElement("div");
+    bubble.className = `guide-bubble ${role === "user" ? "is-user" : "is-ai"}`;
+    const who = document.createElement("strong");
+    who.textContent = role === "user" ? "You" : "Horizon Guide";
+    const body = document.createElement("div");
+    body.textContent = text;
+    bubble.append(who, body);
+    els.guideChat.appendChild(bubble);
+    els.guideChat.scrollTop = els.guideChat.scrollHeight;
+  }
+
+  function guideReply(raw) {
+    const msg = String(raw || "").trim().toLowerCase();
+    const activeQuests = (state.quests || []).filter((q) => !q.done).length;
+    const tokens = state.tokens || 0;
+    const gems = state.gems || 0;
+    const streak = state.streak || 0;
+    const level = state.level || 1;
+
+    if (!msg) {
+      return "Ask me anything — study tips, focus plans, Tokens, themes, or what to do first.";
+    }
+    if (/(hi|hello|hey|yo)\b/.test(msg)) {
+      return `Hey, adventurer. You’re LVL ${level} with ${activeQuests} active quest${activeQuests === 1 ? "" : "s"}. Want a study tip or a focus plan?`;
+    }
+    if (/motivate|motivation|encourage|believe|positive/.test(msg)) {
+      return `${dailyAffirmationFor()} Also: start a 25-minute Focus timer and clear one tiny quest. Momentum beats perfection.`;
+    }
+    if (/focus plan|pomodoro|study plan|schedule/.test(msg)) {
+      return "Try this: 1) Add 1–3 tiny quests. 2) Start Focus 25. 3) No games during Focus. 4) Short break 5. 5) Claim your Daily Chest when ready. Repeat once more if you have energy.";
+    }
+    if (/study tip|tips?|how to study|concentrate|distract/.test(msg)) {
+      return "Study tip: put one quest in the Quest Log, start Focus, and silence one distraction for 25 minutes. After the timer, write one sentence of what you learned — that locks it in.";
+    }
+    if (/token/.test(msg)) {
+      return `Tokens are free currency. You have ${tokens}. Earn them from quests (+10), focus (+15), and game milestones (+10 every 3 wins or 100 points). Themes cost 100 · games cost 150.`;
+    }
+    if (/gem/.test(msg)) {
+      return `Gems are VIP currency. You have ${gems}. Open the Daily Chest for +100 Gems, and earn more from quests/focus when VIP is on.`;
+    }
+    if (/theme chest|free theme/.test(msg)) {
+      return "The purple Theme Chest gives one free non-VIP theme — one time. Open it, then it auto-equips your new look.";
+    }
+    if (/theme|background/.test(msg)) {
+      return "Open Themes to buy a look for 100 Tokens. Everything starts locked/dark until you own one. VIP themes also need the moderator VIP unlock.";
+    }
+    if (/game|mini-?game|unlock game/.test(msg)) {
+      return "Each mini-game costs 150 Tokens to unlock. While a Focus timer is running, games stay locked so studying wins. Breaks are fair game time.";
+    }
+    if (/chest|daily chest|welcome/.test(msg)) {
+      return "Two chests: Daily/Welcome Chest = +100 Gems once per day. Theme Chest = one free theme forever. Tap them in the wallet row.";
+    }
+    if (/vip|moderator|code/.test(msg)) {
+      return "VIP stays locked until you enter the moderator code under Moderator Only. Then VIP gem themes unlock and quests/focus can earn Gems.";
+    }
+    if (/streak/.test(msg)) {
+      return `Your streak is ${streak} day${streak === 1 ? "" : "s"}. Finish a quest or focus session today to keep it alive.`;
+    }
+    if (/quest|todo|task/.test(msg)) {
+      return activeQuests
+        ? `You’ve got ${activeQuests} active quest${activeQuests === 1 ? "" : "s"}. Pick the smallest one, start Focus, and knock it out for +40 XP and +10 Tokens.`
+        : "No quests yet — add one tiny task in the Quest Log (like “read 2 pages”). Small quests are easier to finish and still pay XP + Tokens.";
+    }
+    if (/first|start|begin|what should i do/.test(msg)) {
+      return "Best first loop: open Daily Chest → open Theme Chest → add one quest → start Focus 25 → ask me for a tip if you stall.";
+    }
+    if (/timer|focus timer|break/.test(msg)) {
+      return "Use Focus 25 for deep work. Short Break 5 and Long Break 15 recharge you. Games lock only during Focus — breaks are open.";
+    }
+    if (/leaderboard|rank/.test(msg)) {
+      return "Leaderboard rivals reshuffle a little each day. Your score rises with level, XP, streak, tokens, gems, and chest claims.";
+    }
+    if (/music|song|sound/.test(msg)) {
+      return "Background song is On & On (NCS). Use Music: Start if the browser blocks autoplay. Sound toggles the effect blips.";
+    }
+    if (/who are you|what are you|ai|help/.test(msg)) {
+      return "I’m Horizon Guide — your in-app helping AI. I give study advice, motivation, and Arcane Horizon tips. Ask in plain words anytime.";
+    }
+    return `I can help with that. Right now you’re LVL ${level}, ${tokens} Tokens, streak ${streak}. Try asking for a study tip, a focus plan, or how Tokens/themes/games work.`;
+  }
+
+  function askGuide(text) {
+    const cleaned = String(text || "").trim();
+    if (!cleaned) return;
+    appendGuideBubble("user", cleaned);
+    window.setTimeout(() => {
+      appendGuideBubble("ai", guideReply(cleaned));
+      playSfx("click");
+    }, 220);
+  }
+
+  function initHorizonGuide() {
+    if (els.guideChat && !els.guideChat.childElementCount) {
+      appendGuideBubble(
+        "ai",
+        `Welcome. I’m Horizon Guide. Today’s note: “${dailyAffirmationFor()}” Ask me for study tips, motivation, or how the app works.`
+      );
+    }
+    els.guideForm?.addEventListener("submit", (e) => {
+      e.preventDefault();
+      ensureAudio();
+      const value = els.guideInput?.value || "";
+      if (els.guideInput) els.guideInput.value = "";
+      askGuide(value);
+    });
+    els.guideChips?.addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-ask]");
+      if (!btn) return;
+      ensureAudio();
+      askGuide(btn.getAttribute("data-ask"));
+    });
+  }
+
   function dayOffsetKey(days) {
     const dt = new Date();
     dt.setHours(12, 0, 0, 0);
@@ -1779,6 +1959,9 @@
   renderVipToggle();
   renderWallet();
   renderDailyChest();
+  renderThemeChest();
+  renderDailyAttachment();
+  initHorizonGuide();
   renderStreak();
   renderHistory();
   renderLeaderboard();
@@ -1786,6 +1969,14 @@
   renderXp();
   renderTimer();
   renderGameLocks();
+
+  els.dailyNoteDismiss?.addEventListener("click", () => {
+    ensureAudio();
+    localStorage.setItem("arcane-horizon-daily-note-hide", todayKey());
+    if (els.dailyAttachment) els.dailyAttachment.hidden = true;
+    playSfx("click");
+    showToast("Daily attachment pinned closed for today");
+  });
 
   function runSplashScreen() {
     const splash = document.getElementById("splash-screen");
@@ -1839,6 +2030,10 @@
       window.setTimeout(() => {
         splash.setAttribute("hidden", "");
         splash.remove();
+        renderDailyAttachment();
+        if (els.dailyAttachment && !els.dailyAttachment.hidden) {
+          showToast(`Daily attachment: ${dailyAffirmationFor()}`);
+        }
       }, 700);
     }
 
