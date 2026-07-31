@@ -1177,107 +1177,208 @@
     }
   }
 
+  const eliMemory = [];
+
   function appendGuideBubble(role, text) {
     if (!els.guideChat) return;
     const bubble = document.createElement("div");
     bubble.className = `guide-bubble ${role === "user" ? "is-user" : "is-ai"}`;
     const who = document.createElement("strong");
-    who.textContent = role === "user" ? "You" : "Horizon Guide";
+    who.textContent = role === "user" ? "You" : "ELI AI";
     const body = document.createElement("div");
     body.textContent = text;
     bubble.append(who, body);
     els.guideChat.appendChild(bubble);
     els.guideChat.scrollTop = els.guideChat.scrollHeight;
+    return bubble;
+  }
+
+  function setEliTyping(on) {
+    if (!els.guideChat) return;
+    let tip = els.guideChat.querySelector(".guide-bubble.is-typing");
+    if (on) {
+      if (tip) return;
+      tip = document.createElement("div");
+      tip.className = "guide-bubble is-ai is-typing";
+      tip.innerHTML = "<strong>ELI AI</strong><div>Thinking…</div>";
+      els.guideChat.appendChild(tip);
+      els.guideChat.scrollTop = els.guideChat.scrollHeight;
+    } else if (tip) {
+      tip.remove();
+    }
+  }
+
+  function safeMathEval(expr) {
+    const cleaned = String(expr)
+      .replace(/×/g, "*")
+      .replace(/÷/g, "/")
+      .replace(/x/gi, "*")
+      .replace(/[^0-9+\-*/().,%\s]/g, "")
+      .trim();
+    if (!cleaned || cleaned.length > 80) return null;
+    if (!/^[\d+\-*/().,%\s]+$/.test(cleaned)) return null;
+    try {
+      // percent: 20% of 50 → (20/100)*50 style not supported; simple 50% → 0.5
+      const normalized = cleaned.replace(/(\d+(?:\.\d+)?)%/g, "($1/100)");
+      // eslint-disable-next-line no-new-func
+      const val = Function(`"use strict"; return (${normalized});`)();
+      if (typeof val !== "number" || !Number.isFinite(val)) return null;
+      return Math.round(val * 10000) / 10000;
+    } catch {
+      return null;
+    }
+  }
+
+  function trySolveMath(raw) {
+    const text = String(raw || "").trim();
+    const eq = text.match(
+      /(?:what\s+is|solve|calculate|compute)?\s*([0-9x×÷+\-*/().,%\s]+)=\s*\??/i
+    ) || text.match(/^(?:what\s+is|solve|calculate|compute)\s+(.+)$/i);
+    let expr = null;
+    if (eq) expr = eq[1];
+    else if (/^[\d+\-*/().,%\s×÷x]+$/.test(text)) expr = text;
+    else {
+      const embedded = text.match(/([0-9]+(?:\.[0-9+])?(?:\s*[+\-*/×÷x]\s*[0-9]+(?:\.[0-9]+)?)+\s*(?:%?)?)/i);
+      if (embedded) expr = embedded[1];
+    }
+    if (!expr) return null;
+    const answer = safeMathEval(expr);
+    if (answer === null) return null;
+    return `Let’s solve it step by step.\n\nProblem: ${expr.trim()}\nAnswer: ${answer}\n\nTip: check your work by doing the problem again the other way (like subtraction to check addition). You got this!`;
   }
 
   function guideReply(raw) {
-    const msg = String(raw || "").trim().toLowerCase();
+    const original = String(raw || "").trim();
+    const msg = original.toLowerCase();
     const activeQuests = (state.quests || []).filter((q) => !q.done).length;
     const tokens = state.tokens || 0;
     const gems = state.gems || 0;
     const streak = state.streak || 0;
     const level = state.level || 1;
 
+    const math = trySolveMath(original);
+    if (math) return math;
+
     if (!msg) {
-      return "Ask me anything — study tips, focus plans, Tokens, themes, or what to do first.";
+      return "Hi! I’m ELI AI. Ask me about math, reading, writing, science, or any homework question — I’ll explain it in kid-friendly steps.";
     }
     if (/(hi|hello|hey|yo)\b/.test(msg)) {
-      return `Hey, adventurer. You’re LVL ${level} with ${activeQuests} active quest${activeQuests === 1 ? "" : "s"}. Want a study tip or a focus plan?`;
+      return `Hey! I’m ELI AI — your homework buddy (like ChatGPT, made for kids). You’re LVL ${level} in Arcane Horizon. What subject are we working on: math, reading, writing, or science?`;
     }
-    if (/motivate|motivation|encourage|believe|positive/.test(msg)) {
-      return `${dailyAffirmationFor()} Also: start a 25-minute Focus timer and clear one tiny quest. Momentum beats perfection.`;
+    if (/who are you|what are you|eli ai|chatgpt|your name/.test(msg)) {
+      return "I’m ELI AI — a helpful homework AI for kids. I explain ideas simply, help you practice, and cheer you on. I won’t just give secret answers with no learning — we solve things together!";
+    }
+    if (/motivate|motivation|encourage|i('?|\s+a)m stuck|hard|give up|homework feel/.test(msg)) {
+      return `${dailyAffirmationFor()}\n\nHomework tip: set a tiny goal (one page or 5 problems), start Focus 25, then take a short break. Ask me one question at a time — we’ll crush it.`;
+    }
+    if (/math homework|help me with math|math help|algebra|fraction|percent|multiply|divide|addition|subtraction/.test(msg)) {
+      return "Math mode on! Paste a problem like “12 × 8”, “3/4 of 20”, or “what is 15% of 80”. I’ll show the answer and how we got there. You can also say “explain fractions” or “help with long division”.";
+    }
+    if (/fraction/.test(msg)) {
+      return "Fractions are parts of a whole. The top number (numerator) is how many parts you have. The bottom (denominator) is how many equal parts make one whole. Example: 3/4 means 3 slices of a pizza cut into 4. Want to try a fraction problem together?";
+    }
+    if (/percent|percentage|%/.test(msg) && !math) {
+      return "Percents mean “out of 100.” 25% = 25/100 = 1/4. To find 20% of 50: do 0.20 × 50 = 10. Send me a percent problem and we’ll solve it!";
+    }
+    if (/long division|divide|division/.test(msg) && !math) {
+      return "Long division steps: Divide → Multiply → Subtract → Bring down → Repeat. Example idea: 84 ÷ 4 → 4 goes into 8 two times, bring down 4, 4 goes into 4 once → 21. Paste your division problem and I’ll walk through it.";
+    }
+    if (/reading homework|help me with reading|reading|comprehension|main idea|summar/.test(msg)) {
+      return "Reading help: 1) Read the title. 2) Ask “what is this mostly about?” 3) Find 2–3 key details. 4) Write the main idea in one kid sentence. Paste a short paragraph and I can help you find the main idea!";
+    }
+    if (/write|writing|paragraph|essay|sentence|story/.test(msg)) {
+      return "Writing helper: use this mini plan — Hook (start), 2 detail sentences, Closing sentence. Example starter: “Today I learned ___ because ___.” Tell me your topic (animals, friendship, space…) and I’ll help you build a paragraph.";
+    }
+    if (/science|planet|photosynthesis|gravity|magnet|animal|habitat|water cycle/.test(msg)) {
+      if (/photosynthesis/.test(msg)) {
+        return "Photosynthesis (kid version): plants use sunlight + water + air (carbon dioxide) to make food (sugar) and release oxygen. Think of the plant as a tiny kitchen powered by the sun!";
+      }
+      if (/water cycle/.test(msg)) {
+        return "Water cycle: Evaporation (water turns to vapor) → Condensation (clouds form) → Precipitation (rain/snow) → Collection (rivers, lakes, oceans). Then it repeats!";
+      }
+      if (/gravity/.test(msg)) {
+        return "Gravity is the invisible pull that keeps us on Earth and makes things fall down. Bigger objects pull harder — that’s why Earth holds the Moon in orbit!";
+      }
+      return "Science mode! Ask me to explain a topic simply — like planets, animals, magnets, the water cycle, or photosynthesis — or paste your science question.";
+    }
+    if (/history|president|ancient|egypt|rome|war|civil/.test(msg)) {
+      return "History tip: answer with Who / What / When / Where / Why. That keeps your answer clear. Tell me the history question and I’ll help you organize a short answer.";
+    }
+    if (/explain (this )?like i('?|\s+a)m 10|explain simply|simple words|eli5/.test(msg)) {
+      return "Got it — kid mode. Paste the hard sentence or topic, and I’ll explain it with easy words, a fun example, and one practice question.";
+    }
+    if (/homework|school|assignment|worksheet|study for/.test(msg)) {
+      return "I’m ready for homework help! Tell me the subject and the question. Examples:\n• “What is 9 × 7?”\n• “Help me write about dolphins”\n• “Explain photosynthesis”\n• “What’s the main idea of this paragraph?”";
     }
     if (/focus plan|pomodoro|study plan|schedule/.test(msg)) {
-      return "Try this: 1) Add 1–3 tiny quests. 2) Start Focus 25. 3) No games during Focus. 4) Short break 5. 5) Claim your Daily Chest when ready. Repeat once more if you have energy.";
+      return "Kid focus plan: 1) Write one homework quest. 2) Start Focus 25. 3) Ask ELI AI if you get stuck. 4) Short break 5. 5) Check answers. Games wait until Focus is done!";
     }
-    if (/study tip|tips?|how to study|concentrate|distract/.test(msg)) {
-      return "Study tip: put one quest in the Quest Log, start Focus, and silence one distraction for 25 minutes. After the timer, write one sentence of what you learned — that locks it in.";
+    if (/study tip|how to study|concentrate|distract/.test(msg)) {
+      return "Study tip: phone away, water nearby, one subject at a time. After each page/problem set, tell me what you learned in one sentence — that makes it stick.";
     }
     if (/token/.test(msg)) {
-      return `Tokens are free currency. You have ${tokens}. Earn them from quests (+10), focus (+15), and game milestones (+10 every 3 wins or 100 points). Themes cost 100 · games cost 150.`;
+      return `Tokens are free game money. You have ${tokens}. Finish quests (+10) and Focus (+15) to earn more. Games cost 150 Tokens to unlock.`;
     }
     if (/gem/.test(msg)) {
-      return `Gems are VIP currency. You have ${gems}. Open the Daily Chest for +100 Gems, and earn more from quests/focus when VIP is on.`;
-    }
-    if (/theme chest|free theme/.test(msg)) {
-      return "The purple Theme Chest is a one-time bonus: +50 Tokens and it equips a random theme for you.";
+      return `Gems are VIP points. You have ${gems}. Open the Daily Chest for +100 Gems.`;
     }
     if (/theme|background/.test(msg)) {
-      return "Regular themes are free — tap any look to equip. VIP themes stay locked until you enter the moderator code.";
+      return "Regular themes are free — open Themes and tap one. VIP themes stay locked until a moderator unlocks VIP.";
     }
     if (/positive|affirmation|daily attachment|daily note/.test(msg)) {
-      return `Today’s positive words: “${dailyAffirmationFor()}” A new note appears every day at the top of the app.`;
+      return `Today’s positive words: “${dailyAffirmationFor()}”`;
     }
-    if (/game|mini-?game|unlock game/.test(msg)) {
-      return "Each mini-game costs 150 Tokens to unlock. While a Focus timer is running, games stay locked so studying wins. Breaks are fair game time.";
+    if (/game|mini-?game/.test(msg)) {
+      return "Games unlock for 150 Tokens each, and they lock during Focus time so homework comes first. Breaks are okay for play!";
     }
-    if (/chest|daily chest|welcome/.test(msg)) {
-      return "Two chests: Daily/Welcome Chest = +100 Gems once per day. Theme Chest = one free theme forever. Tap them in the wallet row.";
+    if (/chest|daily chest|welcome|theme chest/.test(msg)) {
+      return "Daily Chest = +100 Gems once a day. Theme Chest = +50 Tokens one time. Grab them in the top wallet row!";
     }
     if (/vip|moderator|code/.test(msg)) {
-      return "VIP stays locked until you enter the moderator code under Moderator Only. Then VIP gem themes unlock and quests/focus can earn Gems.";
+      return "VIP unlocks with the moderator code under Moderator Only. Then VIP themes open up.";
     }
     if (/streak/.test(msg)) {
-      return `Your streak is ${streak} day${streak === 1 ? "" : "s"}. Finish a quest or focus session today to keep it alive.`;
+      return `Your streak is ${streak} day${streak === 1 ? "" : "s"}. Finish a quest or Focus today to keep it glowing!`;
     }
     if (/quest|todo|task/.test(msg)) {
       return activeQuests
-        ? `You’ve got ${activeQuests} active quest${activeQuests === 1 ? "" : "s"}. Pick the smallest one, start Focus, and knock it out for +40 XP and +10 Tokens.`
-        : "No quests yet — add one tiny task in the Quest Log (like “read 2 pages”). Small quests are easier to finish and still pay XP + Tokens.";
-    }
-    if (/first|start|begin|what should i do/.test(msg)) {
-      return "Best first loop: read today’s Positive Words → open Daily Chest → pick a free theme → add one quest → start Focus 25.";
+        ? `You’ve got ${activeQuests} quest${activeQuests === 1 ? "" : "s"}. Turn one homework task into a quest, then start Focus!`
+        : "Add a homework quest like “Finish math page 12” — then ask me for help on any sticky problem.";
     }
     if (/timer|focus timer|break/.test(msg)) {
-      return "Use Focus 25 for deep work. Short Break 5 and Long Break 15 recharge you. Games lock only during Focus — breaks are open.";
+      return "Use Focus 25 for homework power time. Short Break 5 and Long Break 15 are for rest. Games pause during Focus.";
     }
-    if (/leaderboard|rank/.test(msg)) {
-      return "Leaderboard rivals reshuffle a little each day. Your score rises with level, XP, streak, tokens, gems, and chest claims.";
+
+    // Context from recent chat
+    const recent = eliMemory.slice(-3).map((m) => m.text).join(" ");
+    if (/yes|yeah|yep|ok|okay|sure|please/.test(msg) && /math|fraction|reading|write|science/.test(recent)) {
+      return "Awesome — paste the exact homework question now and I’ll help step by step.";
     }
-    if (/music|song|sound/.test(msg)) {
-      return "Background song is On & On (NCS). Use Music: Start if the browser blocks autoplay. Sound toggles the effect blips.";
-    }
-    if (/who are you|what are you|ai|help/.test(msg)) {
-      return "I’m Horizon Guide — your in-app helping AI. I give study advice, motivation, and Arcane Horizon tips. Ask in plain words anytime.";
-    }
-    return `I can help with that. Right now you’re LVL ${level}, ${tokens} Tokens, streak ${streak}. Try asking for a study tip, a focus plan, or how Tokens/themes/games work.`;
+
+    return `I’m ELI AI, your homework helper. I can help with math problems, reading main ideas, writing paragraphs, and science explanations.\n\nYou said: “${original.slice(0, 160)}”\n\nTry adding the subject, like “Math: 48 ÷ 6” or “Explain gravity simply,” and I’ll jump right in. (LVL ${level} · streak ${streak})`;
   }
 
   function askGuide(text) {
     const cleaned = String(text || "").trim();
     if (!cleaned) return;
     appendGuideBubble("user", cleaned);
+    eliMemory.push({ role: "user", text: cleaned });
+    if (eliMemory.length > 12) eliMemory.splice(0, eliMemory.length - 12);
+    setEliTyping(true);
     window.setTimeout(() => {
-      appendGuideBubble("ai", guideReply(cleaned));
+      setEliTyping(false);
+      const reply = guideReply(cleaned);
+      appendGuideBubble("ai", reply);
+      eliMemory.push({ role: "ai", text: reply });
       playSfx("click");
-    }, 220);
+    }, 380 + Math.min(900, cleaned.length * 8));
   }
 
   function initHorizonGuide() {
     if (els.guideChat && !els.guideChat.childElementCount) {
       appendGuideBubble(
         "ai",
-        "Hey — I’m Horizon Guide, your helping AI. Check today’s positive attachment above, or ask me for study tips, motivation, or how Arcane Horizon works."
+        "Hi! I’m ELI AI — your ChatGPT-style homework helper for kids. Ask me about math, reading, writing, or science. I’ll explain things simply and help you learn step by step."
       );
     }
     els.guideFab?.addEventListener("click", () => {

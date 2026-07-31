@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;800&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=splash-prev1" />
+  <link rel="stylesheet" href="style.css?v=eli-ai1" />
   <link rel="preload" as="image" href="assets/arcane-horizon-splash.jpg?v=3" />
   <style>
     :root { --bg-image: none; }
@@ -538,29 +538,31 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
-  <button type="button" class="guide-fab" id="guide-fab" aria-expanded="false" aria-controls="guide-drawer" title="Open helping AI">
-    <span class="guide-fab-label">AI</span>
-    <span class="guide-fab-sub">Help</span>
+  <button type="button" class="guide-fab" id="guide-fab" aria-expanded="false" aria-controls="guide-drawer" title="Open ELI AI homework helper">
+    <span class="guide-fab-label">ELI</span>
+    <span class="guide-fab-sub">AI</span>
   </button>
 
   <div class="guide-drawer" id="guide-drawer" hidden>
     <div class="guide-drawer-panel" role="dialog" aria-modal="true" aria-labelledby="guide-heading">
       <div class="guide-drawer-head">
         <div>
-          <h2 id="guide-heading">Horizon Guide</h2>
-          <p class="guide-drawer-sub">Helping AI · study companion</p>
+          <h2 id="guide-heading">ELI AI</h2>
+          <p class="guide-drawer-sub">Homework helper for kids · like ChatGPT, built for school</p>
         </div>
-        <button type="button" class="guide-drawer-close" id="guide-close" aria-label="Close helping AI">×</button>
+        <button type="button" class="guide-drawer-close" id="guide-close" aria-label="Close ELI AI">×</button>
       </div>
       <div class="guide-daily-attach" id="guide-daily-attach">
         <span class="guide-daily-attach-tag">Positive words · today</span>
         <p id="guide-daily-text"></p>
       </div>
-      <div class="guide-chips" id="guide-chips" role="toolbar" aria-label="Quick asks">
-        <button type="button" class="guide-chip" data-ask="Give me a study tip">Study tip</button>
-        <button type="button" class="guide-chip" data-ask="Motivate me">Motivate me</button>
-        <button type="button" class="guide-chip" data-ask="How do Tokens work?">Tokens</button>
-        <button type="button" class="guide-chip" data-ask="Make me a focus plan">Focus plan</button>
+      <div class="guide-chips" id="guide-chips" role="toolbar" aria-label="Quick homework asks">
+        <button type="button" class="guide-chip" data-ask="Help me with math homework">Math help</button>
+        <button type="button" class="guide-chip" data-ask="Help me with reading homework">Reading</button>
+        <button type="button" class="guide-chip" data-ask="Explain this like I'm 10">Explain simply</button>
+        <button type="button" class="guide-chip" data-ask="Help me write a paragraph">Writing</button>
+        <button type="button" class="guide-chip" data-ask="Give me a science tip">Science</button>
+        <button type="button" class="guide-chip" data-ask="Motivate me for homework">Motivate me</button>
       </div>
       <div class="guide-chat" id="guide-chat" aria-live="polite"></div>
       <form class="guide-form" id="guide-form" autocomplete="off">
@@ -568,9 +570,9 @@
           type="text"
           id="guide-input"
           class="guide-input"
-          placeholder="Ask the helping AI…"
-          maxlength="200"
-          aria-label="Message for Horizon Guide"
+          placeholder="Ask ELI AI about your homework…"
+          maxlength="400"
+          aria-label="Message for ELI AI"
         />
         <button type="submit" class="btn btn-primary">Ask</button>
       </form>
