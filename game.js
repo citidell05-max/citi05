@@ -431,6 +431,7 @@
 
     window.addEventListener("keydown", (e) => {
       if (e.code !== "Space" && e.code !== "ArrowUp") return;
+      if (window.__arcaneCowboyLock) return;
       const tag = (document.activeElement && document.activeElement.tagName) || "";
       if (tag === "INPUT" || tag === "TEXTAREA" || tag === "BUTTON") {
         if (tag === "BUTTON" && document.activeElement.id !== "game-start") return;

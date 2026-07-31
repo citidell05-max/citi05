@@ -515,7 +515,8 @@ body {
   grid-template-areas:
     "quest timer"
     "xp xp"
-    "game game";
+    "game game"
+    "cowboy cowboy";
   gap: 1.25rem;
 }
 
@@ -523,6 +524,7 @@ body {
 .timer-panel { grid-area: timer; }
 .xp-panel { grid-area: xp; }
 .game-panel { grid-area: game; }
+.cowboy-panel { grid-area: cowboy; }
 
 .panel {
   background: rgba(255, 255, 255, 0.04);
@@ -538,13 +540,15 @@ body {
 .quest-panel,
 .timer-panel,
 .xp-panel,
-.game-panel {
+.game-panel,
+.cowboy-panel {
   background: rgba(12, 6, 24, 0.12);
 }
 
 .timer-panel { animation-delay: 0.08s; }
 .xp-panel { animation-delay: 0.16s; }
 .game-panel { animation-delay: 0.22s; }
+.cowboy-panel { animation-delay: 0.28s; }
 
 @keyframes rise-in {
   from {
@@ -995,7 +999,8 @@ body {
       "timer"
       "quest"
       "xp"
-      "game";
+      "game"
+      "cowboy";
   }
 
   .quest-list {
@@ -1068,12 +1073,27 @@ body {
   background: rgba(6, 4, 16, 0.35);
 }
 
-#dash-canvas {
+#dash-canvas,
+#cowboy-canvas {
   display: block;
   width: 100%;
   height: auto;
   cursor: pointer;
   touch-action: manipulation;
+}
+
+.cowboy-wrap {
+  border-color: rgba(255, 180, 80, 0.35);
+}
+
+.cowboy-status {
+  margin: -0.35rem 0 0.75rem;
+  font-family: var(--font-display);
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #ffc857;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.75);
 }
 
 .game-hud {
@@ -1086,12 +1106,17 @@ body {
   background: rgba(8, 4, 18, 0.35);
 }
 
-#game-score {
+#game-score,
+#cowboy-score {
   font-family: var(--font-display);
   font-size: 0.8rem;
   letter-spacing: 0.08em;
   color: var(--neon-lime);
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
+}
+
+#cowboy-score {
+  color: #ffc857;
 }
 
 @media (prefers-reduced-motion: reduce) {

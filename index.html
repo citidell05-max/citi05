@@ -203,6 +203,22 @@
           </div>
         </div>
       </section>
+
+      <section class="panel cowboy-panel" aria-labelledby="cowboy-heading">
+        <div class="panel-head">
+          <h2 id="cowboy-heading">Cowboy Quick Draw</h2>
+          <span class="panel-meta" id="cowboy-meta">Wins: 0</span>
+        </div>
+        <p class="game-help">1 · 2 · 3 · <strong>SHOOT!</strong> — click / tap / Space as fast as you can. Draw early and you lose.</p>
+        <p class="cowboy-status" id="cowboy-status">Wait for SHOOT — then click fast!</p>
+        <div class="game-wrap cowboy-wrap">
+          <canvas id="cowboy-canvas" width="960" height="360" aria-label="Cowboy Quick Draw game"></canvas>
+          <div class="game-hud">
+            <span id="cowboy-score">Reaction: —</span>
+            <button type="button" class="btn btn-primary" id="cowboy-start">Duel</button>
+          </div>
+        </div>
+      </section>
     </main>
   </div>
 
@@ -220,5 +236,6 @@
   <script src="script.js"></script>
   <script src="birds.js"></script>
   <script src="game.js"></script>
+  <script src="cowboy.js"></script>
 </body>
 </html>

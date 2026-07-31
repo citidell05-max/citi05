@@ -915,7 +915,8 @@
     saveState();
     renderWallet();
     renderVipToggle();
-    showToast(`Dash reward +${tokens} Tokens`);
+    const label = event.detail?.game === "cowboy" ? "Quick Draw" : "Dash";
+    showToast(`${label} reward +${tokens} Tokens`);
   });
 
   window.addEventListener("beforeunload", saveState);
