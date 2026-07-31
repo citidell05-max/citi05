@@ -126,6 +126,8 @@
     leaderboardMeta: document.getElementById("leaderboard-meta"),
     dailyAttachment: document.getElementById("daily-attachment"),
     dailyNoteText: document.getElementById("daily-note-text"),
+    liveClockTime: document.getElementById("live-clock-time"),
+    liveClockDate: document.getElementById("live-clock-date"),
     guideFab: document.getElementById("guide-fab"),
     guideDrawer: document.getElementById("guide-drawer"),
     guideClose: document.getElementById("guide-close"),
@@ -1154,6 +1156,32 @@
     return `${y}-${m}-${d}`;
   }
 
+  function renderLiveClock() {
+    if (!els.liveClockTime && !els.liveClockDate) return;
+    const now = new Date();
+    if (els.liveClockTime) {
+      els.liveClockTime.textContent = now.toLocaleTimeString(undefined, {
+        hour: "numeric",
+        minute: "2-digit",
+        second: "2-digit",
+      });
+      els.liveClockTime.dateTime = now.toISOString();
+    }
+    if (els.liveClockDate) {
+      els.liveClockDate.textContent = now.toLocaleDateString(undefined, {
+        weekday: "long",
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      });
+    }
+  }
+
+  function startLiveClock() {
+    renderLiveClock();
+    window.setInterval(renderLiveClock, 1000);
+  }
+
   const DAILY_AFFIRMATIONS = [
     "You showed up — that already puts you ahead of yesterday.",
     "Small focused steps beat perfect plans you never start.",
@@ -2124,6 +2152,7 @@
   renderXp();
   renderTimer();
   renderGameLocks();
+  startLiveClock();
 
   function runSplashScreen() {
     const splash = document.getElementById("splash-screen");
