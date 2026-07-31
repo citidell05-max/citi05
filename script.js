@@ -303,6 +303,7 @@
 
     document.documentElement.style.setProperty("--neon-cyan", theme.accent);
     document.documentElement.style.setProperty("--neon-magenta", theme.accent2);
+    document.body.dataset.theme = theme.id;
 
     if (persist) {
       try {
