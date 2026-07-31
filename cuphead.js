@@ -49,7 +49,21 @@
       window.__arcaneCupLock = !!on;
     }
 
+    function forceStudyStop() {
+      if (state.mode !== "playing") {
+        startBtn.disabled = !!window.__arcaneStudyLock;
+        return;
+      }
+      state.mode = "idle";
+      setBusy(false);
+      startBtn.disabled = !!window.__arcaneStudyLock;
+      startBtn.textContent = "Fight Boss";
+      setStatus("Study time — boss fight locked until focus ends");
+      syncHud();
+    }
+
     function reset() {
+      if (window.arcaneGuardStudy?.()) return;
       state.mode = "playing";
       setBusy(true);
       state.t = 0;
@@ -640,7 +654,19 @@
       keys.right = x > W * 0.72;
     });
 
+    window.addEventListener("arcane-study-lock", (e) => {
+      if (e.detail?.locked) forceStudyStop();
+      else startBtn.disabled = false;
+    });
+
     startBtn.addEventListener("click", () => reset());
+
+    window.addEventListener("keydown", (e) => {
+      if (!window.__arcaneStudyLock) return;
+      if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Space", "KeyZ", "KeyX"].includes(e.code)) {
+        e.preventDefault();
+      }
+    }, true);
 
     syncHud();
     draw();

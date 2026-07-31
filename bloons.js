@@ -178,6 +178,7 @@
     }
 
     function resetGame() {
+      if (window.arcaneGuardStudy?.()) return;
       state.mode = "playing";
       state.lives = 40;
       state.cash = 250;
@@ -192,6 +193,22 @@
       state.rewardBank = 0;
       state._hudKey = "";
       setStatus("Place towers off the track, then Send Wave");
+      syncHud(true);
+    }
+
+    function forceStudyStop() {
+      if (state.mode === "idle" || state.mode === "won" || state.mode === "lost") {
+        startBtn.disabled = !!window.__arcaneStudyLock;
+        waveBtn.disabled = true;
+        return;
+      }
+      state.mode = "idle";
+      state.waveActive = false;
+      state.spawnQueue = [];
+      setBusy(false);
+      startBtn.disabled = !!window.__arcaneStudyLock;
+      waveBtn.disabled = true;
+      setStatus("Study time — defense locked until focus ends");
       syncHud(true);
     }
 
@@ -227,6 +244,7 @@
     }
 
     function startWave() {
+      if (window.arcaneGuardStudy?.()) return;
       if (state.mode !== "playing" || state.waveActive) return;
       state.wave += 1;
       state.spawnQueue = wavePlan(state.wave);
@@ -805,9 +823,17 @@
       };
     }
 
+    window.addEventListener("arcane-study-lock", (e) => {
+      if (e.detail?.locked) forceStudyStop();
+      else {
+        startBtn.disabled = false;
+        waveBtn.disabled = state.mode !== "playing" || state.waveActive;
+      }
+    });
+
     startBtn.addEventListener("click", () => {
       resetGame();
-      setBusy(true);
+      if (state.mode === "playing") setBusy(true);
     });
 
     waveBtn.addEventListener("click", () => {
@@ -815,6 +841,10 @@
     });
 
     shop.addEventListener("click", (e) => {
+      if (window.__arcaneStudyLock) {
+        window.arcaneGuardStudy?.();
+        return;
+      }
       const btn = e.target.closest("[data-tower]");
       if (!btn) return;
       state.selected = btn.dataset.tower;

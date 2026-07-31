@@ -107,7 +107,20 @@
       renderHand();
     }
 
+    function forceStudyStop() {
+      if (state.mode !== "playing") {
+        startBtn.disabled = !!window.__arcaneStudyLock;
+        return;
+      }
+      state.mode = "idle";
+      startBtn.disabled = !!window.__arcaneStudyLock;
+      startBtn.textContent = "Battle";
+      statusStatus("Study time — arena locked until focus ends");
+      syncHud();
+    }
+
     function reset() {
+      if (window.arcaneGuardStudy?.()) return;
       state.mode = "playing";
       state.elixir = 5;
       state.enemyElixir = 5;
@@ -527,6 +540,11 @@
       };
     }
 
+    window.addEventListener("arcane-study-lock", (e) => {
+      if (e.detail?.locked) forceStudyStop();
+      else startBtn.disabled = false;
+    });
+
     startBtn.addEventListener("click", () => {
       if (state.mode === "playing") {
         end(false);
@@ -537,6 +555,10 @@
 
     canvas.addEventListener("pointerdown", (e) => {
       e.preventDefault();
+      if (window.__arcaneStudyLock) {
+        window.arcaneGuardStudy?.();
+        return;
+      }
       if (state.mode === "idle" || state.mode === "win" || state.mode === "lose") {
         reset();
         return;

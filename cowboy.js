@@ -79,6 +79,7 @@
     }
 
     function startDuel() {
+      if (window.arcaneGuardStudy?.()) return;
       state.mode = "countdown";
       state.countStep = 0;
       state.countAt = performance.now();
@@ -92,6 +93,18 @@
       startBtn.disabled = true;
       setBusy(true);
       setStatus("Don't draw early…");
+    }
+
+    function forceStudyStop() {
+      if (state.mode === "idle" || state.mode === "win" || state.mode === "lose" || state.mode === "early") {
+        startBtn.disabled = !!window.__arcaneStudyLock;
+        return;
+      }
+      state.mode = "idle";
+      setBusy(false);
+      startBtn.disabled = !!window.__arcaneStudyLock;
+      startBtn.textContent = "Duel";
+      setStatus("Study time — duel locked until focus ends");
     }
 
     function falseStart() {
@@ -436,6 +449,13 @@
       requestAnimationFrame(frame);
     }
 
+    window.addEventListener("arcane-study-lock", (e) => {
+      if (e.detail?.locked) forceStudyStop();
+      else if (state.mode === "idle" || state.mode === "win" || state.mode === "lose" || state.mode === "early") {
+        startBtn.disabled = false;
+      }
+    });
+
     startBtn.addEventListener("click", (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -446,6 +466,10 @@
 
     canvas.addEventListener("pointerdown", (e) => {
       e.preventDefault();
+      if (window.__arcaneStudyLock) {
+        window.arcaneGuardStudy?.();
+        return;
+      }
       if (state.mode === "idle") {
         startDuel();
         return;
@@ -455,6 +479,7 @@
 
     window.addEventListener("keydown", (e) => {
       if (e.code !== "Space" && e.code !== "Enter") return;
+      if (window.__arcaneStudyLock) return;
       const tag = (document.activeElement && document.activeElement.tagName) || "";
       if (tag === "INPUT" || tag === "TEXTAREA") return;
       if (tag === "BUTTON" && document.activeElement.id !== "cowboy-start") return;

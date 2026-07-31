@@ -1224,6 +1224,38 @@ body[data-theme="vipcrystal"] .theme-orb-2 {
 .cup-panel { animation-delay: 0.4s; }
 .royale-panel { animation-delay: 0.46s; }
 
+body.is-study-lock .game-panel,
+body.is-study-lock .cowboy-panel,
+body.is-study-lock .bloons-panel,
+body.is-study-lock .cup-panel,
+body.is-study-lock .royale-panel {
+  position: relative;
+  opacity: 0.72;
+  filter: saturate(0.7);
+}
+
+body.is-study-lock .game-panel::after,
+body.is-study-lock .cowboy-panel::after,
+body.is-study-lock .bloons-panel::after,
+body.is-study-lock .cup-panel::after,
+body.is-study-lock .royale-panel::after {
+  content: "Study time — games locked";
+  position: absolute;
+  top: 0.85rem;
+  right: 1rem;
+  z-index: 5;
+  padding: 0.28rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 180, 70, 0.45);
+  background: rgba(20, 10, 8, 0.82);
+  color: #ffd27a;
+  font-family: var(--font-display);
+  font-size: 0.58rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  pointer-events: none;
+}
+
 .leaderboard-intro {
   margin: -0.35rem 0 0.9rem;
   color: var(--text-muted);

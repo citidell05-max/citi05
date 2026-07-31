@@ -1225,11 +1225,51 @@
     updateRing();
   }
 
+  function isStudyTimeActive() {
+    return running && state.timer.mode === "focus";
+  }
+
+  function syncStudyGameLock() {
+    const locked = isStudyTimeActive();
+    window.__arcaneStudyLock = locked;
+    document.body.classList.toggle("is-study-lock", locked);
+
+    [
+      "game-start",
+      "cowboy-start",
+      "bloons-start",
+      "bloons-wave",
+      "cup-start",
+      "royale-start",
+    ].forEach((id) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.disabled = locked;
+      if (locked) {
+        el.dataset.studyLock = "1";
+        el.title = "Locked during study time";
+      } else if (el.dataset.studyLock === "1") {
+        delete el.dataset.studyLock;
+        el.removeAttribute("title");
+      }
+    });
+
+    window.dispatchEvent(new CustomEvent("arcane-study-lock", { detail: { locked } }));
+  }
+
+  window.arcaneGuardStudy = function arcaneGuardStudy() {
+    if (!isStudyTimeActive()) return false;
+    showToast("Games locked during study time — finish your focus session first");
+    playSfx("click");
+    return true;
+  };
+
   function stopTimer() {
     clearInterval(timerId);
     timerId = null;
     running = false;
     saveState();
+    syncStudyGameLock();
   }
 
   function completeTimer() {
@@ -1247,6 +1287,7 @@
     remaining = state.timer.minutes * 60;
     saveState();
     renderTimer();
+    syncStudyGameLock();
   }
 
   function tick() {
@@ -1264,6 +1305,10 @@
     running = true;
     timerId = setInterval(tick, 1000);
     renderTimer();
+    syncStudyGameLock();
+    if (isStudyTimeActive()) {
+      showToast("Study time — games locked until focus ends");
+    }
     playSfx("click");
   }
 
@@ -1282,6 +1327,7 @@
     remaining = state.timer.minutes * 60;
     saveState();
     renderTimer();
+    syncStudyGameLock();
     playSfx("click");
   }
 
@@ -1295,6 +1341,7 @@
       btn.classList.toggle("is-active", btn.dataset.mode === mode);
     });
     renderTimer();
+    syncStudyGameLock();
     playSfx("click");
   }
 
@@ -1567,4 +1614,5 @@
   renderQuests();
   renderXp();
   renderTimer();
+  syncStudyGameLock();
 })();

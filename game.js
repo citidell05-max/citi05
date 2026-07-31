@@ -84,13 +84,25 @@
     }
 
     function startRun() {
+      if (window.arcaneGuardStudy?.()) return;
       resetRun();
       state.mode = "playing";
       startBtn.textContent = "Flap!";
       burst();
     }
 
+    function forceStudyStop() {
+      if (state.mode !== "playing") return;
+      state.mode = "idle";
+      startBtn.textContent = "Play";
+      startBtn.disabled = !!window.__arcaneStudyLock;
+    }
+
     function flap() {
+      if (window.__arcaneStudyLock) {
+        window.arcaneGuardStudy?.();
+        return;
+      }
       if (state.mode === "idle" || state.mode === "dead") {
         startRun();
         return;
@@ -417,6 +429,11 @@
       requestAnimationFrame(frame);
     }
 
+    window.addEventListener("arcane-study-lock", (e) => {
+      if (e.detail?.locked) forceStudyStop();
+      else startBtn.disabled = false;
+    });
+
     startBtn.addEventListener("click", (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -430,7 +447,7 @@
 
     window.addEventListener("keydown", (e) => {
       if (e.code !== "Space" && e.code !== "ArrowUp") return;
-      if (window.__arcaneCowboyLock || window.__arcaneCupLock) return;
+      if (window.__arcaneStudyLock || window.__arcaneCowboyLock || window.__arcaneCupLock) return;
       const tag = (document.activeElement && document.activeElement.tagName) || "";
       if (tag === "INPUT" || tag === "TEXTAREA" || tag === "BUTTON") {
         if (tag === "BUTTON" && document.activeElement.id !== "game-start") return;
