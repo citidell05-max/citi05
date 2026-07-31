@@ -1070,9 +1070,9 @@
       const meta = document.createElement("p");
       meta.className = "history-item-meta";
       const bits = [];
-      if (entry.xp) bits.push(`+${entry.xp} XP`);
-      if (entry.tokens) bits.push(`+${entry.tokens} Tokens`);
-      if (entry.gems) bits.push(`+${entry.gems} Gems`);
+      if (entry.xp) bits.push(`${entry.xp > 0 ? "+" : ""}${entry.xp} XP`);
+      if (entry.tokens) bits.push(`${entry.tokens > 0 ? "+" : ""}${entry.tokens} Tokens`);
+      if (entry.gems) bits.push(`${entry.gems > 0 ? "+" : ""}${entry.gems} Gems`);
       meta.textContent = bits.join(" · ") || entry.type || "Activity";
       const when = document.createElement("span");
       when.className = "history-item-when";
