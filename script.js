@@ -15,6 +15,7 @@
     { id: "desert", name: "Desert Dusk", src: "assets/themes/08-desert.jpg?v=4", accent: "#ffb347", accent2: "#ff6f91", overlay: "rgba(36, 16, 8, 0.22)" },
     { id: "space", name: "Cosmic Nebula", src: "assets/themes/09-space.jpg?v=4", accent: "#b388ff", accent2: "#66e0ff", overlay: "rgba(10, 4, 28, 0.26)" },
     { id: "neonrain", name: "Neon Rain", src: "assets/themes/10-neonrain.jpg?v=4", accent: "#ff4fd8", accent2: "#4de1ff", overlay: "rgba(16, 4, 24, 0.3)" },
+    { id: "curacao", name: "Curaçao Coast", src: "assets/themes/15-curacao.jpg?v=1", accent: "#2ec4ff", accent2: "#ff6b9d", overlay: "rgba(8, 28, 48, 0.22)" },
     { id: "vipgold", name: "Gem Vault", src: "assets/themes/12-vipgold.jpg?v=1", accent: "#ffd27a", accent2: "#ffb347", overlay: "rgba(28, 12, 4, 0.22)", vip: true },
     { id: "viproyal", name: "Royal Obsidian", src: "assets/themes/13-viproyal.jpg?v=1", accent: "#d16bff", accent2: "#ff71ce", overlay: "rgba(12, 4, 24, 0.28)", vip: true },
     { id: "vipcrystal", name: "Crystal Crown", src: "assets/themes/14-vipcrystal.jpg?v=1", accent: "#9fe9ff", accent2: "#b388ff", overlay: "rgba(8, 16, 32, 0.24)", vip: true },
