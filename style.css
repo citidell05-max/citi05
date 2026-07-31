@@ -1487,6 +1487,7 @@ body[data-theme="vipcrystal"] .theme-orb-2 {
   grid-template-areas:
     "quest timer"
     "xp xp"
+    "achievements achievements"
     "history history"
     "leaderboard leaderboard"
     "game game"
@@ -1500,6 +1501,7 @@ body[data-theme="vipcrystal"] .theme-orb-2 {
 .quest-panel { grid-area: quest; }
 .timer-panel { grid-area: timer; }
 .xp-panel { grid-area: xp; }
+.achievements-panel { grid-area: achievements; }
 .history-panel { grid-area: history; }
 .leaderboard-panel { grid-area: leaderboard; }
 .game-panel { grid-area: game; }
@@ -1775,6 +1777,7 @@ body.eli-open .guide-fab {
 .quest-panel,
 .timer-panel,
 .xp-panel,
+.achievements-panel,
 .history-panel,
 .leaderboard-panel,
 .game-panel,
@@ -1787,8 +1790,95 @@ body.eli-open .guide-fab {
 
 .timer-panel { animation-delay: 0.08s; }
 .xp-panel { animation-delay: 0.16s; }
+.achievements-panel { animation-delay: 0.17s; }
 .history-panel { animation-delay: 0.18s; }
 .leaderboard-panel { animation-delay: 0.2s; }
+
+.achievements-intro {
+  margin: 0 0 0.85rem;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+.achievements-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.7rem;
+}
+
+.achievement-card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.65rem;
+  align-items: start;
+  padding: 0.75rem 0.8rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(8, 4, 18, 0.55);
+}
+
+.achievement-card.is-locked {
+  opacity: 0.55;
+  filter: grayscale(0.35);
+}
+
+.achievement-card.is-unlocked {
+  border-color: rgba(122, 240, 255, 0.35);
+  background:
+    linear-gradient(135deg, rgba(122, 240, 255, 0.1), rgba(255, 79, 216, 0.08)),
+    rgba(8, 4, 18, 0.65);
+}
+
+.achievement-icon {
+  display: grid;
+  place-items: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 200, 120, 0.35);
+  background: rgba(255, 180, 70, 0.12);
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  color: #ffe0a8;
+}
+
+.achievement-card.is-unlocked .achievement-icon {
+  border-color: rgba(122, 240, 255, 0.45);
+  background: rgba(122, 240, 255, 0.14);
+  color: #d8f7ff;
+}
+
+.achievement-copy strong {
+  display: block;
+  margin-bottom: 0.2rem;
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.achievement-copy p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.35;
+}
+
+.achievement-status {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  color: rgba(255, 210, 240, 0.7);
+}
+
+.achievement-card.is-unlocked .achievement-status {
+  color: #7af0ff;
+}
 .game-panel { animation-delay: 0.22s; }
 .cowboy-panel { animation-delay: 0.28s; }
 .bloons-panel { animation-delay: 0.34s; }
@@ -2409,6 +2499,7 @@ body.is-study-lock .royale-panel.is-game-owned::after {
       "timer"
       "quest"
       "xp"
+      "achievements"
       "history"
       "leaderboard"
       "game"

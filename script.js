@@ -33,6 +33,26 @@
   const GAME_WIN_GOAL = 3;
   const GAME_POINT_GOAL = 100;
   const GAME_MILESTONE_TOKENS = 10;
+  const ACHIEVEMENTS = [
+    { id: "first_quest", title: "First Quest", desc: "Complete your first quest", icon: "Q1", test: (s) => (s.stats?.quests || 0) >= 1 },
+    { id: "quest_hunter", title: "Quest Hunter", desc: "Complete 10 quests", icon: "Q10", test: (s) => (s.stats?.quests || 0) >= 10 },
+    { id: "quest_legend", title: "Quest Legend", desc: "Complete 50 quests", icon: "Q50", test: (s) => (s.stats?.quests || 0) >= 50 },
+    { id: "deep_focus", title: "Deep Focus", desc: "Finish 1 focus session", icon: "F1", test: (s) => (s.stats?.focus || 0) >= 1 },
+    { id: "focus_master", title: "Focus Master", desc: "Finish 10 focus sessions", icon: "F10", test: (s) => (s.stats?.focus || 0) >= 10 },
+    { id: "streak_starter", title: "Streak Starter", desc: "Reach a 3-day streak", icon: "S3", test: (s) => Math.max(s.streak || 0, s.bestStreak || 0) >= 3 },
+    { id: "week_warrior", title: "Week Warrior", desc: "Reach a 7-day best streak", icon: "S7", test: (s) => (s.bestStreak || 0) >= 7 },
+    { id: "rising_star", title: "Rising Star", desc: "Reach level 5", icon: "L5", test: (s) => (s.level || 1) >= 5 },
+    { id: "horizon_hero", title: "Horizon Hero", desc: "Reach level 10", icon: "L10", test: (s) => (s.level || 1) >= 10 },
+    { id: "chest_opener", title: "Chest Opener", desc: "Open the daily gem chest", icon: "CH", test: (s) => (s.chestClaims || 0) >= 1 },
+    { id: "theme_bonus", title: "Theme Bonus", desc: "Open the Theme Chest", icon: "TH", test: (s) => !!s.themeChestClaimed },
+    { id: "token_stack", title: "Token Stack", desc: "Hold at least 100 Tokens", icon: "100", test: (s) => (s.tokens || 0) >= 100 },
+    { id: "game_ready", title: "Game Ready", desc: "Unlock your first mini-game", icon: "G1", test: (s) => (s.ownedGames || []).length >= 1 },
+    { id: "game_champ", title: "Game Champ", desc: "Win 3 mini-game matches", icon: "W3", test: (s) => (s.stats?.gameWins || 0) >= 3 },
+    { id: "point_scorer", title: "Point Scorer", desc: "Earn 100 game points", icon: "P100", test: (s) => (s.stats?.gamePoints || 0) >= 100 },
+    { id: "island_focus", title: "Island Focus", desc: "Equip the Curaçao Coast theme", icon: "CW", test: () => currentThemeId === "curacao" },
+    { id: "eli_buddy", title: "ELI Buddy", desc: "Open ELI AI for homework help", icon: "ELI", test: (s) => !!s.stats?.eliOpened },
+    { id: "vip_key", title: "VIP Key", desc: "Unlock VIP with the moderator code", icon: "VIP", test: (s) => !!s.vipUnlocked && s.vipUnlockSource === "moderator" },
+  ];
   const PLAYABLE_GAMES = [
     { id: "dash", name: "Horizon Dash", startIds: ["game-start"] },
     { id: "cowboy", name: "Cowboy Quick Draw", startIds: ["cowboy-start"] },
@@ -124,6 +144,8 @@
     themeChestMeta: document.getElementById("theme-chest-meta"),
     leaderboardList: document.getElementById("leaderboard-list"),
     leaderboardMeta: document.getElementById("leaderboard-meta"),
+    achievementsGrid: document.getElementById("achievements-grid"),
+    achievementsMeta: document.getElementById("achievements-meta"),
     dailyAttachment: document.getElementById("daily-attachment"),
     dailyNoteText: document.getElementById("daily-note-text"),
     liveClockTime: document.getElementById("live-clock-time"),
@@ -154,6 +176,17 @@
   const state = loadState();
   if (!Array.isArray(state.ownedThemes)) state.ownedThemes = [];
   if (!Array.isArray(state.ownedGames)) state.ownedGames = [];
+  if (!state.unlockedAchievements || typeof state.unlockedAchievements !== "object") {
+    state.unlockedAchievements = {};
+  }
+  if (!state.stats || typeof state.stats !== "object") {
+    state.stats = { quests: 0, focus: 0, gameWins: 0, gamePoints: 0, eliOpened: false };
+  }
+  state.stats.quests = Math.max(0, Number(state.stats.quests) || 0);
+  state.stats.focus = Math.max(0, Number(state.stats.focus) || 0);
+  state.stats.gameWins = Math.max(0, Number(state.stats.gameWins) || 0);
+  state.stats.gamePoints = Math.max(0, Number(state.stats.gamePoints) || 0);
+  state.stats.eliOpened = !!state.stats.eliOpened;
   let currentThemeId = localStorage.getItem(THEME_STORAGE_KEY) || "";
   if (currentThemeId && !THEMES.some((t) => t.id === currentThemeId)) currentThemeId = "";
   // Regular themes free; VIP themes stay locked until moderator VIP unlock
@@ -255,6 +288,8 @@
       ownedGames: [],
       gameWinProgress: 0,
       gamePointProgress: 0,
+      unlockedAchievements: {},
+      stats: { quests: 0, focus: 0, gameWins: 0, gamePoints: 0, eliOpened: false },
       history: [],
       vipEnabled: false,
       vipUnlocked: false,
@@ -297,6 +332,17 @@
             : [],
           gameWinProgress: Math.max(0, Number(parsed.gameWinProgress) || 0),
           gamePointProgress: Math.max(0, Number(parsed.gamePointProgress) || 0),
+          unlockedAchievements:
+            parsed.unlockedAchievements && typeof parsed.unlockedAchievements === "object"
+              ? parsed.unlockedAchievements
+              : {},
+          stats: {
+            quests: Math.max(0, Number(parsed.stats?.quests) || 0),
+            focus: Math.max(0, Number(parsed.stats?.focus) || 0),
+            gameWins: Math.max(0, Number(parsed.stats?.gameWins) || 0),
+            gamePoints: Math.max(0, Number(parsed.stats?.gamePoints) || 0),
+            eliOpened: !!parsed.stats?.eliOpened,
+          },
           history: Array.isArray(parsed.history) ? parsed.history.slice(0, HISTORY_LIMIT) : [],
           vipEnabled: !!parsed.vipEnabled && parsed.vipUnlockSource === "moderator",
           vipUnlocked: !!parsed.vipUnlocked && parsed.vipUnlockSource === "moderator",
@@ -343,6 +389,8 @@
         ownedGames: Array.isArray(state.ownedGames) ? state.ownedGames : [],
         gameWinProgress: state.gameWinProgress || 0,
         gamePointProgress: state.gamePointProgress || 0,
+        unlockedAchievements: state.unlockedAchievements || {},
+        stats: state.stats || { quests: 0, focus: 0, gameWins: 0, gamePoints: 0, eliOpened: false },
         history: Array.isArray(state.history) ? state.history.slice(0, HISTORY_LIMIT) : [],
         vipEnabled,
         vipUnlocked,
@@ -687,6 +735,7 @@
     renderDailyChest();
     renderHistory();
     renderLeaderboard();
+    checkAchievements();
     playSfx("levelup");
     showToast(
       isNewcomer
@@ -738,6 +787,7 @@
     renderHistory();
     renderLeaderboard();
     applyTheme(theme.id, { persist: true, toast: false });
+    checkAchievements();
     playSfx("levelup");
     showToast(`Theme chest opened — +${bonus} Tokens · ${theme.name}`);
   }
@@ -1142,6 +1192,7 @@
     renderWallet();
     renderVipToggle();
     renderThemeGrid();
+    checkAchievements();
     playSfx("levelup");
     showToast("Moderator code accepted — VIP gem themes unlocked");
     els.modPanel.setAttribute("hidden", "");
@@ -1235,6 +1286,12 @@
     els.guideFab.setAttribute("aria-expanded", String(open));
     document.body.classList.toggle("eli-open", open);
     if (open) {
+      if (!state.stats) state.stats = { quests: 0, focus: 0, gameWins: 0, gamePoints: 0, eliOpened: false };
+      if (!state.stats.eliOpened) {
+        state.stats.eliOpened = true;
+        saveState();
+        checkAchievements();
+      }
       renderDailyAttachment();
       window.setTimeout(() => els.guideInput?.focus(), 40);
     }
@@ -1572,6 +1629,83 @@
     });
   }
 
+  function isAchievementUnlocked(id) {
+    return !!(state.unlockedAchievements && state.unlockedAchievements[id]);
+  }
+
+  function renderAchievements() {
+    if (!els.achievementsGrid) return;
+    const unlockedCount = ACHIEVEMENTS.filter((a) => isAchievementUnlocked(a.id)).length;
+    if (els.achievementsMeta) {
+      els.achievementsMeta.textContent = `${unlockedCount} / ${ACHIEVEMENTS.length} unlocked`;
+    }
+    els.achievementsGrid.innerHTML = "";
+    ACHIEVEMENTS.forEach((ach) => {
+      const unlocked = isAchievementUnlocked(ach.id);
+      const li = document.createElement("li");
+      li.className = `achievement-card ${unlocked ? "is-unlocked" : "is-locked"}`;
+      const icon = document.createElement("span");
+      icon.className = "achievement-icon";
+      icon.textContent = unlocked ? ach.icon : "···";
+      const copy = document.createElement("div");
+      copy.className = "achievement-copy";
+      const title = document.createElement("strong");
+      title.textContent = ach.title;
+      const desc = document.createElement("p");
+      desc.textContent = unlocked ? ach.desc : "Keep studying to unlock this badge";
+      const status = document.createElement("span");
+      status.className = "achievement-status";
+      if (unlocked) {
+        status.textContent = `Unlocked ${formatHistoryWhen(state.unlockedAchievements[ach.id])}`;
+      } else {
+        status.textContent = "Locked";
+      }
+      copy.append(title, desc, status);
+      li.append(icon, copy);
+      els.achievementsGrid.appendChild(li);
+    });
+  }
+
+  function unlockAchievement(id) {
+    const ach = ACHIEVEMENTS.find((a) => a.id === id);
+    if (!ach || isAchievementUnlocked(id)) return false;
+    if (!state.unlockedAchievements) state.unlockedAchievements = {};
+    state.unlockedAchievements[id] = Date.now();
+    addHistory({
+      type: "achievement",
+      text: `Achievement unlocked: ${ach.title}`,
+    });
+    playSfx("levelup");
+    showToast(`Achievement: ${ach.title}`);
+    return true;
+  }
+
+  function checkAchievements({ silent = false } = {}) {
+    let gained = 0;
+    ACHIEVEMENTS.forEach((ach) => {
+      if (isAchievementUnlocked(ach.id)) return;
+      let ok = false;
+      try {
+        ok = !!ach.test(state);
+      } catch {
+        ok = false;
+      }
+      if (!ok) return;
+      if (silent) {
+        if (!state.unlockedAchievements) state.unlockedAchievements = {};
+        state.unlockedAchievements[ach.id] = Date.now();
+      } else if (unlockAchievement(ach.id)) {
+        gained += 1;
+      }
+    });
+    if (gained || silent) {
+      saveState();
+      renderAchievements();
+      if (!silent) renderHistory();
+    }
+    return gained;
+  }
+
   function gainRewards({ xp, tokens, gems = 0, reason }) {
     state.xp += xp;
     sessionXp += xp;
@@ -1583,8 +1717,14 @@
     }
 
     const streakInfo = touchStreak();
+    const isFocus = reason === "Focus session complete";
+    const isQuest = reason === "Quest complete";
+    if (!state.stats) state.stats = { quests: 0, focus: 0, gameWins: 0, gamePoints: 0, eliOpened: false };
+    if (isFocus) state.stats.focus = (state.stats.focus || 0) + 1;
+    if (isQuest) state.stats.quests = (state.stats.quests || 0) + 1;
+
     addHistory({
-      type: reason === "Focus session complete" ? "focus" : "quest",
+      type: isFocus ? "focus" : "quest",
       text: reason,
       xp,
       tokens,
@@ -1614,6 +1754,7 @@
     renderStreak();
     renderHistory();
     renderLeaderboard();
+    checkAchievements();
 
     if (leveled) {
       els.levelBadge.classList.remove("is-levelup");
@@ -1625,7 +1766,7 @@
       return;
     }
 
-    playSfx(reason === "Focus session complete" ? "timer" : "complete");
+    playSfx(isFocus ? "timer" : "complete");
     const gemText = gemGain > 0 ? ` · +${gemGain} Gems` : "";
     const streakText = streakInfo.grew ? ` · ${state.streak}-day streak` : "";
     showToast(`+${xp} XP · +${tokens} Tokens${gemText}${streakText} — ${reason}`);
@@ -1714,6 +1855,7 @@
     renderHistory();
     renderLeaderboard();
     renderGameLocks();
+    checkAchievements();
     return { ok: true, bought: true, amount: GAME_UNLOCK_COST, name: game.name };
   }
 
@@ -1910,6 +2052,7 @@
       return;
     }
     applyTheme(theme.id, { toast: true });
+    checkAchievements();
     playSfx("click");
     renderThemeGrid();
   });
@@ -2061,6 +2204,9 @@
 
     state.gameWinProgress = Math.max(0, Number(state.gameWinProgress) || 0) + (win ? 1 : 0);
     state.gamePointProgress = Math.max(0, Number(state.gamePointProgress) || 0) + points;
+    if (!state.stats) state.stats = { quests: 0, focus: 0, gameWins: 0, gamePoints: 0, eliOpened: false };
+    if (win) state.stats.gameWins = (state.stats.gameWins || 0) + 1;
+    if (points > 0) state.stats.gamePoints = (state.stats.gamePoints || 0) + points;
 
     let gained = 0;
     const parts = [];
@@ -2093,6 +2239,7 @@
     renderLeaderboard();
     renderThemeGrid();
     renderGameLocks();
+    checkAchievements();
 
     const streakText = streakInfo.grew ? ` · ${state.streak}-day streak` : "";
     if (gained > 0) {
@@ -2148,6 +2295,8 @@
   renderStreak();
   renderHistory();
   renderLeaderboard();
+  renderAchievements();
+  checkAchievements({ silent: true });
   renderQuests();
   renderXp();
   renderTimer();
