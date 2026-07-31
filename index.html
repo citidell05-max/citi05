@@ -588,12 +588,20 @@
     <source src="sounds/on-and-on.mp3" type="audio/mpeg" />
   </audio>
 
-  <script src="script.js?v=eli-full1"></script>
-  <script src="theme-fx.js?v=eli-full1"></script>
-  <script src="game.js?v=eli-full1"></script>
-  <script src="cowboy.js?v=eli-full1"></script>
-  <script src="bloons.js?v=eli-full1"></script>
-  <script src="cuphead.js?v=eli-full1"></script>
-  <script src="royale.js?v=eli-full1"></script>
+  <!-- Preload UI sound effects from /sounds -->
+  <link rel="preload" as="audio" href="sounds/click.wav" />
+  <link rel="preload" as="audio" href="sounds/quest-add.wav" />
+  <link rel="preload" as="audio" href="sounds/quest-complete.wav" />
+  <link rel="preload" as="audio" href="sounds/quest-delete.wav" />
+  <link rel="preload" as="audio" href="sounds/timer-done.wav" />
+  <link rel="preload" as="audio" href="sounds/level-up.wav" />
+
+  <script src="script.js?v=sounds1"></script>
+  <script src="theme-fx.js?v=sounds1"></script>
+  <script src="game.js?v=sounds1"></script>
+  <script src="cowboy.js?v=sounds1"></script>
+  <script src="bloons.js?v=sounds1"></script>
+  <script src="cuphead.js?v=sounds1"></script>
+  <script src="royale.js?v=sounds1"></script>
 </body>
 </html>
