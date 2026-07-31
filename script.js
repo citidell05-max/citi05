@@ -1743,6 +1743,17 @@
     splash.removeAttribute("hidden");
     splash.classList.remove("is-done");
 
+    const artImg = splash.querySelector(".splash-art img");
+    if (artImg) {
+      const markArt = () => splash.classList.add("splash-has-art");
+      const markMissing = () => splash.classList.remove("splash-has-art");
+      if (artImg.complete && artImg.naturalWidth > 0) markArt();
+      else {
+        artImg.addEventListener("load", markArt, { once: true });
+        artImg.addEventListener("error", markMissing, { once: true });
+      }
+    }
+
     function finishSplash() {
       if (entered || !ready) return;
       entered = true;

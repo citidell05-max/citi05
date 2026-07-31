@@ -133,6 +133,22 @@
       text-transform: uppercase;
       cursor: pointer;
     }
+    /* Image already includes title/credits — hide HTML copy when art loads */
+    #splash-screen.splash-has-art .splash-title,
+    #splash-screen.splash-has-art .splash-credits {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0,0,0,0);
+    }
+    #splash-screen.splash-has-art .splash-content {
+      position: absolute;
+      left: 50%;
+      bottom: 2.2rem;
+      transform: translateX(-50%);
+      width: min(94vw, 420px);
+    }
   </style>
 </head>
 <body data-theme="dark" class="theme-locked-dark splash-active">
