@@ -178,7 +178,7 @@
     }
 
     function resetGame() {
-      if (window.arcaneGuardStudy?.()) return;
+      if (window.arcaneGuardStudy?.("bloons")) return;
       state.mode = "playing";
       state.lives = 40;
       state.cash = 250;
@@ -244,7 +244,7 @@
     }
 
     function startWave() {
-      if (window.arcaneGuardStudy?.()) return;
+      if (window.arcaneGuardStudy?.("bloons")) return;
       if (state.mode !== "playing" || state.waveActive) return;
       state.wave += 1;
       state.spawnQueue = wavePlan(state.wave);
@@ -826,8 +826,9 @@
     window.addEventListener("arcane-study-lock", (e) => {
       if (e.detail?.locked) forceStudyStop();
       else {
-        startBtn.disabled = false;
-        waveBtn.disabled = state.mode !== "playing" || state.waveActive;
+        const owned = !!window.arcaneOwnsGame?.("bloons");
+        startBtn.disabled = !owned;
+        waveBtn.disabled = !owned || state.mode !== "playing" || state.waveActive;
       }
     });
 
@@ -841,8 +842,8 @@
     });
 
     shop.addEventListener("click", (e) => {
-      if (window.__arcaneStudyLock) {
-        window.arcaneGuardStudy?.();
+      if (window.__arcaneStudyLock || !window.arcaneOwnsGame?.("bloons")) {
+        window.arcaneGuardStudy?.("bloons");
         return;
       }
       const btn = e.target.closest("[data-tower]");
@@ -863,9 +864,13 @@
     });
     canvas.addEventListener("pointerdown", (e) => {
       e.preventDefault();
+      if (window.__arcaneStudyLock || !window.arcaneOwnsGame?.("bloons")) {
+        window.arcaneGuardStudy?.("bloons");
+        return;
+      }
       if (state.mode === "idle" || state.mode === "won" || state.mode === "lost") {
         resetGame();
-        setBusy(true);
+        if (state.mode === "playing") setBusy(true);
         return;
       }
       const p = canvasPos(e);

@@ -213,8 +213,8 @@
         <ul class="xp-hints">
           <li>Complete a quest → <strong>+40 XP</strong> · <strong>+10 Tokens</strong> · VIP <strong>+2 Gems</strong></li>
           <li>Finish a focus session → <strong>+55 XP</strong> · <strong>+15 Tokens</strong> · VIP <strong>+3 Gems</strong></li>
-          <li>Games → <strong>+10 Tokens</strong> every <strong>3 wins</strong> or <strong>100 points</strong> · themes cost <strong>100 Tokens</strong></li>
-          <li>Games stay locked while a <strong>Focus</strong> study timer is running (breaks are fine)</li>
+          <li>Games cost <strong>150 Tokens</strong> to unlock · earn <strong>+10 Tokens</strong> every <strong>3 wins</strong> or <strong>100 points</strong></li>
+          <li>Themes cost <strong>100 Tokens</strong> · games also stay locked while a <strong>Focus</strong> timer is running</li>
           <li>Unlock VIP → enter the moderator code (VIP stays locked until then)</li>
         </ul>
       </section>
@@ -250,42 +250,48 @@
         <ol class="leaderboard-list" id="leaderboard-list" aria-live="polite"></ol>
       </section>
 
-      <section class="panel game-panel" aria-labelledby="game-heading">
+      <section class="panel game-panel is-game-locked" data-game="dash" aria-labelledby="game-heading">
         <div class="panel-head">
           <h2 id="game-heading">Horizon Dash</h2>
           <span class="panel-meta" id="game-meta">Best: 0</span>
         </div>
+        <p class="game-lock-note">Locked · 150 Tokens to unlock</p>
+        <button type="button" class="btn btn-primary game-buy-btn" data-buy-game="dash">Unlock · 150 Tokens</button>
         <p class="game-help">Geometry Dash vibes · Flappy Bird character · Click / Space / Tap to flap</p>
         <div class="game-wrap">
           <canvas id="dash-canvas" width="960" height="360" aria-label="Horizon Dash game"></canvas>
           <div class="game-hud">
             <span id="game-score">Score: 0</span>
-            <button type="button" class="btn btn-primary" id="game-start">Play</button>
+            <button type="button" class="btn btn-primary" id="game-start" disabled>Play</button>
           </div>
         </div>
       </section>
 
-      <section class="panel cowboy-panel" aria-labelledby="cowboy-heading">
+      <section class="panel cowboy-panel is-game-locked" data-game="cowboy" aria-labelledby="cowboy-heading">
         <div class="panel-head">
           <h2 id="cowboy-heading">Cowboy Quick Draw</h2>
           <span class="panel-meta" id="cowboy-meta">Wins: 0</span>
         </div>
+        <p class="game-lock-note">Locked · 150 Tokens to unlock</p>
+        <button type="button" class="btn btn-primary game-buy-btn" data-buy-game="cowboy">Unlock · 150 Tokens</button>
         <p class="game-help">1 · 2 · 3 · <strong>SHOOT!</strong> — the bandit is <strong>extra fast</strong>. Click / tap / Space instantly. Draw early and you lose.</p>
         <p class="cowboy-status" id="cowboy-status">Wait for SHOOT — then click FAST!</p>
         <div class="game-wrap cowboy-wrap">
           <canvas id="cowboy-canvas" width="960" height="360" aria-label="Cowboy Quick Draw game"></canvas>
           <div class="game-hud">
             <span id="cowboy-score">Reaction: —</span>
-            <button type="button" class="btn btn-primary" id="cowboy-start">Duel</button>
+            <button type="button" class="btn btn-primary" id="cowboy-start" disabled>Duel</button>
           </div>
         </div>
       </section>
 
-      <section class="panel bloons-panel" aria-labelledby="bloons-heading">
+      <section class="panel bloons-panel is-game-locked" data-game="bloons" aria-labelledby="bloons-heading">
         <div class="panel-head">
           <h2 id="bloons-heading">Balloon Defense</h2>
           <span class="panel-meta" id="bloons-meta">Best wave: 0</span>
         </div>
+        <p class="game-lock-note">Locked · 150 Tokens to unlock</p>
+        <button type="button" class="btn btn-primary game-buy-btn" data-buy-game="bloons">Unlock · 150 Tokens</button>
         <p class="game-help">Bloons-style tower defense — place <strong>monkey</strong> shooters (Bow, Bomb, Sniper) off the track and pop the waves.</p>
         <p class="bloons-status" id="bloons-status">Press Start Defense, buy monkey towers, then Send Wave</p>
         <div class="bloons-shop" id="bloons-shop" role="toolbar" aria-label="Monkey tower shop">
@@ -299,33 +305,37 @@
             <span id="bloons-hud">♥ 40  ·  $ 250  ·  Wave 0</span>
             <div class="bloons-actions">
               <button type="button" class="btn btn-ghost" id="bloons-wave" disabled>Send Wave</button>
-              <button type="button" class="btn btn-primary" id="bloons-start">Start Defense</button>
+              <button type="button" class="btn btn-primary" id="bloons-start" disabled>Start Defense</button>
             </div>
           </div>
         </div>
       </section>
 
-      <section class="panel cup-panel" aria-labelledby="cup-heading">
+      <section class="panel cup-panel is-game-locked" data-game="cuphead" aria-labelledby="cup-heading">
         <div class="panel-head">
           <h2 id="cup-heading">Ink Boss Blitz</h2>
           <span class="panel-meta" id="cup-meta">Wins: 0</span>
         </div>
+        <p class="game-lock-note">Locked · 150 Tokens to unlock</p>
+        <button type="button" class="btn btn-primary game-buy-btn" data-buy-game="cuphead">Unlock · 150 Tokens</button>
         <p class="game-help">Cuphead-style boss fight — run, jump, duck, shoot, and <strong>parry pink orbs</strong>.</p>
         <p class="cup-status" id="cup-status">A/D move · W/Space jump · S duck · Click/F shoot</p>
         <div class="game-wrap cup-wrap">
           <canvas id="cup-canvas" width="960" height="420" aria-label="Ink Boss Blitz Cuphead-style game"></canvas>
           <div class="game-hud">
             <span id="cup-hud">Ready to rumble</span>
-            <button type="button" class="btn btn-primary" id="cup-start">Fight Boss</button>
+            <button type="button" class="btn btn-primary" id="cup-start" disabled>Fight Boss</button>
           </div>
         </div>
       </section>
 
-      <section class="panel royale-panel" aria-labelledby="royale-heading">
+      <section class="panel royale-panel is-game-locked" data-game="royale" aria-labelledby="royale-heading">
         <div class="panel-head">
           <h2 id="royale-heading">Arena Clash</h2>
           <span class="panel-meta" id="royale-meta">Wins: 0</span>
         </div>
+        <p class="game-lock-note">Locked · 150 Tokens to unlock</p>
+        <button type="button" class="btn btn-primary game-buy-btn" data-buy-game="royale">Unlock · 150 Tokens</button>
         <p class="game-help">Clash Royale vibes — spend <strong>elixir</strong>, deploy cards, destroy the enemy king tower.</p>
         <p class="royale-status" id="royale-status">Pick a card, tap your side of the arena to deploy</p>
         <div class="royale-hand" id="royale-hand" role="toolbar" aria-label="Card hand"></div>
@@ -333,7 +343,7 @@
           <canvas id="royale-canvas" width="960" height="560" aria-label="Arena Clash Royale-style game"></canvas>
           <div class="game-hud">
             <span id="royale-hud">Elixir 5  ·  Battle ready</span>
-            <button type="button" class="btn btn-primary" id="royale-start">Battle</button>
+            <button type="button" class="btn btn-primary" id="royale-start" disabled>Battle</button>
           </div>
         </div>
       </section>

@@ -28,9 +28,17 @@
   const FOCUS_GEMS = 3;
   const DAILY_CHEST_GEMS = 100;
   const THEME_TOKEN_COST = 100;
+  const GAME_UNLOCK_COST = 150;
   const GAME_WIN_GOAL = 3;
   const GAME_POINT_GOAL = 100;
   const GAME_MILESTONE_TOKENS = 10;
+  const PLAYABLE_GAMES = [
+    { id: "dash", name: "Horizon Dash", startIds: ["game-start"] },
+    { id: "cowboy", name: "Cowboy Quick Draw", startIds: ["cowboy-start"] },
+    { id: "bloons", name: "Balloon Defense", startIds: ["bloons-start", "bloons-wave"] },
+    { id: "cuphead", name: "Ink Boss Blitz", startIds: ["cup-start"] },
+    { id: "royale", name: "Arena Clash", startIds: ["royale-start"] },
+  ];
   const VIP_COST = 25000;
   const MOD_VIP_CODE = "ONLY4VIP";
   const CIRCUMFERENCE = 552.92;
@@ -129,6 +137,7 @@
 
   const state = loadState();
   if (!Array.isArray(state.ownedThemes)) state.ownedThemes = [];
+  if (!Array.isArray(state.ownedGames)) state.ownedGames = [];
   let currentThemeId = localStorage.getItem(THEME_STORAGE_KEY) || "";
   if (currentThemeId && !THEMES.some((t) => t.id === currentThemeId)) currentThemeId = "";
   // Lock all themes behind Tokens — start dark until a theme is bought
@@ -142,6 +151,11 @@
     } catch {
       /* ignore */
     }
+  }
+  // Lock all games behind Tokens until purchased
+  if (localStorage.getItem("arcane-horizon-game-shop-v1") !== "1") {
+    state.ownedGames = [];
+    localStorage.setItem("arcane-horizon-game-shop-v1", "1");
   }
   if (currentThemeId && !state.ownedThemes.includes(currentThemeId)) {
     currentThemeId = "";
@@ -195,6 +209,7 @@
       lastChestDate: null,
       chestClaims: 0,
       ownedThemes: [],
+      ownedGames: [],
       gameWinProgress: 0,
       gamePointProgress: 0,
       history: [],
@@ -232,6 +247,9 @@
           chestClaims: Math.max(0, Number(parsed.chestClaims) || 0),
           ownedThemes: Array.isArray(parsed.ownedThemes)
             ? parsed.ownedThemes.filter((id) => typeof id === "string")
+            : [],
+          ownedGames: Array.isArray(parsed.ownedGames)
+            ? parsed.ownedGames.filter((id) => typeof id === "string")
             : [],
           gameWinProgress: Math.max(0, Number(parsed.gameWinProgress) || 0),
           gamePointProgress: Math.max(0, Number(parsed.gamePointProgress) || 0),
@@ -277,6 +295,7 @@
         lastChestDate: state.lastChestDate || null,
         chestClaims: state.chestClaims || 0,
         ownedThemes: Array.isArray(state.ownedThemes) ? state.ownedThemes : [],
+        ownedGames: Array.isArray(state.ownedGames) ? state.ownedGames : [],
         gameWinProgress: state.gameWinProgress || 0,
         gamePointProgress: state.gamePointProgress || 0,
         history: Array.isArray(state.history) ? state.history.slice(0, HISTORY_LIMIT) : [],
@@ -1229,39 +1248,101 @@
     return running && state.timer.mode === "focus";
   }
 
-  function syncStudyGameLock() {
-    const locked = isStudyTimeActive();
-    window.__arcaneStudyLock = locked;
-    document.body.classList.toggle("is-study-lock", locked);
-
-    [
-      "game-start",
-      "cowboy-start",
-      "bloons-start",
-      "bloons-wave",
-      "cup-start",
-      "royale-start",
-    ].forEach((id) => {
-      const el = document.getElementById(id);
-      if (!el) return;
-      el.disabled = locked;
-      if (locked) {
-        el.dataset.studyLock = "1";
-        el.title = "Locked during study time";
-      } else if (el.dataset.studyLock === "1") {
-        delete el.dataset.studyLock;
-        el.removeAttribute("title");
-      }
-    });
-
-    window.dispatchEvent(new CustomEvent("arcane-study-lock", { detail: { locked } }));
+  function ownsGame(gameId) {
+    if (!Array.isArray(state.ownedGames)) state.ownedGames = [];
+    return !!gameId && state.ownedGames.includes(gameId);
   }
 
-  window.arcaneGuardStudy = function arcaneGuardStudy() {
-    if (!isStudyTimeActive()) return false;
-    showToast("Games locked during study time — finish your focus session first");
-    playSfx("click");
-    return true;
+  function getPlayableGame(gameId) {
+    return PLAYABLE_GAMES.find((g) => g.id === gameId) || null;
+  }
+
+  function tryBuyGame(gameId) {
+    const game = getPlayableGame(gameId);
+    if (!game) return { ok: false, reason: "Unknown game" };
+    if (ownsGame(game.id)) return { ok: true, bought: false };
+    if ((state.tokens || 0) < GAME_UNLOCK_COST) {
+      return { ok: false, reason: `Need ${GAME_UNLOCK_COST} Tokens to unlock ${game.name}` };
+    }
+    state.tokens -= GAME_UNLOCK_COST;
+    state.ownedGames.push(game.id);
+    addHistory({
+      type: "game-unlock",
+      text: `Unlocked game: ${game.name}`,
+      tokens: -GAME_UNLOCK_COST,
+    });
+    saveState();
+    renderWallet();
+    renderHistory();
+    renderLeaderboard();
+    renderGameLocks();
+    return { ok: true, bought: true, amount: GAME_UNLOCK_COST, name: game.name };
+  }
+
+  function renderGameLocks() {
+    PLAYABLE_GAMES.forEach((game) => {
+      const panel = document.querySelector(`[data-game="${game.id}"]`);
+      if (!panel) return;
+      const owned = ownsGame(game.id);
+      panel.classList.toggle("is-game-locked", !owned);
+      panel.classList.toggle("is-game-owned", owned);
+
+      const buyBtn = panel.querySelector("[data-buy-game]");
+      if (buyBtn) {
+        buyBtn.hidden = owned;
+        buyBtn.disabled = owned;
+        buyBtn.textContent = `Unlock · ${GAME_UNLOCK_COST} Tokens`;
+      }
+      const lockNote = panel.querySelector(".game-lock-note");
+      if (lockNote) {
+        lockNote.hidden = owned;
+        lockNote.textContent = `Locked · ${GAME_UNLOCK_COST} Tokens to unlock`;
+      }
+    });
+    syncStudyGameLock();
+  }
+
+  function syncStudyGameLock() {
+    const studyLocked = isStudyTimeActive();
+    window.__arcaneStudyLock = studyLocked;
+    document.body.classList.toggle("is-study-lock", studyLocked);
+
+    PLAYABLE_GAMES.forEach((game) => {
+      const owned = ownsGame(game.id);
+      const locked = studyLocked || !owned;
+      game.startIds.forEach((id) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.disabled = locked || (id === "bloons-wave" && !owned);
+        if (!owned) {
+          el.title = `Unlock ${game.name} for ${GAME_UNLOCK_COST} Tokens`;
+        } else if (studyLocked) {
+          el.title = "Locked during study time";
+        } else if (el.dataset.studyLock === "1" || el.title.includes("Locked") || el.title.includes("Unlock")) {
+          el.removeAttribute("title");
+        }
+      });
+    });
+
+    window.dispatchEvent(new CustomEvent("arcane-study-lock", { detail: { locked: studyLocked } }));
+  }
+
+  window.arcaneGuardStudy = function arcaneGuardStudy(gameId) {
+    if (isStudyTimeActive()) {
+      showToast("Games locked during study time — finish your focus session first");
+      playSfx("click");
+      return true;
+    }
+    if (gameId && !ownsGame(gameId)) {
+      showToast(`Unlock this game for ${GAME_UNLOCK_COST} Tokens`);
+      playSfx("click");
+      return true;
+    }
+    return false;
+  };
+
+  window.arcaneOwnsGame = function arcaneOwnsGame(gameId) {
+    return ownsGame(gameId);
   };
 
   function stopTimer() {
@@ -1403,6 +1484,23 @@
   els.dailyChest?.addEventListener("click", () => {
     ensureAudio();
     claimDailyChest();
+  });
+
+  document.querySelectorAll("[data-buy-game]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      ensureAudio();
+      const gameId = btn.getAttribute("data-buy-game");
+      const result = tryBuyGame(gameId);
+      if (!result.ok) {
+        showToast(result.reason);
+        playSfx("click");
+        return;
+      }
+      if (result.bought) {
+        playSfx("levelup");
+        showToast(`Unlocked ${result.name} for ${result.amount} Tokens`);
+      }
+    });
   });
 
   els.musicToggle.addEventListener("click", () => {
@@ -1555,6 +1653,7 @@
     renderHistory();
     renderLeaderboard();
     renderThemeGrid();
+    renderGameLocks();
 
     const streakText = streakInfo.grew ? ` · ${state.streak}-day streak` : "";
     if (gained > 0) {
@@ -1614,5 +1713,5 @@
   renderQuests();
   renderXp();
   renderTimer();
-  syncStudyGameLock();
+  renderGameLocks();
 })();

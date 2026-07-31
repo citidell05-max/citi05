@@ -84,7 +84,7 @@
     }
 
     function startRun() {
-      if (window.arcaneGuardStudy?.()) return;
+      if (window.arcaneGuardStudy?.("dash")) return;
       resetRun();
       state.mode = "playing";
       startBtn.textContent = "Flap!";
@@ -99,8 +99,8 @@
     }
 
     function flap() {
-      if (window.__arcaneStudyLock) {
-        window.arcaneGuardStudy?.();
+      if (window.__arcaneStudyLock || !window.arcaneOwnsGame?.("dash")) {
+        window.arcaneGuardStudy?.("dash");
         return;
       }
       if (state.mode === "idle" || state.mode === "dead") {
@@ -431,7 +431,7 @@
 
     window.addEventListener("arcane-study-lock", (e) => {
       if (e.detail?.locked) forceStudyStop();
-      else startBtn.disabled = false;
+      else startBtn.disabled = !window.arcaneOwnsGame?.("dash");
     });
 
     startBtn.addEventListener("click", (e) => {

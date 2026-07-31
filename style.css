@@ -1224,21 +1224,57 @@ body[data-theme="vipcrystal"] .theme-orb-2 {
 .cup-panel { animation-delay: 0.4s; }
 .royale-panel { animation-delay: 0.46s; }
 
-body.is-study-lock .game-panel,
-body.is-study-lock .cowboy-panel,
-body.is-study-lock .bloons-panel,
-body.is-study-lock .cup-panel,
-body.is-study-lock .royale-panel {
+.game-lock-note {
+  margin: 0 0 0.65rem;
+  color: #ffb0e0;
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.game-buy-btn {
+  margin: 0 0 0.85rem;
+}
+
+.panel.is-game-locked .game-wrap,
+.panel.is-game-locked .bloons-shop,
+.panel.is-game-locked .royale-hand,
+.panel.is-game-locked .game-help,
+.panel.is-game-locked .cowboy-status,
+.panel.is-game-locked .bloons-status,
+.panel.is-game-locked .cup-status,
+.panel.is-game-locked .royale-status {
+  opacity: 0.35;
+  filter: grayscale(0.85) brightness(0.55);
+  pointer-events: none;
+  user-select: none;
+}
+
+.panel.is-game-locked {
+  border-color: rgba(255, 113, 206, 0.28);
+}
+
+.panel.is-game-owned .game-lock-note,
+.panel.is-game-owned .game-buy-btn {
+  display: none;
+}
+
+body.is-study-lock .game-panel.is-game-owned,
+body.is-study-lock .cowboy-panel.is-game-owned,
+body.is-study-lock .bloons-panel.is-game-owned,
+body.is-study-lock .cup-panel.is-game-owned,
+body.is-study-lock .royale-panel.is-game-owned {
   position: relative;
   opacity: 0.72;
   filter: saturate(0.7);
 }
 
-body.is-study-lock .game-panel::after,
-body.is-study-lock .cowboy-panel::after,
-body.is-study-lock .bloons-panel::after,
-body.is-study-lock .cup-panel::after,
-body.is-study-lock .royale-panel::after {
+body.is-study-lock .game-panel.is-game-owned::after,
+body.is-study-lock .cowboy-panel.is-game-owned::after,
+body.is-study-lock .bloons-panel.is-game-owned::after,
+body.is-study-lock .cup-panel.is-game-owned::after,
+body.is-study-lock .royale-panel.is-game-owned::after {
   content: "Study time — games locked";
   position: absolute;
   top: 0.85rem;

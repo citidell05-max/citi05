@@ -120,7 +120,7 @@
     }
 
     function reset() {
-      if (window.arcaneGuardStudy?.()) return;
+      if (window.arcaneGuardStudy?.("royale")) return;
       state.mode = "playing";
       state.elixir = 5;
       state.enemyElixir = 5;
@@ -542,7 +542,7 @@
 
     window.addEventListener("arcane-study-lock", (e) => {
       if (e.detail?.locked) forceStudyStop();
-      else startBtn.disabled = false;
+      else startBtn.disabled = !window.arcaneOwnsGame?.("royale");
     });
 
     startBtn.addEventListener("click", () => {
@@ -555,8 +555,8 @@
 
     canvas.addEventListener("pointerdown", (e) => {
       e.preventDefault();
-      if (window.__arcaneStudyLock) {
-        window.arcaneGuardStudy?.();
+      if (window.__arcaneStudyLock || !window.arcaneOwnsGame?.("royale")) {
+        window.arcaneGuardStudy?.("royale");
         return;
       }
       if (state.mode === "idle" || state.mode === "win" || state.mode === "lose") {

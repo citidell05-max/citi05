@@ -63,7 +63,7 @@
     }
 
     function reset() {
-      if (window.arcaneGuardStudy?.()) return;
+      if (window.arcaneGuardStudy?.("cuphead")) return;
       state.mode = "playing";
       setBusy(true);
       state.t = 0;
@@ -656,7 +656,7 @@
 
     window.addEventListener("arcane-study-lock", (e) => {
       if (e.detail?.locked) forceStudyStop();
-      else startBtn.disabled = false;
+      else startBtn.disabled = !window.arcaneOwnsGame?.("cuphead");
     });
 
     startBtn.addEventListener("click", () => reset());

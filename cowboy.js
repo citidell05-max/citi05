@@ -79,7 +79,7 @@
     }
 
     function startDuel() {
-      if (window.arcaneGuardStudy?.()) return;
+      if (window.arcaneGuardStudy?.("cowboy")) return;
       state.mode = "countdown";
       state.countStep = 0;
       state.countAt = performance.now();
@@ -452,7 +452,7 @@
     window.addEventListener("arcane-study-lock", (e) => {
       if (e.detail?.locked) forceStudyStop();
       else if (state.mode === "idle" || state.mode === "win" || state.mode === "lose" || state.mode === "early") {
-        startBtn.disabled = false;
+        startBtn.disabled = !window.arcaneOwnsGame?.("cowboy");
       }
     });
 
@@ -466,8 +466,8 @@
 
     canvas.addEventListener("pointerdown", (e) => {
       e.preventDefault();
-      if (window.__arcaneStudyLock) {
-        window.arcaneGuardStudy?.();
+      if (window.__arcaneStudyLock || !window.arcaneOwnsGame?.("cowboy")) {
+        window.arcaneGuardStudy?.("cowboy");
         return;
       }
       if (state.mode === "idle") {
@@ -479,7 +479,7 @@
 
     window.addEventListener("keydown", (e) => {
       if (e.code !== "Space" && e.code !== "Enter") return;
-      if (window.__arcaneStudyLock) return;
+      if (window.__arcaneStudyLock || !window.arcaneOwnsGame?.("cowboy")) return;
       const tag = (document.activeElement && document.activeElement.tagName) || "";
       if (tag === "INPUT" || tag === "TEXTAREA") return;
       if (tag === "BUTTON" && document.activeElement.id !== "cowboy-start") return;
