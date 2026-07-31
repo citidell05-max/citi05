@@ -1598,6 +1598,7 @@
   });
 
   const unlockAudio = () => {
+    if (document.body.classList.contains("splash-active")) return;
     ensureAudio();
     if (musicEnabled) syncBackgroundMusic(true);
   };
