@@ -8,12 +8,32 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;800&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
-  <link rel="preload" as="image" href="assets/themes/11-sunrise.jpg?v=5" />
+  <link rel="preload" as="image" href="assets/arcane-horizon-splash.jpg?v=1" />
   <style>
     :root { --bg-image: none; }
   </style>
 </head>
-<body data-theme="dark" class="theme-locked-dark">
+<body data-theme="dark" class="theme-locked-dark splash-active">
+  <div class="splash-screen" id="splash-screen" role="dialog" aria-modal="true" aria-labelledby="splash-title">
+    <div class="splash-art" aria-hidden="true">
+      <img src="assets/arcane-horizon-splash.jpg?v=1" alt="" />
+    </div>
+    <div class="splash-veil" aria-hidden="true"></div>
+    <div class="splash-content">
+      <div class="splash-sr-only">
+        <h1 id="splash-title">Arcane Horizon</h1>
+        <p>Creator: Eliano Kirindongo. Developer: Yacoub Dimaano. Helper: Kyan Giterson.</p>
+      </div>
+      <div class="splash-loader" aria-hidden="true">
+        <div class="splash-loader-track">
+          <div class="splash-loader-fill" id="splash-loader-fill"></div>
+        </div>
+        <p class="splash-loader-text" id="splash-loader-text">Loading…</p>
+      </div>
+      <button type="button" class="splash-enter" id="splash-enter" hidden>Enter Arcane Horizon</button>
+    </div>
+  </div>
+
   <div class="bg-scene" aria-hidden="true" style="background-image:none;background-color:#07040f;background-size:cover;background-position:center;">
     <img class="bg-photo" id="bg-photo" alt="" hidden />
   </div>

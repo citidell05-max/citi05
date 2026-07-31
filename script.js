@@ -1706,12 +1706,85 @@
   renderStreak();
   renderHistory();
   renderLeaderboard();
-  // Keep trying to start music on first interactions
-  if (musicEnabled) {
-    showToast("Tap Music: Start if you don't hear the song");
-  }
   renderQuests();
   renderXp();
   renderTimer();
   renderGameLocks();
+
+  function runSplashScreen() {
+    const splash = document.getElementById("splash-screen");
+    const fill = document.getElementById("splash-loader-fill");
+    const text = document.getElementById("splash-loader-text");
+    const enterBtn = document.getElementById("splash-enter");
+    if (!splash) {
+      document.body.classList.remove("splash-active");
+      if (musicEnabled) showToast("Tap Music: Start if you don't hear the song");
+      return;
+    }
+
+    let ready = false;
+    let entered = false;
+
+    const steps = [
+      { at: 12, label: "Summoning stars…" },
+      { at: 28, label: "Charging arcane cores…" },
+      { at: 46, label: "Loading quests & themes…" },
+      { at: 64, label: "Calibrating study timer…" },
+      { at: 82, label: "Warming up games…" },
+      { at: 100, label: "Ready" },
+    ];
+
+    const started = performance.now();
+    const duration = 3200;
+
+    function finishSplash() {
+      if (entered || !ready) return;
+      entered = true;
+      ensureAudio();
+      if (musicEnabled) syncBackgroundMusic(true);
+      splash.classList.add("is-done");
+      document.body.classList.remove("splash-active");
+      window.setTimeout(() => {
+        splash.setAttribute("hidden", "");
+        splash.remove();
+      }, 750);
+    }
+
+    function tickSplash(now) {
+      const t = Math.min(1, (now - started) / duration);
+      const progress = Math.round(t * 100);
+      if (fill) fill.style.width = `${progress}%`;
+      const step = [...steps].reverse().find((s) => progress >= s.at) || steps[0];
+      if (text) text.textContent = step.label;
+      if (t < 1) {
+        requestAnimationFrame(tickSplash);
+        return;
+      }
+      ready = true;
+      if (text) text.textContent = "Tap to enter";
+      if (enterBtn) {
+        enterBtn.hidden = false;
+        enterBtn.focus();
+      }
+    }
+
+    enterBtn?.addEventListener("click", (e) => {
+      e.stopPropagation();
+      finishSplash();
+    });
+    splash.addEventListener("click", () => {
+      if (ready) finishSplash();
+    });
+    window.addEventListener("keydown", (e) => {
+      if (!ready || entered) return;
+      if (e.code === "Enter" || e.code === "Space") {
+        e.preventDefault();
+        finishSplash();
+      }
+    });
+
+    requestAnimationFrame(tickSplash);
+  }
+
+  runSplashScreen();
 })();
