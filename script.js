@@ -118,6 +118,9 @@
     dailyChest: document.getElementById("daily-chest"),
     dailyChestLabel: document.getElementById("daily-chest-label"),
     dailyChestMeta: document.getElementById("daily-chest-meta"),
+    themeChest: document.getElementById("theme-chest"),
+    themeChestLabel: document.getElementById("theme-chest-label"),
+    themeChestMeta: document.getElementById("theme-chest-meta"),
     leaderboardList: document.getElementById("leaderboard-list"),
     leaderboardMeta: document.getElementById("leaderboard-meta"),
   };
@@ -208,6 +211,7 @@
       lastActiveDate: null,
       lastChestDate: null,
       chestClaims: 0,
+      themeChestClaimed: false,
       ownedThemes: [],
       ownedGames: [],
       gameWinProgress: 0,
@@ -245,6 +249,7 @@
           lastActiveDate: typeof parsed.lastActiveDate === "string" ? parsed.lastActiveDate : null,
           lastChestDate: typeof parsed.lastChestDate === "string" ? parsed.lastChestDate : null,
           chestClaims: Math.max(0, Number(parsed.chestClaims) || 0),
+          themeChestClaimed: !!parsed.themeChestClaimed,
           ownedThemes: Array.isArray(parsed.ownedThemes)
             ? parsed.ownedThemes.filter((id) => typeof id === "string")
             : [],
@@ -294,6 +299,7 @@
         lastActiveDate: state.lastActiveDate || null,
         lastChestDate: state.lastChestDate || null,
         chestClaims: state.chestClaims || 0,
+        themeChestClaimed: !!state.themeChestClaimed,
         ownedThemes: Array.isArray(state.ownedThemes) ? state.ownedThemes : [],
         ownedGames: Array.isArray(state.ownedGames) ? state.ownedGames : [],
         gameWinProgress: state.gameWinProgress || 0,
@@ -637,6 +643,70 @@
         ? `Welcome! Chest opened — +${DAILY_CHEST_GEMS} Gems`
         : `Daily chest opened — +${DAILY_CHEST_GEMS} Gems`
     );
+  }
+
+  function freeThemePool() {
+    return THEMES.filter((theme) => !theme.vip && !ownsTheme(theme.id));
+  }
+
+  function renderThemeChest() {
+    if (!els.themeChest) return;
+    const claimed = !!state.themeChestClaimed;
+    const pool = freeThemePool();
+    const ready = !claimed && pool.length > 0;
+    els.themeChest.classList.toggle("is-ready", ready);
+    els.themeChest.classList.toggle("is-claimed", !ready);
+    els.themeChest.disabled = !ready;
+    if (els.themeChestLabel) {
+      els.themeChestLabel.textContent = claimed ? "Theme Claimed" : "Theme Chest";
+    }
+    if (els.themeChestMeta) {
+      els.themeChestMeta.textContent = claimed
+        ? "Already opened"
+        : pool.length
+          ? "+1 Free Theme"
+          : "All free themes owned";
+    }
+    els.themeChest.title = ready
+      ? "Open for 1 free theme"
+      : claimed
+        ? "Theme chest already opened"
+        : "You already own every free theme";
+    els.themeChest.setAttribute("aria-disabled", String(!ready));
+  }
+
+  function claimThemeChest() {
+    if (state.themeChestClaimed) {
+      showToast("Theme chest already opened");
+      playSfx("click");
+      return;
+    }
+    const pool = freeThemePool();
+    if (!pool.length) {
+      state.themeChestClaimed = true;
+      saveState();
+      renderThemeChest();
+      showToast("You already own every free theme");
+      playSfx("click");
+      return;
+    }
+    const theme = pool[Math.floor(Math.random() * pool.length)];
+    if (!Array.isArray(state.ownedThemes)) state.ownedThemes = [];
+    state.ownedThemes.push(theme.id);
+    state.themeChestClaimed = true;
+    addHistory({
+      type: "chest",
+      text: `Theme chest — unlocked ${theme.name}`,
+    });
+    saveState();
+    renderWallet();
+    renderThemeChest();
+    renderThemeGrid();
+    renderHistory();
+    renderLeaderboard();
+    applyTheme(theme.id, { persist: true, toast: false });
+    playSfx("levelup");
+    showToast(`Theme chest opened — free theme: ${theme.name}`);
   }
 
   function hashSeed(str) {
@@ -1484,6 +1554,11 @@
   els.dailyChest?.addEventListener("click", () => {
     ensureAudio();
     claimDailyChest();
+  });
+
+  els.themeChest?.addEventListener("click", () => {
+    ensureAudio();
+    claimThemeChest();
   });
 
   document.querySelectorAll("[data-buy-game]").forEach((btn) => {

@@ -823,6 +823,22 @@ body[data-theme="vipcrystal"] .theme-orb-2 {
   font-weight: 600;
 }
 
+.theme-chest {
+  border-color: rgba(154, 120, 255, 0.55);
+  background:
+    linear-gradient(135deg, rgba(122, 240, 255, 0.16), rgba(155, 109, 255, 0.22)),
+    rgba(12, 6, 20, 0.78);
+  color: #e6ddff;
+}
+
+.theme-chest:hover:not(:disabled) {
+  border-color: rgba(180, 220, 255, 0.85);
+}
+
+.theme-chest .daily-chest-copy span {
+  color: #7af0ff;
+}
+
 @keyframes chest-bounce {
   0%, 100% { transform: translateY(0) rotate(-2deg); }
   50% { transform: translateY(-4px) rotate(2deg); }
