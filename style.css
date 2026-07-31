@@ -201,6 +201,126 @@ body {
   background: rgba(255, 113, 206, 0.14);
 }
 
+.streak-chip {
+  border-color: rgba(255, 180, 70, 0.45);
+}
+
+.streak-chip strong {
+  color: #ffc857;
+}
+
+.streak-chip .wallet-tag {
+  color: #ffc857;
+  background: rgba(255, 180, 70, 0.14);
+}
+
+.streak-block {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.85rem;
+}
+
+.streak-badge {
+  flex: 0 0 auto;
+  width: 92px;
+  height: 92px;
+  border-radius: 18px;
+  display: grid;
+  place-content: center;
+  text-align: center;
+  border: 1px solid rgba(255, 180, 70, 0.45);
+  background: linear-gradient(160deg, rgba(255, 180, 70, 0.22), rgba(255, 80, 120, 0.12));
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+.streak-num {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 800;
+  color: #ffc857;
+  line-height: 1;
+}
+
+.streak-caption {
+  font-family: var(--font-display);
+  font-size: 0.55rem;
+  letter-spacing: 0.1em;
+  color: #ffe0a8;
+  margin-top: 0.2rem;
+}
+
+.streak-copy {
+  min-width: 0;
+}
+
+.streak-title {
+  margin: 0 0 0.25rem;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #ffe6a8;
+}
+
+.streak-hint {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.65);
+}
+
+.history-tools {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 0.55rem;
+}
+
+.history-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.45rem;
+  max-height: 260px;
+  overflow: auto;
+}
+
+.history-item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.35rem 0.75rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(8, 4, 18, 0.28);
+}
+
+.history-item-main {
+  margin: 0;
+  color: var(--text);
+  font-size: 0.98rem;
+}
+
+.history-item-meta {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+}
+
+.history-item-when {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  align-self: center;
+  font-family: var(--font-display);
+  font-size: 0.58rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #ffc857;
+  text-align: right;
+  white-space: nowrap;
+}
+
 .header-actions {
   display: flex;
   flex-wrap: wrap;
@@ -512,6 +632,7 @@ body {
   grid-template-areas:
     "quest timer"
     "xp xp"
+    "history history"
     "game game"
     "cowboy cowboy"
     "bloons bloons"
@@ -523,6 +644,7 @@ body {
 .quest-panel { grid-area: quest; }
 .timer-panel { grid-area: timer; }
 .xp-panel { grid-area: xp; }
+.history-panel { grid-area: history; }
 .game-panel { grid-area: game; }
 .cowboy-panel { grid-area: cowboy; }
 .bloons-panel { grid-area: bloons; }
@@ -543,6 +665,7 @@ body {
 .quest-panel,
 .timer-panel,
 .xp-panel,
+.history-panel,
 .game-panel,
 .cowboy-panel,
 .bloons-panel,
@@ -553,6 +676,7 @@ body {
 
 .timer-panel { animation-delay: 0.08s; }
 .xp-panel { animation-delay: 0.16s; }
+.history-panel { animation-delay: 0.18s; }
 .game-panel { animation-delay: 0.22s; }
 .cowboy-panel { animation-delay: 0.28s; }
 .bloons-panel { animation-delay: 0.34s; }
@@ -1008,6 +1132,7 @@ body {
       "timer"
       "quest"
       "xp"
+      "history"
       "game"
       "cowboy"
       "bloons"

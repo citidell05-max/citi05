@@ -92,6 +92,13 @@
     modCode: document.getElementById("mod-code"),
     tokenCount: document.getElementById("token-count"),
     gemCount: document.getElementById("gem-count"),
+    streakCount: document.getElementById("streak-count"),
+    streakDisplay: document.getElementById("streak-display"),
+    streakTitle: document.getElementById("streak-title"),
+    historyMeta: document.getElementById("history-meta"),
+    historyList: document.getElementById("history-list"),
+    historyEmpty: document.getElementById("history-empty"),
+    historyClear: document.getElementById("history-clear"),
   };
 
   const state = loadState();
@@ -130,6 +137,8 @@
     return 100 + (level - 1) * 50;
   }
 
+  const HISTORY_LIMIT = 60;
+
   function defaultState() {
     return {
       quests: [],
@@ -138,6 +147,10 @@
       sessionXp: 0,
       tokens: 0,
       gems: 0,
+      streak: 0,
+      bestStreak: 0,
+      lastActiveDate: null,
+      history: [],
       vipEnabled: false,
       vipUnlocked: false,
       vipUnlockSource: null,
@@ -165,6 +178,10 @@
           sessionXp: Number(parsed.sessionXp) || 0,
           tokens: Number(parsed.tokens) || 0,
           gems: Number(parsed.gems) || 0,
+          streak: Math.max(0, Number(parsed.streak) || 0),
+          bestStreak: Math.max(0, Number(parsed.bestStreak) || 0),
+          lastActiveDate: typeof parsed.lastActiveDate === "string" ? parsed.lastActiveDate : null,
+          history: Array.isArray(parsed.history) ? parsed.history.slice(0, HISTORY_LIMIT) : [],
           vipEnabled: !!parsed.vipEnabled && parsed.vipUnlockSource === "moderator",
           vipUnlocked: !!parsed.vipUnlocked && parsed.vipUnlockSource === "moderator",
           vipUnlockSource: parsed.vipUnlockSource === "moderator" ? "moderator" : null,
@@ -200,6 +217,10 @@
         sessionXp,
         tokens: state.tokens,
         gems: state.gems,
+        streak: state.streak || 0,
+        bestStreak: state.bestStreak || 0,
+        lastActiveDate: state.lastActiveDate || null,
+        history: Array.isArray(state.history) ? state.history.slice(0, HISTORY_LIMIT) : [],
         vipEnabled,
         vipUnlocked,
         vipUnlockSource,
@@ -637,6 +658,110 @@
     els.modCode.value = "";
   }
 
+  function todayKey(date = new Date()) {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    const d = String(date.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  }
+
+  function dayOffsetKey(days) {
+    const dt = new Date();
+    dt.setHours(12, 0, 0, 0);
+    dt.setDate(dt.getDate() + days);
+    return todayKey(dt);
+  }
+
+  function touchStreak() {
+    const today = todayKey();
+    const yesterday = dayOffsetKey(-1);
+    if (state.lastActiveDate === today) {
+      return { grew: false, streak: state.streak || 0 };
+    }
+    if (state.lastActiveDate === yesterday) {
+      state.streak = (state.streak || 0) + 1;
+    } else {
+      state.streak = 1;
+    }
+    state.lastActiveDate = today;
+    state.bestStreak = Math.max(state.bestStreak || 0, state.streak);
+    return { grew: true, streak: state.streak };
+  }
+
+  function addHistory({ type, text, xp = 0, tokens = 0, gems = 0 }) {
+    if (!Array.isArray(state.history)) state.history = [];
+    state.history.unshift({
+      id: uid(),
+      type: type || "activity",
+      text,
+      xp,
+      tokens,
+      gems,
+      at: Date.now(),
+    });
+    if (state.history.length > HISTORY_LIMIT) {
+      state.history.length = HISTORY_LIMIT;
+    }
+  }
+
+  function formatHistoryWhen(ts) {
+    try {
+      return new Date(ts).toLocaleString(undefined, {
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+      });
+    } catch {
+      return "";
+    }
+  }
+
+  function renderStreak() {
+    // Drop expired streak display if a day was missed
+    const today = todayKey();
+    const yesterday = dayOffsetKey(-1);
+    if (state.lastActiveDate && state.lastActiveDate !== today && state.lastActiveDate !== yesterday) {
+      state.streak = 0;
+    }
+    const streak = state.streak || 0;
+    const best = state.bestStreak || 0;
+    if (els.streakCount) els.streakCount.textContent = String(streak);
+    if (els.streakDisplay) els.streakDisplay.textContent = String(streak);
+    if (els.historyMeta) els.historyMeta.textContent = `Best streak: ${best}`;
+    if (els.streakTitle) {
+      if (!streak) els.streakTitle.textContent = "Start your streak today";
+      else if (streak === 1) els.streakTitle.textContent = "Streak started — come back tomorrow";
+      else els.streakTitle.textContent = `${streak}-day streak on fire`;
+    }
+  }
+
+  function renderHistory() {
+    if (!els.historyList || !els.historyEmpty) return;
+    const items = Array.isArray(state.history) ? state.history : [];
+    els.historyList.innerHTML = "";
+    els.historyEmpty.hidden = items.length > 0;
+    items.forEach((entry) => {
+      const li = document.createElement("li");
+      li.className = "history-item";
+      const main = document.createElement("p");
+      main.className = "history-item-main";
+      main.textContent = entry.text;
+      const meta = document.createElement("p");
+      meta.className = "history-item-meta";
+      const bits = [];
+      if (entry.xp) bits.push(`+${entry.xp} XP`);
+      if (entry.tokens) bits.push(`+${entry.tokens} Tokens`);
+      if (entry.gems) bits.push(`+${entry.gems} Gems`);
+      meta.textContent = bits.join(" · ") || entry.type || "Activity";
+      const when = document.createElement("span");
+      when.className = "history-item-when";
+      when.textContent = formatHistoryWhen(entry.at);
+      li.append(main, meta, when);
+      els.historyList.appendChild(li);
+    });
+  }
+
   function gainRewards({ xp, tokens, gems = 0, reason }) {
     state.xp += xp;
     sessionXp += xp;
@@ -647,6 +772,15 @@
       state.gems = (state.gems || 0) + gemGain;
     }
 
+    const streakInfo = touchStreak();
+    addHistory({
+      type: reason === "Focus session complete" ? "focus" : "quest",
+      text: reason,
+      xp,
+      tokens,
+      gems: gemGain,
+    });
+
     let leveled = false;
     while (state.xp >= xpForLevel(state.level)) {
       state.xp -= xpForLevel(state.level);
@@ -654,23 +788,36 @@
       leveled = true;
     }
 
+    if (leveled) {
+      addHistory({
+        type: "level",
+        text: `Level up — now LVL ${state.level}`,
+        xp: 0,
+        tokens: 0,
+      });
+    }
+
     saveState();
     renderXp();
     renderWallet();
     renderVipToggle();
+    renderStreak();
+    renderHistory();
 
     if (leveled) {
       els.levelBadge.classList.remove("is-levelup");
       void els.levelBadge.offsetWidth;
       els.levelBadge.classList.add("is-levelup");
       playSfx("levelup");
-      showToast(`Level up! You are now LVL ${state.level}`);
+      const streakNote = streakInfo.grew ? ` · ${state.streak}-day streak` : "";
+      showToast(`Level up! You are now LVL ${state.level}${streakNote}`);
       return;
     }
 
     playSfx(reason === "Focus session complete" ? "timer" : "complete");
     const gemText = gemGain > 0 ? ` · +${gemGain} Gems` : "";
-    showToast(`+${xp} XP · +${tokens} Tokens${gemText} — ${reason}`);
+    const streakText = streakInfo.grew ? ` · ${state.streak}-day streak` : "";
+    showToast(`+${xp} XP · +${tokens} Tokens${gemText}${streakText} — ${reason}`);
   }
 
   function gainXp(amount, reason) {
@@ -943,9 +1090,6 @@
     const tokens = Number(event.detail?.tokens) || 0;
     if (tokens <= 0) return;
     state.tokens = (state.tokens || 0) + tokens;
-    saveState();
-    renderWallet();
-    renderVipToggle();
     const game = event.detail?.game;
     const labels = {
       cowboy: "Quick Draw",
@@ -954,7 +1098,27 @@
       royale: "Arena Clash",
     };
     const label = labels[game] || "Dash";
-    showToast(`${label} reward +${tokens} Tokens`);
+    const streakInfo = touchStreak();
+    addHistory({
+      type: "game",
+      text: `${label} reward`,
+      tokens,
+    });
+    saveState();
+    renderWallet();
+    renderVipToggle();
+    renderStreak();
+    renderHistory();
+    const streakText = streakInfo.grew ? ` · ${state.streak}-day streak` : "";
+    showToast(`${label} reward +${tokens} Tokens${streakText}`);
+  });
+
+  els.historyClear?.addEventListener("click", () => {
+    state.history = [];
+    saveState();
+    renderHistory();
+    playSfx("click");
+    showToast("History cleared — streak kept");
   });
 
   window.addEventListener("beforeunload", saveState);
@@ -971,6 +1135,8 @@
   renderMusicToggle();
   renderVipToggle();
   renderWallet();
+  renderStreak();
+  renderHistory();
   // Keep trying to start music on first interactions
   if (musicEnabled) {
     showToast("Tap Music: Start if you don't hear the song");
