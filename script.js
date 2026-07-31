@@ -4,16 +4,16 @@
   const THEME_STORAGE_KEY = "arcane-horizon-theme-id";
   const BG_STORAGE_KEY = "arcane-horizon-v6-bg";
   const THEMES = [
-    { id: "sunset", name: "Sunset Palm", src: "assets/themes/01-sunset.jpg?v=1", accent: "#ff8c42", accent2: "#ff4fd8", overlay: "rgba(40, 10, 30, 0.18)" },
-    { id: "cyberpunk", name: "Cyber Purple", src: "assets/themes/02-cyberpunk.jpg?v=1", accent: "#7af0ff", accent2: "#ff71ce", overlay: "rgba(12, 4, 28, 0.22)" },
-    { id: "forest", name: "Forest Mist", src: "assets/themes/03-forest.jpg?v=1", accent: "#8cff9a", accent2: "#6ad1ff", overlay: "rgba(8, 20, 12, 0.2)" },
-    { id: "ocean", name: "Deep Ocean", src: "assets/themes/04-ocean.jpg?v=1", accent: "#4fd2ff", accent2: "#2b7cff", overlay: "rgba(4, 20, 40, 0.28)" },
-    { id: "aurora", name: "Aurora", src: "assets/themes/05-aurora.jpg?v=1", accent: "#7dffb0", accent2: "#6ecbff", overlay: "rgba(4, 16, 28, 0.24)" },
-    { id: "volcano", name: "Volcano", src: "assets/themes/06-volcano.jpg?v=1", accent: "#ff7a3c", accent2: "#ff3d5a", overlay: "rgba(30, 8, 8, 0.28)" },
-    { id: "ice", name: "Ice Cavern", src: "assets/themes/07-ice.jpg?v=1", accent: "#9fe9ff", accent2: "#d8f6ff", overlay: "rgba(8, 24, 36, 0.22)" },
-    { id: "desert", name: "Desert Dusk", src: "assets/themes/08-desert.jpg?v=1", accent: "#ffb347", accent2: "#ff6f91", overlay: "rgba(36, 16, 8, 0.22)" },
-    { id: "space", name: "Cosmic Nebula", src: "assets/themes/09-space.jpg?v=1", accent: "#b388ff", accent2: "#66e0ff", overlay: "rgba(10, 4, 28, 0.26)" },
-    { id: "neonrain", name: "Neon Rain", src: "assets/themes/10-neonrain.jpg?v=1", accent: "#ff4fd8", accent2: "#4de1ff", overlay: "rgba(16, 4, 24, 0.3)" },
+    { id: "sunset", name: "Sunset Palm", src: "assets/themes/01-sunset.jpg?v=2", accent: "#ff8c42", accent2: "#ff4fd8", overlay: "rgba(40, 10, 30, 0.18)" },
+    { id: "cyberpunk", name: "Cyber Purple", src: "assets/themes/02-cyberpunk.jpg?v=2", accent: "#7af0ff", accent2: "#ff71ce", overlay: "rgba(12, 4, 28, 0.22)" },
+    { id: "forest", name: "Forest Mist", src: "assets/themes/03-forest.jpg?v=2", accent: "#8cff9a", accent2: "#6ad1ff", overlay: "rgba(8, 20, 12, 0.2)" },
+    { id: "ocean", name: "Deep Ocean", src: "assets/themes/04-ocean.jpg?v=2", accent: "#4fd2ff", accent2: "#2b7cff", overlay: "rgba(4, 20, 40, 0.28)" },
+    { id: "aurora", name: "Aurora", src: "assets/themes/05-aurora.jpg?v=2", accent: "#7dffb0", accent2: "#6ecbff", overlay: "rgba(4, 16, 28, 0.24)" },
+    { id: "volcano", name: "Volcano", src: "assets/themes/06-volcano.jpg?v=2", accent: "#ff7a3c", accent2: "#ff3d5a", overlay: "rgba(30, 8, 8, 0.28)" },
+    { id: "ice", name: "Ice Cavern", src: "assets/themes/07-ice.jpg?v=2", accent: "#9fe9ff", accent2: "#d8f6ff", overlay: "rgba(8, 24, 36, 0.22)" },
+    { id: "desert", name: "Desert Dusk", src: "assets/themes/08-desert.jpg?v=2", accent: "#ffb347", accent2: "#ff6f91", overlay: "rgba(36, 16, 8, 0.22)" },
+    { id: "space", name: "Cosmic Nebula", src: "assets/themes/09-space.jpg?v=2", accent: "#b388ff", accent2: "#66e0ff", overlay: "rgba(10, 4, 28, 0.26)" },
+    { id: "neonrain", name: "Neon Rain", src: "assets/themes/10-neonrain.jpg?v=2", accent: "#ff4fd8", accent2: "#4de1ff", overlay: "rgba(16, 4, 24, 0.3)" },
   ];
   const BG_DEFAULT = THEMES[0].src;
   const QUEST_XP = 40;
@@ -284,7 +284,19 @@
       btn.setAttribute("role", "option");
       btn.setAttribute("aria-selected", String(theme.id === currentThemeId));
       btn.title = theme.name;
-      btn.innerHTML = `<img src="${theme.src}" alt="" loading="lazy" /><span>${theme.name}</span>`;
+      const img = document.createElement("img");
+      img.src = theme.src;
+      img.alt = theme.name;
+      img.decoding = "async";
+      img.onerror = () => {
+        img.replaceWith(Object.assign(document.createElement("div"), {
+          className: "theme-fallback",
+          textContent: theme.name,
+        }));
+      };
+      const label = document.createElement("span");
+      label.textContent = theme.name;
+      btn.append(img, label);
       btn.addEventListener("click", () => {
         applyTheme(theme.id, { toast: true });
         playSfx("click");
@@ -776,6 +788,14 @@
     playSfx("click");
   });
 
+  // Works even if cards are already in HTML
+  els.themeGrid?.addEventListener("click", (e) => {
+    const card = e.target.closest("[data-theme]");
+    if (!card) return;
+    applyTheme(card.dataset.theme, { toast: true });
+    playSfx("click");
+  });
+
   els.musicToggle.addEventListener("click", () => {
     ensureAudio();
 
@@ -891,6 +911,9 @@
   window.addEventListener("beforeunload", saveState);
 
   applyBackgroundFromStorage();
+  renderThemeGrid();
+  if (els.themePanel) els.themePanel.removeAttribute("hidden");
+  if (els.themeToggle) els.themeToggle.setAttribute("aria-expanded", "true");
 
   els.ring.style.strokeDasharray = String(CIRCUMFERENCE);
 
