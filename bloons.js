@@ -168,12 +168,16 @@
       if (statusEl) statusEl.textContent = msg;
     }
 
-    function syncHud() {
+    function syncHud(force = false) {
+      const waveReady = state.mode === "playing" && !state.waveActive && !state.spawnQueue.length;
+      const key = `${state.mode}|${state.lives}|${state.cash}|${state.wave}|${state.bestWave}|${state.selected}|${waveReady}|${state.waveActive}`;
+      if (!force && key === state._hudKey) return;
+      state._hudKey = key;
       metaEl.textContent = `Best wave: ${state.bestWave}`;
       if (hudEl) {
         hudEl.textContent = `♥ ${state.lives}  ·  $ ${state.cash}  ·  Wave ${state.wave}`;
       }
-      waveBtn.disabled = state.mode !== "playing" || state.waveActive || state.spawnQueue.length > 0;
+      waveBtn.disabled = !waveReady;
       startBtn.textContent = state.mode === "playing" ? "Restart" : "Start Defense";
       shop.querySelectorAll("[data-tower]").forEach((btn) => {
         const t = TOWER_TYPES[btn.dataset.tower];
