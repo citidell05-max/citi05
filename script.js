@@ -51,7 +51,15 @@
     { id: "point_scorer", title: "Point Scorer", desc: "Earn 100 game points", icon: "P100", test: (s) => (s.stats?.gamePoints || 0) >= 100 },
     { id: "island_focus", title: "Island Focus", desc: "Equip the Curaçao Coast theme", icon: "CW", test: () => currentThemeId === "curacao" },
     { id: "eli_buddy", title: "ELI Buddy", desc: "Open ELI AI for homework help", icon: "ELI", test: (s) => !!s.stats?.eliOpened },
+    { id: "card_caster", title: "Card Caster", desc: "Open the Flash Cards study deck", icon: "FC", test: (s) => !!s.stats?.flashOpened },
+    { id: "deck_builder", title: "Deck Builder", desc: "Create 3 flash cards", icon: "D3", test: (s) => (s.stats?.flashCreated || 0) >= 3 },
+    { id: "memory_spark", title: "Memory Spark", desc: "Mark Knew it on 5 flash cards", icon: "K5", test: (s) => (s.stats?.flashReviews || 0) >= 5 },
     { id: "vip_key", title: "VIP Key", desc: "Unlock VIP with the moderator code", icon: "VIP", test: (s) => !!s.vipUnlocked && s.vipUnlockSource === "moderator" },
+  ];
+  const DEFAULT_FLASHCARDS = [
+    { id: "seed-math", front: "What is 7 × 8?", back: "56" },
+    { id: "seed-geo", front: "Capital of France?", back: "Paris" },
+    { id: "seed-sci", front: "H₂O is the formula for…", back: "Water" },
   ];
   const PLAYABLE_GAMES = [
     { id: "dash", name: "Horizon Dash", startIds: ["game-start"] },
@@ -158,6 +166,23 @@
     guideForm: document.getElementById("guide-form"),
     guideInput: document.getElementById("guide-input"),
     guideChips: document.getElementById("guide-chips"),
+    flashFab: document.getElementById("flash-fab"),
+    flashDrawer: document.getElementById("flash-drawer"),
+    flashClose: document.getElementById("flash-close"),
+    flashForm: document.getElementById("flash-form"),
+    flashFront: document.getElementById("flash-front"),
+    flashBack: document.getElementById("flash-back"),
+    flashCard: document.getElementById("flash-card"),
+    flashCardText: document.getElementById("flash-card-text"),
+    flashCardSide: document.getElementById("flash-card-side"),
+    flashCardHint: document.getElementById("flash-card-hint"),
+    flashProgress: document.getElementById("flash-progress"),
+    flashDeckCount: document.getElementById("flash-deck-count"),
+    flashPrev: document.getElementById("flash-prev"),
+    flashNext: document.getElementById("flash-next"),
+    flashFlip: document.getElementById("flash-flip"),
+    flashKnew: document.getElementById("flash-knew"),
+    flashDelete: document.getElementById("flash-delete"),
   };
 
   const AI_RIVALS = [
@@ -180,13 +205,28 @@
     state.unlockedAchievements = {};
   }
   if (!state.stats || typeof state.stats !== "object") {
-    state.stats = { quests: 0, focus: 0, gameWins: 0, gamePoints: 0, eliOpened: false };
+    state.stats = {
+      quests: 0,
+      focus: 0,
+      gameWins: 0,
+      gamePoints: 0,
+      flashCreated: 0,
+      flashReviews: 0,
+      flashOpened: false,
+      eliOpened: false,
+    };
   }
   state.stats.quests = Math.max(0, Number(state.stats.quests) || 0);
   state.stats.focus = Math.max(0, Number(state.stats.focus) || 0);
   state.stats.gameWins = Math.max(0, Number(state.stats.gameWins) || 0);
   state.stats.gamePoints = Math.max(0, Number(state.stats.gamePoints) || 0);
+  state.stats.flashCreated = Math.max(0, Number(state.stats.flashCreated) || 0);
+  state.stats.flashReviews = Math.max(0, Number(state.stats.flashReviews) || 0);
+  state.stats.flashOpened = !!state.stats.flashOpened;
   state.stats.eliOpened = !!state.stats.eliOpened;
+  if (!Array.isArray(state.flashcards)) {
+    state.flashcards = DEFAULT_FLASHCARDS.map((c) => ({ ...c }));
+  }
   let currentThemeId = localStorage.getItem(THEME_STORAGE_KEY) || "";
   if (currentThemeId && !THEMES.some((t) => t.id === currentThemeId)) currentThemeId = "";
   // Regular themes free; VIP themes stay locked until moderator VIP unlock
@@ -289,7 +329,17 @@
       gameWinProgress: 0,
       gamePointProgress: 0,
       unlockedAchievements: {},
-      stats: { quests: 0, focus: 0, gameWins: 0, gamePoints: 0, eliOpened: false },
+      flashcards: DEFAULT_FLASHCARDS.map((c) => ({ ...c })),
+      stats: {
+        quests: 0,
+        focus: 0,
+        gameWins: 0,
+        gamePoints: 0,
+        flashCreated: 0,
+        flashReviews: 0,
+        flashOpened: false,
+        eliOpened: false,
+      },
       history: [],
       vipEnabled: false,
       vipUnlocked: false,
@@ -336,11 +386,23 @@
             parsed.unlockedAchievements && typeof parsed.unlockedAchievements === "object"
               ? parsed.unlockedAchievements
               : {},
+          flashcards: Array.isArray(parsed.flashcards)
+            ? parsed.flashcards
+                .filter((c) => c && typeof c.front === "string" && typeof c.back === "string")
+                .map((c) => ({
+                  id: typeof c.id === "string" ? c.id : `card-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+                  front: String(c.front).slice(0, 120),
+                  back: String(c.back).slice(0, 160),
+                }))
+            : DEFAULT_FLASHCARDS.map((c) => ({ ...c })),
           stats: {
             quests: Math.max(0, Number(parsed.stats?.quests) || 0),
             focus: Math.max(0, Number(parsed.stats?.focus) || 0),
             gameWins: Math.max(0, Number(parsed.stats?.gameWins) || 0),
             gamePoints: Math.max(0, Number(parsed.stats?.gamePoints) || 0),
+            flashCreated: Math.max(0, Number(parsed.stats?.flashCreated) || 0),
+            flashReviews: Math.max(0, Number(parsed.stats?.flashReviews) || 0),
+            flashOpened: !!parsed.stats?.flashOpened,
             eliOpened: !!parsed.stats?.eliOpened,
           },
           history: Array.isArray(parsed.history) ? parsed.history.slice(0, HISTORY_LIMIT) : [],
@@ -390,7 +452,17 @@
         gameWinProgress: state.gameWinProgress || 0,
         gamePointProgress: state.gamePointProgress || 0,
         unlockedAchievements: state.unlockedAchievements || {},
-        stats: state.stats || { quests: 0, focus: 0, gameWins: 0, gamePoints: 0, eliOpened: false },
+        flashcards: Array.isArray(state.flashcards) ? state.flashcards : [],
+        stats: state.stats || {
+          quests: 0,
+          focus: 0,
+          gameWins: 0,
+          gamePoints: 0,
+          flashCreated: 0,
+          flashReviews: 0,
+          flashOpened: false,
+          eliOpened: false,
+        },
         history: Array.isArray(state.history) ? state.history.slice(0, HISTORY_LIMIT) : [],
         vipEnabled,
         vipUnlocked,
@@ -1280,13 +1352,39 @@
     if (els.dailyAttachment) els.dailyAttachment.hidden = false;
   }
 
+  function closeFlashDrawerOnly() {
+    if (!els.flashDrawer) return;
+    els.flashDrawer.hidden = true;
+    els.flashFab?.setAttribute("aria-expanded", "false");
+    document.body.classList.remove("flash-open");
+  }
+
+  function closeGuideDrawerOnly() {
+    if (!els.guideDrawer) return;
+    els.guideDrawer.hidden = true;
+    els.guideFab?.setAttribute("aria-expanded", "false");
+    document.body.classList.remove("eli-open");
+  }
+
   function setGuideOpen(open) {
     if (!els.guideDrawer || !els.guideFab) return;
+    if (open) closeFlashDrawerOnly();
     els.guideDrawer.hidden = !open;
     els.guideFab.setAttribute("aria-expanded", String(open));
     document.body.classList.toggle("eli-open", open);
     if (open) {
-      if (!state.stats) state.stats = { quests: 0, focus: 0, gameWins: 0, gamePoints: 0, eliOpened: false };
+      if (!state.stats) {
+        state.stats = {
+          quests: 0,
+          focus: 0,
+          gameWins: 0,
+          gamePoints: 0,
+          flashCreated: 0,
+          flashReviews: 0,
+          flashOpened: false,
+          eliOpened: false,
+        };
+      }
       if (!state.stats.eliOpened) {
         state.stats.eliOpened = true;
         saveState();
@@ -1295,6 +1393,208 @@
       renderDailyAttachment();
       window.setTimeout(() => els.guideInput?.focus(), 40);
     }
+  }
+
+  let flashIndex = 0;
+  let flashFlipped = false;
+
+  function ensureFlashDeck() {
+    if (!Array.isArray(state.flashcards)) {
+      state.flashcards = DEFAULT_FLASHCARDS.map((c) => ({ ...c }));
+    }
+    if (flashIndex >= state.flashcards.length) flashIndex = Math.max(0, state.flashcards.length - 1);
+    if (flashIndex < 0) flashIndex = 0;
+  }
+
+  function currentFlashCard() {
+    ensureFlashDeck();
+    return state.flashcards[flashIndex] || null;
+  }
+
+  function renderFlashStudy() {
+    ensureFlashDeck();
+    const total = state.flashcards.length;
+    const card = currentFlashCard();
+    if (els.flashDeckCount) {
+      els.flashDeckCount.textContent = `${total} card${total === 1 ? "" : "s"}`;
+    }
+    if (els.flashProgress) {
+      els.flashProgress.textContent = total ? `${flashIndex + 1} / ${total}` : "0 / 0";
+    }
+    if (!els.flashCard || !els.flashCardText) return;
+    if (!card) {
+      flashFlipped = false;
+      els.flashCard.classList.remove("is-back");
+      els.flashCard.setAttribute("aria-pressed", "false");
+      if (els.flashCardSide) els.flashCardSide.textContent = "Front";
+      if (els.flashCardHint) els.flashCardHint.textContent = "Add a card";
+      els.flashCardText.textContent = "Add a card to start studying";
+      return;
+    }
+    els.flashCard.classList.toggle("is-back", flashFlipped);
+    els.flashCard.setAttribute("aria-pressed", String(flashFlipped));
+    if (els.flashCardSide) els.flashCardSide.textContent = flashFlipped ? "Back" : "Front";
+    if (els.flashCardHint) els.flashCardHint.textContent = flashFlipped ? "Tap for front" : "Tap to flip";
+    els.flashCardText.textContent = flashFlipped ? card.back : card.front;
+  }
+
+  function setFlashOpen(open) {
+    if (!els.flashDrawer || !els.flashFab) return;
+    if (open) closeGuideDrawerOnly();
+    els.flashDrawer.hidden = !open;
+    els.flashFab.setAttribute("aria-expanded", String(open));
+    document.body.classList.toggle("flash-open", open);
+    if (open) {
+      if (!state.stats) {
+        state.stats = {
+          quests: 0,
+          focus: 0,
+          gameWins: 0,
+          gamePoints: 0,
+          flashCreated: 0,
+          flashReviews: 0,
+          flashOpened: false,
+          eliOpened: false,
+        };
+      }
+      if (!state.stats.flashOpened) {
+        state.stats.flashOpened = true;
+        saveState();
+        checkAchievements();
+      }
+      flashFlipped = false;
+      renderFlashStudy();
+      window.setTimeout(() => els.flashFront?.focus(), 40);
+    }
+  }
+
+  function addFlashCard(front, back) {
+    const f = String(front || "").trim().slice(0, 120);
+    const b = String(back || "").trim().slice(0, 160);
+    if (!f || !b) return false;
+    ensureFlashDeck();
+    state.flashcards.push({ id: uid(), front: f, back: b });
+    state.stats.flashCreated = (state.stats.flashCreated || 0) + 1;
+    flashIndex = state.flashcards.length - 1;
+    flashFlipped = false;
+    saveState();
+    renderFlashStudy();
+    checkAchievements();
+    return true;
+  }
+
+  function deleteCurrentFlashCard() {
+    ensureFlashDeck();
+    if (!state.flashcards.length) {
+      showToast("No flash card to delete");
+      return;
+    }
+    state.flashcards.splice(flashIndex, 1);
+    if (flashIndex >= state.flashcards.length) flashIndex = Math.max(0, state.flashcards.length - 1);
+    flashFlipped = false;
+    saveState();
+    renderFlashStudy();
+    showToast("Flash card deleted");
+  }
+
+  function flipFlashCard() {
+    if (!currentFlashCard()) return;
+    flashFlipped = !flashFlipped;
+    renderFlashStudy();
+    playSfx("click");
+  }
+
+  function stepFlashCard(delta) {
+    ensureFlashDeck();
+    if (!state.flashcards.length) return;
+    flashIndex = (flashIndex + delta + state.flashcards.length) % state.flashcards.length;
+    flashFlipped = false;
+    renderFlashStudy();
+    playSfx("click");
+  }
+
+  function markFlashKnew() {
+    const card = currentFlashCard();
+    if (!card) {
+      showToast("Add a flash card first");
+      return;
+    }
+    state.stats.flashReviews = (state.stats.flashReviews || 0) + 1;
+    state.tokens = (state.tokens || 0) + 2;
+    touchStreak();
+    addHistory({
+      type: "flash",
+      text: `Flash card reviewed: ${card.front}`,
+      tokens: 2,
+    });
+    saveState();
+    renderWallet();
+    renderStreak();
+    renderHistory();
+    checkAchievements();
+    playSfx("complete");
+    showToast("Knew it! +2 Tokens");
+    ensureFlashDeck();
+    if (state.flashcards.length) {
+      flashIndex = (flashIndex + 1) % state.flashcards.length;
+    }
+    flashFlipped = false;
+    renderFlashStudy();
+  }
+
+  function initFlashCards() {
+    renderFlashStudy();
+    els.flashFab?.addEventListener("click", () => {
+      ensureAudio();
+      const open = els.flashDrawer?.hidden !== false;
+      setFlashOpen(open);
+      playSfx("click");
+    });
+    els.flashClose?.addEventListener("click", () => {
+      ensureAudio();
+      setFlashOpen(false);
+      playSfx("click");
+    });
+    els.flashForm?.addEventListener("submit", (e) => {
+      e.preventDefault();
+      ensureAudio();
+      const ok = addFlashCard(els.flashFront?.value, els.flashBack?.value);
+      if (!ok) {
+        showToast("Fill in both sides of the card");
+        playSfx("delete");
+        return;
+      }
+      if (els.flashFront) els.flashFront.value = "";
+      if (els.flashBack) els.flashBack.value = "";
+      playSfx("add");
+      showToast("Flash card added");
+      els.flashFront?.focus();
+    });
+    els.flashCard?.addEventListener("click", () => {
+      ensureAudio();
+      flipFlashCard();
+    });
+    els.flashFlip?.addEventListener("click", () => {
+      ensureAudio();
+      flipFlashCard();
+    });
+    els.flashPrev?.addEventListener("click", () => {
+      ensureAudio();
+      stepFlashCard(-1);
+    });
+    els.flashNext?.addEventListener("click", () => {
+      ensureAudio();
+      stepFlashCard(1);
+    });
+    els.flashKnew?.addEventListener("click", () => {
+      ensureAudio();
+      markFlashKnew();
+    });
+    els.flashDelete?.addEventListener("click", () => {
+      ensureAudio();
+      deleteCurrentFlashCard();
+      playSfx("delete");
+    });
   }
 
   const eliMemory = [];
@@ -1513,7 +1813,12 @@
       playSfx("click");
     });
     window.addEventListener("keydown", (e) => {
-      if (e.code === "Escape" && els.guideDrawer && !els.guideDrawer.hidden) {
+      if (e.code !== "Escape") return;
+      if (els.flashDrawer && !els.flashDrawer.hidden) {
+        setFlashOpen(false);
+        return;
+      }
+      if (els.guideDrawer && !els.guideDrawer.hidden) {
         setGuideOpen(false);
       }
     });
@@ -2292,6 +2597,7 @@
   renderThemeChest();
   renderDailyAttachment();
   initHorizonGuide();
+  initFlashCards();
   renderStreak();
   renderHistory();
   renderLeaderboard();

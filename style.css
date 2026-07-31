@@ -1510,19 +1510,15 @@ body[data-theme="vipcrystal"] .theme-orb-2 {
 .cup-panel { grid-area: cup; }
 .royale-panel { grid-area: royale; }
 
+.flash-fab,
 .guide-fab {
   position: fixed;
   right: 1.1rem;
-  bottom: 1.1rem;
   z-index: 40;
   appearance: none;
   width: 4.4rem;
   height: 4.4rem;
   border-radius: 999px;
-  border: 1px solid rgba(255, 113, 206, 0.55);
-  background:
-    radial-gradient(circle at 30% 30%, rgba(122, 240, 255, 0.35), transparent 45%),
-    linear-gradient(145deg, rgba(255, 79, 216, 0.45), rgba(40, 12, 70, 0.95));
   color: #fff;
   cursor: pointer;
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
@@ -1531,13 +1527,31 @@ body[data-theme="vipcrystal"] .theme-orb-2 {
   gap: 0.05rem;
 }
 
+.flash-fab {
+  bottom: 6.05rem;
+  border: 1px solid rgba(122, 240, 255, 0.55);
+  background:
+    radial-gradient(circle at 30% 30%, rgba(255, 210, 120, 0.35), transparent 45%),
+    linear-gradient(145deg, rgba(70, 160, 255, 0.5), rgba(20, 40, 80, 0.95));
+}
+
+.guide-fab {
+  bottom: 1.1rem;
+  border: 1px solid rgba(255, 113, 206, 0.55);
+  background:
+    radial-gradient(circle at 30% 30%, rgba(122, 240, 255, 0.35), transparent 45%),
+    linear-gradient(145deg, rgba(255, 79, 216, 0.45), rgba(40, 12, 70, 0.95));
+}
+
+.flash-fab-label,
 .guide-fab-label {
   font-family: var(--font-display);
-  font-size: 0.95rem;
+  font-size: 0.82rem;
   font-weight: 800;
   letter-spacing: 0.08em;
 }
 
+.flash-fab-sub,
 .guide-fab-sub {
   font-size: 0.62rem;
   letter-spacing: 0.14em;
@@ -1545,16 +1559,23 @@ body[data-theme="vipcrystal"] .theme-orb-2 {
   opacity: 0.8;
 }
 
+.flash-fab:hover {
+  border-color: rgba(255, 230, 160, 0.85);
+}
+
 .guide-fab:hover {
   border-color: rgba(180, 240, 255, 0.8);
 }
 
+body.splash-active .flash-fab,
 body.splash-active .guide-fab,
+body.splash-active .flash-drawer,
 body.splash-active .guide-drawer {
   visibility: hidden;
   pointer-events: none;
 }
 
+.flash-drawer,
 .guide-drawer {
   position: fixed;
   inset: 0;
@@ -1564,17 +1585,207 @@ body.splash-active .guide-drawer {
   background: #07040f;
 }
 
+.flash-drawer[hidden],
 .guide-drawer[hidden] {
   display: none !important;
 }
 
-body.eli-open {
+body.eli-open,
+body.flash-open {
   overflow: hidden;
 }
 
-body.eli-open .guide-fab {
+body.eli-open .flash-fab,
+body.eli-open .guide-fab,
+body.flash-open .flash-fab,
+body.flash-open .guide-fab {
   visibility: hidden;
   pointer-events: none;
+}
+
+.flash-drawer-panel {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding: max(0.85rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) max(1rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
+  background:
+    radial-gradient(circle at 18% 0%, rgba(122, 240, 255, 0.16), transparent 42%),
+    radial-gradient(circle at 88% 12%, rgba(255, 200, 100, 0.12), transparent 40%),
+    linear-gradient(180deg, rgba(10, 18, 36, 0.98), rgba(6, 3, 14, 1));
+  animation: attachment-in 0.28s ease-out both;
+}
+
+.flash-drawer-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex: 0 0 auto;
+}
+
+.flash-drawer-head h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.15rem, 4vw, 1.6rem);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.flash-drawer-sub {
+  margin: 0.25rem 0 0;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.flash-create {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 0.55rem;
+  align-items: end;
+  flex: 0 0 auto;
+}
+
+.flash-field {
+  display: grid;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.flash-field span {
+  font-family: var(--font-display);
+  font-size: 0.58rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(200, 230, 255, 0.7);
+}
+
+.flash-field input {
+  width: 100%;
+  min-width: 0;
+  padding: 0.65rem 0.75rem;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(6, 4, 14, 0.65);
+  color: var(--text);
+  font: inherit;
+}
+
+.flash-field input:focus {
+  outline: 2px solid rgba(122, 240, 255, 0.45);
+  outline-offset: 1px;
+}
+
+.flash-study {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.flash-study-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+}
+
+.flash-card {
+  appearance: none;
+  position: relative;
+  width: 100%;
+  min-height: min(48vh, 320px);
+  flex: 1 1 auto;
+  display: grid;
+  place-content: center;
+  gap: 0.55rem;
+  padding: 1.4rem 1.2rem;
+  border-radius: 18px;
+  border: 1px solid rgba(122, 240, 255, 0.28);
+  background:
+    linear-gradient(160deg, rgba(122, 240, 255, 0.12), rgba(255, 79, 216, 0.08)),
+    rgba(8, 10, 24, 0.75);
+  color: #f4f8ff;
+  cursor: pointer;
+  text-align: center;
+  transition: transform 0.28s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.flash-card.is-back {
+  border-color: rgba(255, 200, 120, 0.4);
+  background:
+    linear-gradient(160deg, rgba(255, 200, 120, 0.14), rgba(122, 240, 255, 0.08)),
+    rgba(18, 12, 8, 0.8);
+  transform: rotateY(6deg) scale(1.01);
+}
+
+.flash-card-hint {
+  position: absolute;
+  top: 0.85rem;
+  right: 1rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  color: rgba(220, 240, 255, 0.55);
+}
+
+.flash-card-side {
+  font-family: var(--font-display);
+  font-size: 0.68rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(180, 240, 255, 0.75);
+}
+
+.flash-card.is-back .flash-card-side {
+  color: rgba(255, 220, 160, 0.85);
+}
+
+.flash-card-text {
+  font-family: var(--font-display);
+  font-size: clamp(1.2rem, 4.5vw, 1.85rem);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1.25;
+  max-width: 28ch;
+  margin: 0 auto;
+}
+
+.flash-study-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.flash-study-actions .btn,
+.flash-delete {
+  flex: 1 1 auto;
+}
+
+.flash-delete {
+  opacity: 0.8;
+}
+
+@media (max-width: 720px) {
+  .flash-create {
+    grid-template-columns: 1fr;
+  }
+
+  .flash-fab {
+    bottom: 5.8rem;
+    right: 0.85rem;
+    width: 4rem;
+    height: 4rem;
+  }
+
+  .guide-fab {
+    right: 0.85rem;
+    width: 4rem;
+    height: 4rem;
+  }
 }
 
 .guide-drawer-panel {
@@ -1711,8 +1922,9 @@ body.eli-open .guide-fab {
   font-style: italic;
 }
 
-.guide-fab-label {
-  letter-spacing: 0.12em;
+.guide-fab-label,
+.flash-fab-label {
+  letter-spacing: 0.08em;
 }
 
 .guide-bubble.is-ai {

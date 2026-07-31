@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;800&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=achievements1" />
+  <link rel="stylesheet" href="style.css?v=flashcards1" />
   <link rel="preload" as="image" href="assets/arcane-horizon-splash.jpg?v=3" />
   <style>
     :root { --bg-image: none; }
@@ -16,7 +16,9 @@
     body.splash-active .app,
     body.splash-active .daily-attachment,
     body.splash-active .guide-fab,
+    body.splash-active .flash-fab,
     body.splash-active .guide-drawer,
+    body.splash-active .flash-drawer,
     body.splash-active .music-credit,
     body.splash-active .theme-fx,
     body.splash-active .theme-ornaments,
@@ -554,10 +556,58 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
+  <button type="button" class="flash-fab" id="flash-fab" aria-expanded="false" aria-controls="flash-drawer" title="Open flash cards">
+    <span class="flash-fab-label">Cards</span>
+    <span class="flash-fab-sub">Study</span>
+  </button>
+
   <button type="button" class="guide-fab" id="guide-fab" aria-expanded="false" aria-controls="guide-drawer" title="Open ELI AI homework helper">
     <span class="guide-fab-label">ELI</span>
     <span class="guide-fab-sub">AI</span>
   </button>
+
+  <div class="flash-drawer" id="flash-drawer" hidden>
+    <div class="flash-drawer-panel" role="dialog" aria-modal="true" aria-labelledby="flash-heading">
+      <div class="flash-drawer-head">
+        <div>
+          <h2 id="flash-heading">Flash Cards</h2>
+          <p class="flash-drawer-sub">Make cards · flip to study · save your deck</p>
+        </div>
+        <button type="button" class="guide-drawer-close" id="flash-close" aria-label="Close flash cards">×</button>
+      </div>
+
+      <form class="flash-create" id="flash-form" autocomplete="off">
+        <label class="flash-field">
+          <span>Front</span>
+          <input type="text" id="flash-front" maxlength="120" placeholder="Question or word…" required />
+        </label>
+        <label class="flash-field">
+          <span>Back</span>
+          <input type="text" id="flash-back" maxlength="160" placeholder="Answer…" required />
+        </label>
+        <button type="submit" class="btn btn-primary">Add Card</button>
+      </form>
+
+      <div class="flash-study" aria-live="polite">
+        <div class="flash-study-meta">
+          <span id="flash-progress">0 / 0</span>
+          <span id="flash-deck-count">0 cards</span>
+        </div>
+        <button type="button" class="flash-card" id="flash-card" aria-pressed="false" title="Tap to flip">
+          <span class="flash-card-hint" id="flash-card-hint">Tap to flip</span>
+          <span class="flash-card-side" id="flash-card-side">Front</span>
+          <strong class="flash-card-text" id="flash-card-text">Add a card to start studying</strong>
+        </button>
+        <div class="flash-study-actions">
+          <button type="button" class="btn btn-ghost" id="flash-prev">Prev</button>
+          <button type="button" class="btn btn-ghost" id="flash-flip">Flip</button>
+          <button type="button" class="btn btn-primary" id="flash-next">Next</button>
+          <button type="button" class="btn btn-primary" id="flash-knew">Knew it</button>
+        </div>
+        <button type="button" class="btn btn-ghost flash-delete" id="flash-delete">Delete this card</button>
+      </div>
+    </div>
+  </div>
 
   <div class="guide-drawer" id="guide-drawer" hidden>
     <div class="guide-drawer-panel" role="dialog" aria-modal="true" aria-labelledby="guide-heading">
@@ -612,8 +662,8 @@
   <link rel="preload" as="audio" href="sounds/timer-done.wav" />
   <link rel="preload" as="audio" href="sounds/level-up.wav" />
 
-  <script src="script.js?v=achievements1"></script>
-  <script src="theme-fx.js?v=achievements1"></script>
+  <script src="script.js?v=flashcards1"></script>
+  <script src="theme-fx.js?v=flashcards1"></script>
   <script src="game.js?v=clock1"></script>
   <script src="cowboy.js?v=clock1"></script>
   <script src="bloons.js?v=clock1"></script>
