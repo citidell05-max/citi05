@@ -938,7 +938,13 @@
     renderWallet();
     renderVipToggle();
     const game = event.detail?.game;
-    const label = game === "cowboy" ? "Quick Draw" : game === "bloons" ? "Balloon Defense" : "Dash";
+    const labels = {
+      cowboy: "Quick Draw",
+      bloons: "Balloon Defense",
+      cuphead: "Ink Boss",
+      royale: "Arena Clash",
+    };
+    const label = labels[game] || "Dash";
     showToast(`${label} reward +${tokens} Tokens`);
   });
 

@@ -247,6 +247,39 @@
           </div>
         </div>
       </section>
+
+      <section class="panel cup-panel" aria-labelledby="cup-heading">
+        <div class="panel-head">
+          <h2 id="cup-heading">Ink Boss Blitz</h2>
+          <span class="panel-meta" id="cup-meta">Wins: 0</span>
+        </div>
+        <p class="game-help">Cuphead-style boss fight — run, jump, duck, shoot, and <strong>parry pink orbs</strong>.</p>
+        <p class="cup-status" id="cup-status">A/D move · W/Space jump · S duck · Click/F shoot</p>
+        <div class="game-wrap cup-wrap">
+          <canvas id="cup-canvas" width="960" height="420" aria-label="Ink Boss Blitz Cuphead-style game"></canvas>
+          <div class="game-hud">
+            <span id="cup-hud">Ready to rumble</span>
+            <button type="button" class="btn btn-primary" id="cup-start">Fight Boss</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel royale-panel" aria-labelledby="royale-heading">
+        <div class="panel-head">
+          <h2 id="royale-heading">Arena Clash</h2>
+          <span class="panel-meta" id="royale-meta">Wins: 0</span>
+        </div>
+        <p class="game-help">Clash Royale vibes — spend <strong>elixir</strong>, deploy cards, destroy the enemy king tower.</p>
+        <p class="royale-status" id="royale-status">Pick a card, tap your side of the arena to deploy</p>
+        <div class="royale-hand" id="royale-hand" role="toolbar" aria-label="Card hand"></div>
+        <div class="game-wrap royale-wrap">
+          <canvas id="royale-canvas" width="960" height="560" aria-label="Arena Clash Royale-style game"></canvas>
+          <div class="game-hud">
+            <span id="royale-hud">Elixir 5  ·  Battle ready</span>
+            <button type="button" class="btn btn-primary" id="royale-start">Battle</button>
+          </div>
+        </div>
+      </section>
     </main>
   </div>
 
@@ -266,5 +299,7 @@
   <script src="game.js"></script>
   <script src="cowboy.js"></script>
   <script src="bloons.js"></script>
+  <script src="cuphead.js"></script>
+  <script src="royale.js"></script>
 </body>
 </html>

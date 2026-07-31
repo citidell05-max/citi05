@@ -523,7 +523,9 @@ body {
     "xp xp"
     "game game"
     "cowboy cowboy"
-    "bloons bloons";
+    "bloons bloons"
+    "cup cup"
+    "royale royale";
   gap: 1.25rem;
 }
 
@@ -533,6 +535,8 @@ body {
 .game-panel { grid-area: game; }
 .cowboy-panel { grid-area: cowboy; }
 .bloons-panel { grid-area: bloons; }
+.cup-panel { grid-area: cup; }
+.royale-panel { grid-area: royale; }
 
 .panel {
   background: rgba(255, 255, 255, 0.04);
@@ -550,7 +554,9 @@ body {
 .xp-panel,
 .game-panel,
 .cowboy-panel,
-.bloons-panel {
+.bloons-panel,
+.cup-panel,
+.royale-panel {
   background: rgba(12, 6, 24, 0.12);
 }
 
@@ -559,6 +565,8 @@ body {
 .game-panel { animation-delay: 0.22s; }
 .cowboy-panel { animation-delay: 0.28s; }
 .bloons-panel { animation-delay: 0.34s; }
+.cup-panel { animation-delay: 0.4s; }
+.royale-panel { animation-delay: 0.46s; }
 
 @keyframes rise-in {
   from {
@@ -1011,7 +1019,9 @@ body {
       "xp"
       "game"
       "cowboy"
-      "bloons";
+      "bloons"
+      "cup"
+      "royale";
   }
 
   .quest-list {
@@ -1086,12 +1096,100 @@ body {
 
 #dash-canvas,
 #cowboy-canvas,
-#bloons-canvas {
+#bloons-canvas,
+#cup-canvas,
+#royale-canvas {
   display: block;
   width: 100%;
   height: auto;
   cursor: pointer;
   touch-action: manipulation;
+}
+
+.cup-wrap {
+  border-color: rgba(255, 120, 160, 0.4);
+}
+
+.cup-status,
+.royale-status {
+  margin: -0.35rem 0 0.65rem;
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.75);
+}
+
+.cup-status { color: #ffb0d0; }
+.royale-status { color: #c9a0ff; }
+
+.royale-wrap {
+  border-color: rgba(180, 120, 255, 0.4);
+}
+
+.royale-hand {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.45rem;
+  margin: 0 0 0.75rem;
+}
+
+.royale-card {
+  appearance: none;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: linear-gradient(180deg, rgba(60, 30, 90, 0.55), rgba(20, 10, 40, 0.55));
+  color: #f3e8ff;
+  border-radius: 12px;
+  padding: 0.55rem 0.4rem;
+  cursor: pointer;
+  font-family: var(--font-display);
+  text-align: center;
+  transition: border-color 0.15s, transform 0.15s, background 0.15s;
+}
+
+.royale-card strong {
+  display: block;
+  font-size: 0.62rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 0.2rem;
+}
+
+.royale-card span {
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  color: #e0b0ff;
+}
+
+.royale-card:hover:not(.is-disabled) {
+  transform: translateY(-2px);
+  border-color: rgba(200, 140, 255, 0.7);
+}
+
+.royale-card.is-active {
+  border-color: #c56cff;
+  box-shadow: 0 0 0 2px rgba(197, 108, 255, 0.35);
+}
+
+.royale-card.is-disabled {
+  opacity: 0.45;
+}
+
+#cup-hud,
+#royale-hud {
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
+}
+
+#cup-hud { color: #ffb0d0; }
+#royale-hud { color: #d2a8ff; }
+
+@media (max-width: 820px) {
+  .royale-hand {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 .bloons-wrap {
