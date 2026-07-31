@@ -4,6 +4,7 @@
   const THEME_STORAGE_KEY = "arcane-horizon-theme-id";
   const BG_STORAGE_KEY = "arcane-horizon-v6-bg";
   const THEMES = [
+    { id: "sunrise", name: "Arcane Sunrise", src: "assets/themes/11-sunrise.jpg?v=1", accent: "#ffb347", accent2: "#ff4fd8", overlay: "rgba(24, 10, 28, 0.22)" },
     { id: "sunset", name: "Sunset Palm", src: "assets/themes/01-sunset.jpg?v=2", accent: "#ff8c42", accent2: "#ff4fd8", overlay: "rgba(40, 10, 30, 0.18)" },
     { id: "cyberpunk", name: "Cyber Purple", src: "assets/themes/02-cyberpunk.jpg?v=3", accent: "#d16bff", accent2: "#ff4fd8", overlay: "rgba(18, 4, 36, 0.28)" },
     { id: "forest", name: "Forest Mist", src: "assets/themes/03-forest.jpg?v=2", accent: "#8cff9a", accent2: "#6ad1ff", overlay: "rgba(8, 20, 12, 0.2)" },
@@ -94,8 +95,8 @@
   };
 
   const state = loadState();
-  let currentThemeId = localStorage.getItem(THEME_STORAGE_KEY) || "sunset";
-  if (!THEMES.some((t) => t.id === currentThemeId)) currentThemeId = "sunset";
+  let currentThemeId = localStorage.getItem(THEME_STORAGE_KEY) || "sunrise";
+  if (!THEMES.some((t) => t.id === currentThemeId)) currentThemeId = "sunrise";
   let sessionXp = Number(state.sessionXp) || 0;
   let timerId = null;
   let remaining = Number.isFinite(state.timer.remaining)
