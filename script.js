@@ -5,7 +5,7 @@
   const BG_STORAGE_KEY = "arcane-horizon-v6-bg";
   const THEMES = [
     { id: "sunset", name: "Sunset Palm", src: "assets/themes/01-sunset.jpg?v=2", accent: "#ff8c42", accent2: "#ff4fd8", overlay: "rgba(40, 10, 30, 0.18)" },
-    { id: "cyberpunk", name: "Cyber Purple", src: "assets/themes/02-cyberpunk.jpg?v=2", accent: "#7af0ff", accent2: "#ff71ce", overlay: "rgba(12, 4, 28, 0.22)" },
+    { id: "cyberpunk", name: "Cyber Purple", src: "assets/themes/02-cyberpunk.jpg?v=3", accent: "#d16bff", accent2: "#ff4fd8", overlay: "rgba(18, 4, 36, 0.28)" },
     { id: "forest", name: "Forest Mist", src: "assets/themes/03-forest.jpg?v=2", accent: "#8cff9a", accent2: "#6ad1ff", overlay: "rgba(8, 20, 12, 0.2)" },
     { id: "ocean", name: "Deep Ocean", src: "assets/themes/04-ocean.jpg?v=2", accent: "#4fd2ff", accent2: "#2b7cff", overlay: "rgba(4, 20, 40, 0.28)" },
     { id: "aurora", name: "Aurora", src: "assets/themes/05-aurora.jpg?v=2", accent: "#7dffb0", accent2: "#6ecbff", overlay: "rgba(4, 16, 28, 0.24)" },
