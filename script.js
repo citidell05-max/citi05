@@ -15,6 +15,9 @@
     { id: "desert", name: "Desert Dusk", src: "assets/themes/08-desert.jpg?v=4", accent: "#ffb347", accent2: "#ff6f91", overlay: "rgba(36, 16, 8, 0.22)" },
     { id: "space", name: "Cosmic Nebula", src: "assets/themes/09-space.jpg?v=4", accent: "#b388ff", accent2: "#66e0ff", overlay: "rgba(10, 4, 28, 0.26)" },
     { id: "neonrain", name: "Neon Rain", src: "assets/themes/10-neonrain.jpg?v=4", accent: "#ff4fd8", accent2: "#4de1ff", overlay: "rgba(16, 4, 24, 0.3)" },
+    { id: "vipgold", name: "Gem Vault", src: "assets/themes/12-vipgold.jpg?v=1", accent: "#ffd27a", accent2: "#ffb347", overlay: "rgba(28, 12, 4, 0.22)", vip: true },
+    { id: "viproyal", name: "Royal Obsidian", src: "assets/themes/13-viproyal.jpg?v=1", accent: "#d16bff", accent2: "#ff71ce", overlay: "rgba(12, 4, 24, 0.28)", vip: true },
+    { id: "vipcrystal", name: "Crystal Crown", src: "assets/themes/14-vipcrystal.jpg?v=1", accent: "#9fe9ff", accent2: "#b388ff", overlay: "rgba(8, 16, 32, 0.24)", vip: true },
   ];
   const BG_DEFAULT = THEMES[0].src;
   const QUEST_XP = 40;
@@ -23,6 +26,7 @@
   const FOCUS_TOKENS = 15;
   const QUEST_GEMS = 2;
   const FOCUS_GEMS = 3;
+  const DAILY_CHEST_GEMS = 100;
   const VIP_COST = 25000;
   const MOD_VIP_CODE = "ONLY4VIP";
   const CIRCUMFERENCE = 552.92;
@@ -99,6 +103,9 @@
     historyList: document.getElementById("history-list"),
     historyEmpty: document.getElementById("history-empty"),
     historyClear: document.getElementById("history-clear"),
+    dailyChest: document.getElementById("daily-chest"),
+    dailyChestLabel: document.getElementById("daily-chest-label"),
+    dailyChestMeta: document.getElementById("daily-chest-meta"),
   };
 
   const state = loadState();
@@ -155,6 +162,8 @@
       streak: 0,
       bestStreak: 0,
       lastActiveDate: null,
+      lastChestDate: null,
+      chestClaims: 0,
       history: [],
       vipEnabled: false,
       vipUnlocked: false,
@@ -186,6 +195,8 @@
           streak: Math.max(0, Number(parsed.streak) || 0),
           bestStreak: Math.max(0, Number(parsed.bestStreak) || 0),
           lastActiveDate: typeof parsed.lastActiveDate === "string" ? parsed.lastActiveDate : null,
+          lastChestDate: typeof parsed.lastChestDate === "string" ? parsed.lastChestDate : null,
+          chestClaims: Math.max(0, Number(parsed.chestClaims) || 0),
           history: Array.isArray(parsed.history) ? parsed.history.slice(0, HISTORY_LIMIT) : [],
           vipEnabled: !!parsed.vipEnabled && parsed.vipUnlockSource === "moderator",
           vipUnlocked: !!parsed.vipUnlocked && parsed.vipUnlockSource === "moderator",
@@ -225,6 +236,8 @@
         streak: state.streak || 0,
         bestStreak: state.bestStreak || 0,
         lastActiveDate: state.lastActiveDate || null,
+        lastChestDate: state.lastChestDate || null,
+        chestClaims: state.chestClaims || 0,
         history: Array.isArray(state.history) ? state.history.slice(0, HISTORY_LIMIT) : [],
         vipEnabled,
         vipUnlocked,
@@ -268,8 +281,22 @@
     });
   }
 
+  function isVipTheme(theme) {
+    return !!theme?.vip;
+  }
+
+  function canUseTheme(theme) {
+    if (!isVipTheme(theme)) return true;
+    return !!vipUnlocked;
+  }
+
   function applyTheme(id, { persist = true, toast = false } = {}) {
     const theme = getTheme(id);
+    if (!canUseTheme(theme)) {
+      showToast("VIP theme locked — unlock VIP to use gem themes");
+      playSfx("click");
+      return;
+    }
     currentThemeId = theme.id;
     const src = theme.src;
     const fallback = THEMES[0].src;
@@ -335,13 +362,29 @@
       existing.forEach((btn) => {
         const theme = getTheme(btn.dataset.theme);
         const active = theme.id === currentThemeId;
+        const locked = !canUseTheme(theme);
         btn.classList.toggle("is-active", active);
+        btn.classList.toggle("is-vip", isVipTheme(theme));
+        btn.classList.toggle("is-locked", locked);
         btn.setAttribute("aria-selected", String(active));
+        btn.setAttribute("aria-disabled", String(locked));
         btn.setAttribute("role", "option");
+        btn.title = locked ? `${theme.name} — VIP gem theme (locked)` : theme.name;
         const img = btn.querySelector("img");
         if (img && img.getAttribute("src") !== theme.src) {
           img.src = theme.src;
           img.alt = theme.name;
+        }
+        let badge = btn.querySelector(".theme-vip-badge");
+        if (isVipTheme(theme)) {
+          if (!badge) {
+            badge = document.createElement("em");
+            badge.className = "theme-vip-badge";
+            btn.appendChild(badge);
+          }
+          badge.textContent = locked ? "VIP LOCK" : "VIP";
+        } else if (badge) {
+          badge.remove();
         }
       });
       return;
@@ -349,13 +392,15 @@
 
     els.themeGrid.innerHTML = "";
     THEMES.forEach((theme) => {
+      const locked = !canUseTheme(theme);
       const btn = document.createElement("button");
       btn.type = "button";
-      btn.className = `theme-card${theme.id === currentThemeId ? " is-active" : ""}`;
+      btn.className = `theme-card${theme.id === currentThemeId ? " is-active" : ""}${isVipTheme(theme) ? " is-vip" : ""}${locked ? " is-locked" : ""}`;
       btn.setAttribute("role", "option");
       btn.setAttribute("aria-selected", String(theme.id === currentThemeId));
+      btn.setAttribute("aria-disabled", String(locked));
       btn.dataset.theme = theme.id;
-      btn.title = theme.name;
+      btn.title = locked ? `${theme.name} — VIP gem theme (locked)` : theme.name;
       const img = document.createElement("img");
       img.src = theme.src;
       img.alt = theme.name;
@@ -367,14 +412,81 @@
         }));
       };
       const label = document.createElement("span");
-      label.textContent = theme.name;
+      label.textContent = isVipTheme(theme) ? `${theme.name} · VIP` : theme.name;
       btn.append(img, label);
+      if (isVipTheme(theme)) {
+        const badge = document.createElement("em");
+        badge.className = "theme-vip-badge";
+        badge.textContent = locked ? "VIP LOCK" : "VIP";
+        btn.appendChild(badge);
+      }
       els.themeGrid.appendChild(btn);
     });
   }
 
   function applyBackgroundFromStorage() {
-    applyTheme(currentThemeId, { persist: true, toast: false });
+    let theme = getTheme(currentThemeId);
+    if (!canUseTheme(theme)) {
+      currentThemeId = "sunrise";
+      theme = getTheme("sunrise");
+    }
+    applyTheme(theme.id, { persist: true, toast: false });
+  }
+
+  function chestReadyToday() {
+    return state.lastChestDate !== todayKey();
+  }
+
+  function renderDailyChest() {
+    if (!els.dailyChest) return;
+    const ready = chestReadyToday();
+    const isNewcomer = !(state.chestClaims > 0);
+    els.dailyChest.classList.toggle("is-ready", ready);
+    els.dailyChest.classList.toggle("is-claimed", !ready);
+    els.dailyChest.disabled = !ready;
+    if (els.dailyChestLabel) {
+      els.dailyChestLabel.textContent = ready
+        ? isNewcomer
+          ? "Welcome Chest"
+          : "Daily Chest"
+        : "Chest Claimed";
+    }
+    if (els.dailyChestMeta) {
+      els.dailyChestMeta.textContent = ready
+        ? `+${DAILY_CHEST_GEMS} Gems`
+        : "Come back tomorrow";
+    }
+    els.dailyChest.title = ready
+      ? `Open for ${DAILY_CHEST_GEMS} gems${isNewcomer ? " (newcomer bonus)" : ""}`
+      : "Already opened today — come back tomorrow";
+    els.dailyChest.setAttribute("aria-disabled", String(!ready));
+  }
+
+  function claimDailyChest() {
+    if (!chestReadyToday()) {
+      showToast("Daily chest already opened — come back tomorrow");
+      playSfx("click");
+      return;
+    }
+    const isNewcomer = !(state.chestClaims > 0);
+    state.gems = (state.gems || 0) + DAILY_CHEST_GEMS;
+    state.lastChestDate = todayKey();
+    state.chestClaims = (state.chestClaims || 0) + 1;
+    addHistory({
+      type: "chest",
+      text: isNewcomer ? "Welcome chest opened" : "Daily chest opened",
+      gems: DAILY_CHEST_GEMS,
+    });
+    saveState();
+    renderWallet();
+    renderDailyChest();
+    renderHistory();
+    playSfx("levelup");
+    showToast(
+      isNewcomer
+        ? `Welcome! Chest opened — +${DAILY_CHEST_GEMS} Gems`
+        : `Daily chest opened — +${DAILY_CHEST_GEMS} Gems`
+    );
   }
 
   function ensureAudio() {
@@ -657,8 +769,9 @@
     saveState();
     renderWallet();
     renderVipToggle();
+    renderThemeGrid();
     playSfx("levelup");
-    showToast("Moderator code accepted — VIP unlocked");
+    showToast("Moderator code accepted — VIP gem themes unlocked");
     els.modPanel.setAttribute("hidden", "");
     els.modToggle.setAttribute("aria-expanded", "false");
     els.modCode.value = "";
@@ -986,8 +1099,19 @@
   els.themeGrid?.addEventListener("click", (e) => {
     const card = e.target.closest("[data-theme]");
     if (!card) return;
-    applyTheme(card.dataset.theme, { toast: true });
+    const theme = getTheme(card.dataset.theme);
+    if (!canUseTheme(theme)) {
+      showToast("VIP gem theme locked — unlock VIP first");
+      playSfx("click");
+      return;
+    }
+    applyTheme(theme.id, { toast: true });
     playSfx("click");
+  });
+
+  els.dailyChest?.addEventListener("click", () => {
+    ensureAudio();
+    claimDailyChest();
   });
 
   els.musicToggle.addEventListener("click", () => {
@@ -1141,10 +1265,21 @@
 
   els.ring.style.strokeDasharray = String(CIRCUMFERENCE);
 
+  // One-time wipe of saved activity history / streak panel
+  if (localStorage.getItem("arcane-horizon-history-reset-v1") !== "1") {
+    state.history = [];
+    state.streak = 0;
+    state.bestStreak = 0;
+    state.lastActiveDate = null;
+    localStorage.setItem("arcane-horizon-history-reset-v1", "1");
+    saveState();
+  }
+
   renderSfxToggle();
   renderMusicToggle();
   renderVipToggle();
   renderWallet();
+  renderDailyChest();
   renderStreak();
   renderHistory();
   // Keep trying to start music on first interactions

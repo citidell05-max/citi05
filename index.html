@@ -45,6 +45,21 @@
           <strong id="gem-count">0</strong>
           <span class="wallet-tag">VIP</span>
         </div>
+        <button type="button" class="daily-chest is-ready" id="daily-chest" title="Open for 100 gems (newcomer bonus)">
+          <span class="daily-chest-icon" aria-hidden="true">
+            <svg viewBox="0 0 64 56" width="34" height="30">
+              <rect x="6" y="22" width="52" height="28" rx="4" fill="#c48a2a"/>
+              <rect x="6" y="22" width="52" height="10" fill="#e0b24a"/>
+              <path d="M10 22 V16 Q32 4 54 16 V22 Z" fill="#d9a43a"/>
+              <rect x="28" y="30" width="8" height="12" rx="2" fill="#ffe28a"/>
+              <circle cx="32" cy="36" r="3" fill="#ff71ce"/>
+            </svg>
+          </span>
+          <span class="daily-chest-copy">
+            <strong id="daily-chest-label">Welcome Chest</strong>
+            <span id="daily-chest-meta">+100 Gems</span>
+          </span>
+        </button>
       </div>
 
       <div class="header-actions">
@@ -74,7 +89,7 @@
       </div>
 
       <div class="theme-panel" id="theme-panel">
-        <p class="theme-panel-title">Choose Theme — tap a picture</p>
+        <p class="theme-panel-title">Choose Theme — VIP gem themes unlock with VIP</p>
         <div class="theme-grid" id="theme-grid" role="listbox" aria-label="Background themes">
           <button type="button" class="theme-card is-active is-featured" data-theme="sunrise"><img src="assets/themes/11-sunrise.jpg?v=5" alt="Arcane Sunrise" /><span>Arcane Sunrise · Brand</span></button>
           <button type="button" class="theme-card" data-theme="sunset"><img src="assets/themes/01-sunset.jpg?v=4" alt="Sunset Palm" /><span>Sunset Palm</span></button>
@@ -87,6 +102,9 @@
           <button type="button" class="theme-card" data-theme="desert"><img src="assets/themes/08-desert.jpg?v=4" alt="Desert Dusk" /><span>Desert Dusk</span></button>
           <button type="button" class="theme-card" data-theme="space"><img src="assets/themes/09-space.jpg?v=4" alt="Cosmic Nebula" /><span>Cosmic Nebula</span></button>
           <button type="button" class="theme-card" data-theme="neonrain"><img src="assets/themes/10-neonrain.jpg?v=4" alt="Neon Rain" /><span>Neon Rain</span></button>
+          <button type="button" class="theme-card is-vip is-locked" data-theme="vipgold"><img src="assets/themes/12-vipgold.jpg?v=1" alt="Gem Vault" /><span>Gem Vault · VIP</span><em class="theme-vip-badge">VIP LOCK</em></button>
+          <button type="button" class="theme-card is-vip is-locked" data-theme="viproyal"><img src="assets/themes/13-viproyal.jpg?v=1" alt="Royal Obsidian" /><span>Royal Obsidian · VIP</span><em class="theme-vip-badge">VIP LOCK</em></button>
+          <button type="button" class="theme-card is-vip is-locked" data-theme="vipcrystal"><img src="assets/themes/14-vipcrystal.jpg?v=1" alt="Crystal Crown" /><span>Crystal Crown · VIP</span><em class="theme-vip-badge">VIP LOCK</em></button>
         </div>
       </div>
 
