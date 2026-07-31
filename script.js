@@ -4,7 +4,7 @@
   const THEME_STORAGE_KEY = "arcane-horizon-theme-id";
   const BG_STORAGE_KEY = "arcane-horizon-v6-bg";
   const THEMES = [
-    { id: "sunrise", name: "Arcane Sunrise", src: "assets/themes/11-sunrise.jpg?v=1", accent: "#ffb347", accent2: "#ff4fd8", overlay: "rgba(24, 10, 28, 0.22)" },
+    { id: "sunrise", name: "Arcane Sunrise", src: "assets/themes/11-sunrise.jpg?v=2", accent: "#ffb347", accent2: "#ff4fd8", overlay: "rgba(20, 8, 28, 0.1)" },
     { id: "sunset", name: "Sunset Palm", src: "assets/themes/01-sunset.jpg?v=2", accent: "#ff8c42", accent2: "#ff4fd8", overlay: "rgba(40, 10, 30, 0.18)" },
     { id: "cyberpunk", name: "Cyber Purple", src: "assets/themes/02-cyberpunk.jpg?v=3", accent: "#d16bff", accent2: "#ff4fd8", overlay: "rgba(18, 4, 36, 0.28)" },
     { id: "forest", name: "Forest Mist", src: "assets/themes/03-forest.jpg?v=2", accent: "#8cff9a", accent2: "#6ad1ff", overlay: "rgba(8, 20, 12, 0.2)" },
@@ -237,16 +237,34 @@
   function applyTheme(id, { persist = true, toast = false } = {}) {
     const theme = getTheme(id);
     currentThemeId = theme.id;
+    const src = theme.src;
 
-    if (els.bgPhoto) {
-      els.bgPhoto.src = theme.src;
-    }
+    document.documentElement.style.setProperty("--bg-image", `url("${src}")`);
+
     const scene = document.querySelector(".bg-scene");
     if (scene) {
-      scene.style.backgroundImage = `url("${theme.src}")`;
+      scene.style.backgroundImage = `url("${src}")`;
       scene.style.backgroundSize = "cover";
       scene.style.backgroundPosition = "center";
+      scene.style.backgroundRepeat = "no-repeat";
     }
+
+    if (els.bgPhoto) {
+      els.bgPhoto.decoding = "async";
+      els.bgPhoto.onerror = () => {
+        // Fall back to CSS layer / default sunrise if a theme file fails
+        els.bgPhoto.removeAttribute("src");
+        document.documentElement.style.setProperty(
+          "--bg-image",
+          'url("assets/themes/11-sunrise.jpg?v=2")'
+        );
+        showToast("Background image missing — showing Arcane Sunrise");
+      };
+      if (els.bgPhoto.getAttribute("src") !== src) {
+        els.bgPhoto.src = src;
+      }
+    }
+
     if (els.bgOverlay) {
       els.bgOverlay.style.background = theme.overlay;
     }
@@ -257,14 +275,17 @@
     if (persist) {
       try {
         localStorage.setItem(THEME_STORAGE_KEY, theme.id);
-        localStorage.setItem(BG_STORAGE_KEY, theme.src);
+        localStorage.setItem(BG_STORAGE_KEY, src);
         [
           "arcane-horizon-v1-bg",
           "arcane-horizon-v2-bg",
           "arcane-horizon-v3-bg",
           "arcane-horizon-v4-bg",
           "arcane-horizon-v5-bg",
-        ].forEach((key) => localStorage.removeItem(key));
+          "arcane-horizon-v6-bg",
+        ].forEach((key) => {
+          if (key !== BG_STORAGE_KEY) localStorage.removeItem(key);
+        });
       } catch {
         /* ignore */
       }

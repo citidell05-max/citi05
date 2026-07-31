@@ -43,18 +43,24 @@ body {
   z-index: 0;
   overflow: hidden;
   pointer-events: none;
-  background: #0d1a12;
+  background-color: #12081f;
+  background-image: var(--bg-image, url("assets/themes/11-sunrise.jpg?v=2"));
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
 }
 
 .bg-photo {
   position: absolute;
   inset: 0;
+  display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
   object-position: center;
   transform: scale(1.04);
   animation: city-drift 28s ease-in-out infinite alternate;
+  z-index: 1;
 }
 
 .bg-birds {
@@ -63,15 +69,15 @@ body {
   width: 100%;
   height: 100%;
   pointer-events: none;
-  z-index: 0;
+  z-index: 2;
 }
 
 .bg-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(12, 4, 28, 0.2);
+  background: rgba(12, 4, 28, 0.12);
   pointer-events: none;
-  z-index: 0;
+  z-index: 3;
 }
 
 @keyframes city-drift {
@@ -81,7 +87,7 @@ body {
 
 .app {
   position: relative;
-  z-index: 1;
+  z-index: 4;
   width: min(1100px, calc(100% - 2rem));
   margin: 0 auto;
   padding: 2rem 0 3rem;
@@ -1045,7 +1051,7 @@ body {
 
 .music-credit {
   position: relative;
-  z-index: 1;
+  z-index: 4;
   margin: 0 auto 1.25rem;
   width: min(1100px, calc(100% - 2rem));
   text-align: center;
