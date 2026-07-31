@@ -17,7 +17,7 @@
     }
 
     const sceneBg = new Image();
-    sceneBg.src = "assets/themes/11-sunrise.jpg?v=2";
+    sceneBg.src = "assets/themes/11-sunrise.jpg?v=4";
     window.addEventListener("arcane-theme-change", (e) => {
       if (e.detail?.theme?.src) sceneBg.src = e.detail.theme.src;
     });

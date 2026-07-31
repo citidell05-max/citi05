@@ -18,7 +18,7 @@
     }
 
     const desertBg = new Image();
-    desertBg.src = "assets/themes/08-desert.jpg?v=2";
+    desertBg.src = "assets/themes/08-desert.jpg?v=4";
     desertBg.decoding = "async";
 
     const W = canvas.width;

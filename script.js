@@ -4,17 +4,17 @@
   const THEME_STORAGE_KEY = "arcane-horizon-theme-id";
   const BG_STORAGE_KEY = "arcane-horizon-v6-bg";
   const THEMES = [
-    { id: "sunrise", name: "Arcane Sunrise", src: "assets/themes/11-sunrise.jpg?v=2", accent: "#ffb347", accent2: "#ff4fd8", overlay: "rgba(20, 8, 28, 0.1)" },
-    { id: "sunset", name: "Sunset Palm", src: "assets/themes/01-sunset.jpg?v=2", accent: "#ff8c42", accent2: "#ff4fd8", overlay: "rgba(40, 10, 30, 0.18)" },
-    { id: "cyberpunk", name: "Cyber Purple", src: "assets/themes/02-cyberpunk.jpg?v=3", accent: "#d16bff", accent2: "#ff4fd8", overlay: "rgba(18, 4, 36, 0.28)" },
-    { id: "forest", name: "Forest Mist", src: "assets/themes/03-forest.jpg?v=2", accent: "#8cff9a", accent2: "#6ad1ff", overlay: "rgba(8, 20, 12, 0.2)" },
-    { id: "ocean", name: "Deep Ocean", src: "assets/themes/04-ocean.jpg?v=2", accent: "#4fd2ff", accent2: "#2b7cff", overlay: "rgba(4, 20, 40, 0.28)" },
-    { id: "aurora", name: "Aurora", src: "assets/themes/05-aurora.jpg?v=2", accent: "#7dffb0", accent2: "#6ecbff", overlay: "rgba(4, 16, 28, 0.24)" },
-    { id: "volcano", name: "Volcano", src: "assets/themes/06-volcano.jpg?v=2", accent: "#ff7a3c", accent2: "#ff3d5a", overlay: "rgba(30, 8, 8, 0.28)" },
-    { id: "ice", name: "Ice Cavern", src: "assets/themes/07-ice.jpg?v=2", accent: "#9fe9ff", accent2: "#d8f6ff", overlay: "rgba(8, 24, 36, 0.22)" },
-    { id: "desert", name: "Desert Dusk", src: "assets/themes/08-desert.jpg?v=2", accent: "#ffb347", accent2: "#ff6f91", overlay: "rgba(36, 16, 8, 0.22)" },
-    { id: "space", name: "Cosmic Nebula", src: "assets/themes/09-space.jpg?v=2", accent: "#b388ff", accent2: "#66e0ff", overlay: "rgba(10, 4, 28, 0.26)" },
-    { id: "neonrain", name: "Neon Rain", src: "assets/themes/10-neonrain.jpg?v=2", accent: "#ff4fd8", accent2: "#4de1ff", overlay: "rgba(16, 4, 24, 0.3)" },
+    { id: "sunrise", name: "Arcane Sunrise", src: "assets/themes/11-sunrise.jpg?v=4", accent: "#ffb347", accent2: "#ff4fd8", overlay: "rgba(20, 8, 28, 0.1)" },
+    { id: "sunset", name: "Sunset Palm", src: "assets/themes/01-sunset.jpg?v=4", accent: "#ff8c42", accent2: "#ff4fd8", overlay: "rgba(40, 10, 30, 0.18)" },
+    { id: "cyberpunk", name: "Cyber Purple", src: "assets/themes/02-cyberpunk.jpg?v=4", accent: "#d16bff", accent2: "#ff4fd8", overlay: "rgba(18, 4, 36, 0.28)" },
+    { id: "forest", name: "Forest Mist", src: "assets/themes/03-forest.jpg?v=4", accent: "#8cff9a", accent2: "#6ad1ff", overlay: "rgba(8, 20, 12, 0.2)" },
+    { id: "ocean", name: "Deep Ocean", src: "assets/themes/04-ocean.jpg?v=4", accent: "#4fd2ff", accent2: "#2b7cff", overlay: "rgba(4, 20, 40, 0.28)" },
+    { id: "aurora", name: "Aurora", src: "assets/themes/05-aurora.jpg?v=4", accent: "#7dffb0", accent2: "#6ecbff", overlay: "rgba(4, 16, 28, 0.24)" },
+    { id: "volcano", name: "Volcano", src: "assets/themes/06-volcano.jpg?v=4", accent: "#ff7a3c", accent2: "#ff3d5a", overlay: "rgba(30, 8, 8, 0.28)" },
+    { id: "ice", name: "Ice Cavern", src: "assets/themes/07-ice.jpg?v=4", accent: "#9fe9ff", accent2: "#d8f6ff", overlay: "rgba(8, 24, 36, 0.22)" },
+    { id: "desert", name: "Desert Dusk", src: "assets/themes/08-desert.jpg?v=4", accent: "#ffb347", accent2: "#ff6f91", overlay: "rgba(36, 16, 8, 0.22)" },
+    { id: "space", name: "Cosmic Nebula", src: "assets/themes/09-space.jpg?v=4", accent: "#b388ff", accent2: "#66e0ff", overlay: "rgba(10, 4, 28, 0.26)" },
+    { id: "neonrain", name: "Neon Rain", src: "assets/themes/10-neonrain.jpg?v=4", accent: "#ff4fd8", accent2: "#4de1ff", overlay: "rgba(16, 4, 24, 0.3)" },
   ];
   const BG_DEFAULT = THEMES[0].src;
   const QUEST_XP = 40;
@@ -234,10 +234,19 @@
     return THEMES.find((t) => t.id === id) || THEMES[0];
   }
 
+  function preloadThemes() {
+    THEMES.forEach((theme) => {
+      const img = new Image();
+      img.decoding = "async";
+      img.src = theme.src;
+    });
+  }
+
   function applyTheme(id, { persist = true, toast = false } = {}) {
     const theme = getTheme(id);
     currentThemeId = theme.id;
     const src = theme.src;
+    const fallback = THEMES[0].src;
 
     document.documentElement.style.setProperty("--bg-image", `url("${src}")`);
 
@@ -252,17 +261,14 @@
     if (els.bgPhoto) {
       els.bgPhoto.decoding = "async";
       els.bgPhoto.onerror = () => {
-        // Fall back to CSS layer / default sunrise if a theme file fails
-        els.bgPhoto.removeAttribute("src");
-        document.documentElement.style.setProperty(
-          "--bg-image",
-          'url("assets/themes/11-sunrise.jpg?v=2")'
-        );
-        showToast("Background image missing — showing Arcane Sunrise");
+        if (els.bgPhoto.dataset.failed === src) return;
+        els.bgPhoto.dataset.failed = src;
+        els.bgPhoto.src = fallback;
+        document.documentElement.style.setProperty("--bg-image", `url("${fallback}")`);
+        if (scene) scene.style.backgroundImage = `url("${fallback}")`;
+        showToast("Theme image failed — loaded Arcane Sunrise");
       };
-      if (els.bgPhoto.getAttribute("src") !== src) {
-        els.bgPhoto.src = src;
-      }
+      els.bgPhoto.src = src;
     }
 
     if (els.bgOverlay) {
@@ -282,10 +288,7 @@
           "arcane-horizon-v3-bg",
           "arcane-horizon-v4-bg",
           "arcane-horizon-v5-bg",
-          "arcane-horizon-v6-bg",
-        ].forEach((key) => {
-          if (key !== BG_STORAGE_KEY) localStorage.removeItem(key);
-        });
+        ].forEach((key) => localStorage.removeItem(key));
       } catch {
         /* ignore */
       }
@@ -299,14 +302,20 @@
   function renderThemeGrid() {
     if (!els.themeGrid) return;
 
-    // Prefer the pictures already in HTML — only sync active state
+    // Prefer the pictures already in HTML — sync active state + fresh URLs
     const existing = els.themeGrid.querySelectorAll("[data-theme]");
     if (existing.length) {
       existing.forEach((btn) => {
-        const active = btn.dataset.theme === currentThemeId;
+        const theme = getTheme(btn.dataset.theme);
+        const active = theme.id === currentThemeId;
         btn.classList.toggle("is-active", active);
         btn.setAttribute("aria-selected", String(active));
         btn.setAttribute("role", "option");
+        const img = btn.querySelector("img");
+        if (img && img.getAttribute("src") !== theme.src) {
+          img.src = theme.src;
+          img.alt = theme.name;
+        }
       });
       return;
     }
@@ -950,6 +959,7 @@
 
   window.addEventListener("beforeunload", saveState);
 
+  preloadThemes();
   applyBackgroundFromStorage();
   renderThemeGrid();
   if (els.themePanel) els.themePanel.removeAttribute("hidden");
