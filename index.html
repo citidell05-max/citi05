@@ -10,12 +10,12 @@
   <link rel="stylesheet" href="style.css" />
   <link rel="preload" as="image" href="assets/themes/11-sunrise.jpg?v=5" />
   <style>
-    :root { --bg-image: url("assets/themes/11-sunrise.jpg?v=5"); }
+    :root { --bg-image: none; }
   </style>
 </head>
-<body data-theme="sunrise">
-  <div class="bg-scene" aria-hidden="true" style="background-image:url('assets/themes/11-sunrise.jpg?v=5');background-size:cover;background-position:center;">
-    <img class="bg-photo" id="bg-photo" src="assets/themes/11-sunrise.jpg?v=5" alt="" />
+<body data-theme="dark" class="theme-locked-dark">
+  <div class="bg-scene" aria-hidden="true" style="background-image:none;background-color:#07040f;background-size:cover;background-position:center;">
+    <img class="bg-photo" id="bg-photo" alt="" hidden />
   </div>
   <canvas class="theme-fx" id="theme-fx" aria-hidden="true"></canvas>
   <div class="theme-ornaments" id="theme-ornaments" aria-hidden="true"></div>
@@ -89,22 +89,22 @@
       </div>
 
       <div class="theme-panel" id="theme-panel">
-        <p class="theme-panel-title">Theme Shop — 100 Tokens each · VIP themes 10 Gems</p>
+        <p class="theme-panel-title">Theme Shop — every theme costs 100 Tokens · earn 10 Tokens per 3 game wins or 100 pts</p>
         <div class="theme-grid" id="theme-grid" role="listbox" aria-label="Background themes">
-          <button type="button" class="theme-card is-active is-featured" data-theme="sunrise"><img src="assets/themes/11-sunrise.jpg?v=5" alt="Arcane Sunrise" /><span>Arcane Sunrise · Brand</span></button>
-          <button type="button" class="theme-card" data-theme="sunset"><img src="assets/themes/01-sunset.jpg?v=4" alt="Sunset Palm" /><span>Sunset Palm</span></button>
-          <button type="button" class="theme-card" data-theme="cyberpunk"><img src="assets/themes/02-cyberpunk.jpg?v=4" alt="Cyber Purple" /><span>Cyber Purple</span></button>
-          <button type="button" class="theme-card" data-theme="forest"><img src="assets/themes/03-forest.jpg?v=4" alt="Forest Mist" /><span>Forest Mist</span></button>
-          <button type="button" class="theme-card" data-theme="ocean"><img src="assets/themes/04-ocean.jpg?v=4" alt="Deep Ocean" /><span>Deep Ocean</span></button>
-          <button type="button" class="theme-card" data-theme="aurora"><img src="assets/themes/05-aurora.jpg?v=4" alt="Aurora" /><span>Aurora</span></button>
-          <button type="button" class="theme-card" data-theme="volcano"><img src="assets/themes/06-volcano.jpg?v=4" alt="Volcano" /><span>Volcano</span></button>
-          <button type="button" class="theme-card" data-theme="ice"><img src="assets/themes/07-ice.jpg?v=4" alt="Ice Cavern" /><span>Ice Cavern</span></button>
-          <button type="button" class="theme-card" data-theme="desert"><img src="assets/themes/08-desert.jpg?v=4" alt="Desert Dusk" /><span>Desert Dusk</span></button>
-          <button type="button" class="theme-card" data-theme="space"><img src="assets/themes/09-space.jpg?v=4" alt="Cosmic Nebula" /><span>Cosmic Nebula</span></button>
-          <button type="button" class="theme-card" data-theme="neonrain"><img src="assets/themes/10-neonrain.jpg?v=4" alt="Neon Rain" /><span>Neon Rain</span></button>
-          <button type="button" class="theme-card is-vip is-locked" data-theme="vipgold"><img src="assets/themes/12-vipgold.jpg?v=1" alt="Gem Vault" /><span>Gem Vault · VIP</span><em class="theme-vip-badge">VIP LOCK</em></button>
-          <button type="button" class="theme-card is-vip is-locked" data-theme="viproyal"><img src="assets/themes/13-viproyal.jpg?v=1" alt="Royal Obsidian" /><span>Royal Obsidian · VIP</span><em class="theme-vip-badge">VIP LOCK</em></button>
-          <button type="button" class="theme-card is-vip is-locked" data-theme="vipcrystal"><img src="assets/themes/14-vipcrystal.jpg?v=1" alt="Crystal Crown" /><span>Crystal Crown · VIP</span><em class="theme-vip-badge">VIP LOCK</em></button>
+          <button type="button" class="theme-card is-featured is-locked" data-theme="sunrise"><img alt="" hidden /><span>Arcane Sunrise · 100 Tokens</span><em class="theme-vip-badge is-price">100 TOKENS</em></button>
+          <button type="button" class="theme-card is-locked" data-theme="sunset"><img alt="" hidden /><span>Sunset Palm · 100 Tokens</span><em class="theme-vip-badge is-price">100 TOKENS</em></button>
+          <button type="button" class="theme-card is-locked" data-theme="cyberpunk"><img alt="" hidden /><span>Cyber Purple · 100 Tokens</span><em class="theme-vip-badge is-price">100 TOKENS</em></button>
+          <button type="button" class="theme-card is-locked" data-theme="forest"><img alt="" hidden /><span>Forest Mist · 100 Tokens</span><em class="theme-vip-badge is-price">100 TOKENS</em></button>
+          <button type="button" class="theme-card is-locked" data-theme="ocean"><img alt="" hidden /><span>Deep Ocean · 100 Tokens</span><em class="theme-vip-badge is-price">100 TOKENS</em></button>
+          <button type="button" class="theme-card is-locked" data-theme="aurora"><img alt="" hidden /><span>Aurora · 100 Tokens</span><em class="theme-vip-badge is-price">100 TOKENS</em></button>
+          <button type="button" class="theme-card is-locked" data-theme="volcano"><img alt="" hidden /><span>Volcano · 100 Tokens</span><em class="theme-vip-badge is-price">100 TOKENS</em></button>
+          <button type="button" class="theme-card is-locked" data-theme="ice"><img alt="" hidden /><span>Ice Cavern · 100 Tokens</span><em class="theme-vip-badge is-price">100 TOKENS</em></button>
+          <button type="button" class="theme-card is-locked" data-theme="desert"><img alt="" hidden /><span>Desert Dusk · 100 Tokens</span><em class="theme-vip-badge is-price">100 TOKENS</em></button>
+          <button type="button" class="theme-card is-locked" data-theme="space"><img alt="" hidden /><span>Cosmic Nebula · 100 Tokens</span><em class="theme-vip-badge is-price">100 TOKENS</em></button>
+          <button type="button" class="theme-card is-locked" data-theme="neonrain"><img alt="" hidden /><span>Neon Rain · 100 Tokens</span><em class="theme-vip-badge is-price">100 TOKENS</em></button>
+          <button type="button" class="theme-card is-vip is-locked" data-theme="vipgold"><img alt="" hidden /><span>Gem Vault · VIP Locked</span><em class="theme-vip-badge is-price">100 TOKENS</em></button>
+          <button type="button" class="theme-card is-vip is-locked" data-theme="viproyal"><img alt="" hidden /><span>Royal Obsidian · VIP Locked</span><em class="theme-vip-badge is-price">100 TOKENS</em></button>
+          <button type="button" class="theme-card is-vip is-locked" data-theme="vipcrystal"><img alt="" hidden /><span>Crystal Crown · VIP Locked</span><em class="theme-vip-badge is-price">100 TOKENS</em></button>
         </div>
       </div>
 

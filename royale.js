@@ -131,13 +131,12 @@
       if (win) {
         state.wins += 1;
         localStorage.setItem(STORAGE_WINS, String(state.wins));
-        const tokens = 20;
         window.dispatchEvent(
           new CustomEvent("arcane-game-reward", {
-            detail: { tokens, score: state.wins, game: "royale" },
+            detail: { game: "royale", win: true, points: 0, score: state.wins },
           })
         );
-        statusStatus(`Victory Royale! +${tokens} Tokens`);
+        statusStatus("Victory Royale! Progress toward Tokens recorded");
       } else {
         statusStatus("Defeat — rebuild your push and try again");
       }

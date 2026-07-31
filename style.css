@@ -43,8 +43,8 @@ body {
   z-index: 0;
   overflow: hidden;
   pointer-events: none;
-  background-color: #12081f;
-  background-image: var(--bg-image, url("assets/themes/11-sunrise.jpg?v=5"));
+  background-color: #07040f;
+  background-image: var(--bg-image, none);
   background-size: cover;
   background-position: center center;
   background-repeat: no-repeat;
@@ -61,6 +61,16 @@ body {
   transform: scale(1.04);
   animation: city-drift 28s ease-in-out infinite alternate;
   z-index: 1;
+}
+
+.bg-photo[hidden] {
+  display: none;
+}
+
+body.theme-locked-dark .bg-scene {
+  background-color: #07040f;
+  background-image: none;
+  box-shadow: inset 0 0 120px rgba(0, 0, 0, 0.65);
 }
 
 .theme-fx {
@@ -896,6 +906,7 @@ body[data-theme="vipcrystal"] .theme-orb-2 {
 
 .theme-card {
   appearance: none;
+  position: relative;
   border: 2px solid rgba(255, 255, 255, 0.25);
   border-radius: 12px;
   padding: 0;
@@ -905,6 +916,7 @@ body[data-theme="vipcrystal"] .theme-orb-2 {
   color: #fff;
   text-align: left;
   transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s;
+  min-height: 7.5rem;
 }
 
 .theme-card:hover {
@@ -945,16 +957,34 @@ body[data-theme="vipcrystal"] .theme-orb-2 {
 }
 
 .theme-card.is-locked {
-  cursor: not-allowed;
+  cursor: pointer;
+  background: #0a0712;
 }
 
 .theme-card.is-locked img,
 .theme-card.is-locked .theme-fallback {
-  filter: grayscale(0.35) brightness(0.72);
+  filter: grayscale(1) brightness(0.2);
+}
+
+.theme-card.is-locked::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 2rem;
+  background:
+    radial-gradient(circle at 50% 40%, rgba(255, 255, 255, 0.05), transparent 45%),
+    linear-gradient(180deg, #12101a 0%, #07040f 100%);
+  z-index: 1;
+}
+
+.theme-card.is-locked span,
+.theme-card.is-locked .theme-vip-badge {
+  position: relative;
+  z-index: 2;
 }
 
 .theme-card.is-locked:hover {
-  transform: none;
+  transform: translateY(-2px);
+  border-color: rgba(122, 240, 255, 0.45);
 }
 
 .theme-vip-badge {

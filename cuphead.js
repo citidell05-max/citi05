@@ -98,15 +98,21 @@
         state.best += 1;
         localStorage.setItem(STORAGE_BEST, String(state.best));
         metaEl.textContent = `Wins: ${state.best}`;
-        const tokens = 18 + Math.floor(state.score / 40);
-        window.dispatchEvent(
-          new CustomEvent("arcane-game-reward", {
-            detail: { tokens, score: state.score, game: "cuphead" },
-          })
-        );
-        setStatus(`Boss defeated! +${tokens} Tokens`);
+        setStatus("Boss defeated! Progress toward Tokens recorded");
       } else {
         setStatus("You got dunked — try again, cup fighter!");
+      }
+      if (win || state.score > 0) {
+        window.dispatchEvent(
+          new CustomEvent("arcane-game-reward", {
+            detail: {
+              game: "cuphead",
+              win: !!win,
+              points: state.score,
+              score: state.score,
+            },
+          })
+        );
       }
       syncHud();
     }

@@ -129,14 +129,9 @@
         metaEl.textContent = `Best: ${state.bestMs}ms · Wins: ${state.wins}`;
         setStatus(`You drew first! ${ms}ms (bandit ${Math.round(state.banditMs)}ms)`);
 
-        let tokens = 8;
-        if (ms < 250) tokens = 20;
-        else if (ms < 320) tokens = 15;
-        else if (ms < 400) tokens = 12;
-        tokens += Math.min(10, state.streak);
         window.dispatchEvent(
           new CustomEvent("arcane-game-reward", {
-            detail: { tokens, score: ms, game: "cowboy" },
+            detail: { game: "cowboy", win: true, points: 0, score: ms },
           })
         );
       } else {

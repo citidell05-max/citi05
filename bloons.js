@@ -427,11 +427,10 @@
           state.bestWave = state.wave;
           localStorage.setItem(STORAGE_WAVE, String(state.bestWave));
         }
-        const tokens = Math.max(3, 4 + Math.floor(state.wave * 1.5));
-        state.rewardBank += tokens;
+        state.rewardBank += 1;
         window.dispatchEvent(
           new CustomEvent("arcane-game-reward", {
-            detail: { tokens, score: state.wave, game: "bloons" },
+            detail: { game: "bloons", win: true, points: 0, score: state.wave },
           })
         );
         setStatus(`Wave ${state.wave} cleared! +$${bonus}`);

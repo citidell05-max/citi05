@@ -28,8 +28,9 @@
   const FOCUS_GEMS = 3;
   const DAILY_CHEST_GEMS = 100;
   const THEME_TOKEN_COST = 100;
-  const VIP_THEME_GEM_COST = 10;
-  const FREE_THEME_ID = "sunrise";
+  const GAME_WIN_GOAL = 3;
+  const GAME_POINT_GOAL = 100;
+  const GAME_MILESTONE_TOKENS = 10;
   const VIP_COST = 25000;
   const MOD_VIP_CODE = "ONLY4VIP";
   const CIRCUMFERENCE = 552.92;
@@ -127,20 +128,23 @@
   ];
 
   const state = loadState();
-  if (!Array.isArray(state.ownedThemes) || !state.ownedThemes.length) {
-    state.ownedThemes = [FREE_THEME_ID];
+  if (!Array.isArray(state.ownedThemes)) state.ownedThemes = [];
+  let currentThemeId = localStorage.getItem(THEME_STORAGE_KEY) || "";
+  if (currentThemeId && !THEMES.some((t) => t.id === currentThemeId)) currentThemeId = "";
+  // Lock all themes behind Tokens — start dark until a theme is bought
+  if (localStorage.getItem("arcane-horizon-theme-shop-v2") !== "1") {
+    state.ownedThemes = [];
+    currentThemeId = "";
+    localStorage.setItem("arcane-horizon-theme-shop-v2", "1");
+    try {
+      localStorage.removeItem(THEME_STORAGE_KEY);
+      localStorage.removeItem(BG_STORAGE_KEY);
+    } catch {
+      /* ignore */
+    }
   }
-  if (!state.ownedThemes.includes(FREE_THEME_ID)) state.ownedThemes.push(FREE_THEME_ID);
-  let currentThemeId = localStorage.getItem(THEME_STORAGE_KEY) || "sunrise";
-  if (!THEMES.some((t) => t.id === currentThemeId)) currentThemeId = "sunrise";
-  // One-time refresh: apply the new branded Arcane Sunrise background
-  if (localStorage.getItem("arcane-horizon-sunrise-v5") !== "1") {
-    currentThemeId = "sunrise";
-    localStorage.setItem("arcane-horizon-sunrise-v5", "1");
-  }
-  // Keep currently equipped theme usable after shop pricing was added
   if (currentThemeId && !state.ownedThemes.includes(currentThemeId)) {
-    state.ownedThemes.push(currentThemeId);
+    currentThemeId = "";
   }
   let sessionXp = Number(state.sessionXp) || 0;
   let timerId = null;
@@ -190,7 +194,9 @@
       lastActiveDate: null,
       lastChestDate: null,
       chestClaims: 0,
-      ownedThemes: [FREE_THEME_ID],
+      ownedThemes: [],
+      gameWinProgress: 0,
+      gamePointProgress: 0,
       history: [],
       vipEnabled: false,
       vipUnlocked: false,
@@ -226,7 +232,9 @@
           chestClaims: Math.max(0, Number(parsed.chestClaims) || 0),
           ownedThemes: Array.isArray(parsed.ownedThemes)
             ? parsed.ownedThemes.filter((id) => typeof id === "string")
-            : [FREE_THEME_ID],
+            : [],
+          gameWinProgress: Math.max(0, Number(parsed.gameWinProgress) || 0),
+          gamePointProgress: Math.max(0, Number(parsed.gamePointProgress) || 0),
           history: Array.isArray(parsed.history) ? parsed.history.slice(0, HISTORY_LIMIT) : [],
           vipEnabled: !!parsed.vipEnabled && parsed.vipUnlockSource === "moderator",
           vipUnlocked: !!parsed.vipUnlocked && parsed.vipUnlockSource === "moderator",
@@ -268,7 +276,9 @@
         lastActiveDate: state.lastActiveDate || null,
         lastChestDate: state.lastChestDate || null,
         chestClaims: state.chestClaims || 0,
-        ownedThemes: Array.isArray(state.ownedThemes) ? state.ownedThemes : [FREE_THEME_ID],
+        ownedThemes: Array.isArray(state.ownedThemes) ? state.ownedThemes : [],
+        gameWinProgress: state.gameWinProgress || 0,
+        gamePointProgress: state.gamePointProgress || 0,
         history: Array.isArray(state.history) ? state.history.slice(0, HISTORY_LIMIT) : [],
         vipEnabled,
         vipUnlocked,
@@ -301,7 +311,8 @@
   }
 
   function getTheme(id) {
-    return THEMES.find((t) => t.id === id) || THEMES[0];
+    if (!id) return null;
+    return THEMES.find((t) => t.id === id) || null;
   }
 
   function preloadThemes() {
@@ -317,42 +328,48 @@
   }
 
   function ownsTheme(themeId) {
-    if (!Array.isArray(state.ownedThemes)) state.ownedThemes = [FREE_THEME_ID];
-    return state.ownedThemes.includes(themeId) || themeId === FREE_THEME_ID;
+    if (!Array.isArray(state.ownedThemes)) state.ownedThemes = [];
+    return !!themeId && state.ownedThemes.includes(themeId);
   }
 
   function themePriceLabel(theme) {
-    if (theme.id === FREE_THEME_ID || ownsTheme(theme.id)) return "Owned";
-    if (isVipTheme(theme)) return `${VIP_THEME_GEM_COST} Gems`;
+    if (ownsTheme(theme.id)) return "Owned";
     return `${THEME_TOKEN_COST} Tokens`;
   }
 
   function canUseTheme(theme) {
-    return ownsTheme(theme.id);
+    return ownsTheme(theme?.id);
+  }
+
+  function applyDarkBackdrop() {
+    currentThemeId = "";
+    document.documentElement.style.setProperty("--bg-image", "none");
+    document.body.dataset.theme = "dark";
+    document.body.classList.add("theme-locked-dark");
+    const scene = document.querySelector(".bg-scene");
+    if (scene) {
+      scene.style.backgroundImage = "none";
+      scene.style.backgroundColor = "#07040f";
+    }
+    if (els.bgPhoto) {
+      els.bgPhoto.removeAttribute("src");
+      els.bgPhoto.hidden = true;
+    }
+    if (els.bgOverlay) {
+      els.bgOverlay.style.background = "rgba(4, 2, 12, 0.55)";
+    }
+    window.dispatchEvent(
+      new CustomEvent("arcane-theme-change", {
+        detail: { theme: { id: "dark", name: "Dark Lock", accent: "#7af0ff", accent2: "#ff4fd8" } },
+      })
+    );
   }
 
   function tryBuyTheme(theme) {
     if (ownsTheme(theme.id)) return { ok: true, bought: false };
 
-    if (isVipTheme(theme)) {
-      if (!vipUnlocked) {
-        return { ok: false, reason: "VIP gem themes need VIP unlock first" };
-      }
-      if ((state.gems || 0) < VIP_THEME_GEM_COST) {
-        return { ok: false, reason: `Need ${VIP_THEME_GEM_COST} Gems to unlock ${theme.name}` };
-      }
-      state.gems -= VIP_THEME_GEM_COST;
-      state.ownedThemes.push(theme.id);
-      addHistory({
-        type: "theme",
-        text: `Unlocked VIP theme: ${theme.name}`,
-        gems: -VIP_THEME_GEM_COST,
-      });
-      saveState();
-      renderWallet();
-      renderHistory();
-      renderLeaderboard();
-      return { ok: true, bought: true, currency: "gems", amount: VIP_THEME_GEM_COST };
+    if (isVipTheme(theme) && !vipUnlocked) {
+      return { ok: false, reason: "VIP themes need VIP unlock first — then 100 Tokens" };
     }
 
     if ((state.tokens || 0) < THEME_TOKEN_COST) {
@@ -373,19 +390,25 @@
   }
 
   function applyTheme(id, { persist = true, toast = false } = {}) {
+    if (!id) {
+      applyDarkBackdrop();
+      renderThemeGrid();
+      return;
+    }
     const theme = getTheme(id);
+    if (!theme) {
+      applyDarkBackdrop();
+      renderThemeGrid();
+      return;
+    }
     if (!canUseTheme(theme)) {
-      showToast(
-        isVipTheme(theme)
-          ? `VIP theme costs ${VIP_THEME_GEM_COST} Gems`
-          : `Theme costs ${THEME_TOKEN_COST} Tokens`
-      );
+      showToast(`Theme locked — costs ${THEME_TOKEN_COST} Tokens`);
       playSfx("click");
       return;
     }
     currentThemeId = theme.id;
     const src = theme.src;
-    const fallback = THEMES[0].src;
+    document.body.classList.remove("theme-locked-dark");
 
     document.documentElement.style.setProperty("--bg-image", `url("${src}")`);
 
@@ -395,17 +418,16 @@
       scene.style.backgroundSize = "cover";
       scene.style.backgroundPosition = "center";
       scene.style.backgroundRepeat = "no-repeat";
+      scene.style.backgroundColor = "#12081f";
     }
 
     if (els.bgPhoto) {
+      els.bgPhoto.hidden = false;
       els.bgPhoto.decoding = "async";
       els.bgPhoto.onerror = () => {
-        if (els.bgPhoto.dataset.failed === src) return;
-        els.bgPhoto.dataset.failed = src;
-        els.bgPhoto.src = fallback;
-        document.documentElement.style.setProperty("--bg-image", `url("${fallback}")`);
-        if (scene) scene.style.backgroundImage = `url("${fallback}")`;
-        showToast("Theme image failed — loaded Arcane Sunrise");
+        showToast("Theme image failed — staying on dark lock");
+        applyDarkBackdrop();
+        renderThemeGrid();
       };
       els.bgPhoto.src = src;
     }
@@ -455,14 +477,23 @@
       btn.setAttribute("role", "option");
       btn.title = owned
         ? theme.name
-        : isVipTheme(theme)
-          ? `${theme.name} — ${VIP_THEME_GEM_COST} Gems (VIP)`
+        : isVipTheme(theme) && !vipUnlocked
+          ? `${theme.name} — VIP unlock + ${THEME_TOKEN_COST} Tokens`
           : `${theme.name} — ${THEME_TOKEN_COST} Tokens`;
 
       const img = btn.querySelector("img");
-      if (img && img.getAttribute("src") !== theme.src) {
-        img.src = theme.src;
-        img.alt = theme.name;
+      if (img) {
+        if (owned) {
+          img.hidden = false;
+          if (img.getAttribute("src") !== theme.src) {
+            img.src = theme.src;
+            img.alt = theme.name;
+          }
+        } else {
+          img.hidden = true;
+          img.removeAttribute("src");
+          img.alt = "";
+        }
       }
 
       let label = btn.querySelector("span");
@@ -470,9 +501,13 @@
         label = document.createElement("span");
         btn.appendChild(label);
       }
-      if (theme.id === FREE_THEME_ID) label.textContent = `${theme.name} · Free`;
-      else if (isVipTheme(theme)) label.textContent = owned ? `${theme.name} · VIP` : `${theme.name} · ${VIP_THEME_GEM_COST} Gems`;
-      else label.textContent = owned ? theme.name : `${theme.name} · ${THEME_TOKEN_COST} Tokens`;
+      if (owned) {
+        label.textContent = isVipTheme(theme) ? `${theme.name} · VIP` : theme.name;
+      } else if (isVipTheme(theme) && !vipUnlocked) {
+        label.textContent = `${theme.name} · VIP Locked`;
+      } else {
+        label.textContent = `${theme.name} · ${THEME_TOKEN_COST} Tokens`;
+      }
 
       let badge = btn.querySelector(".theme-vip-badge");
       if (!badge) {
@@ -483,9 +518,6 @@
       if (owned) {
         badge.textContent = active ? "ACTIVE" : "OWNED";
         badge.classList.toggle("is-price", false);
-      } else if (isVipTheme(theme)) {
-        badge.textContent = vipUnlocked ? `${VIP_THEME_GEM_COST} GEMS` : "VIP · 10 GEMS";
-        badge.classList.toggle("is-price", true);
       } else {
         badge.textContent = `${THEME_TOKEN_COST} TOKENS`;
         badge.classList.toggle("is-price", true);
@@ -522,12 +554,12 @@
   }
 
   function applyBackgroundFromStorage() {
-    let theme = getTheme(currentThemeId);
-    if (!canUseTheme(theme)) {
-      currentThemeId = FREE_THEME_ID;
-      theme = getTheme(FREE_THEME_ID);
+    if (!currentThemeId || !ownsTheme(currentThemeId)) {
+      applyDarkBackdrop();
+      renderThemeGrid();
+      return;
     }
-    applyTheme(theme.id, { persist: true, toast: false });
+    applyTheme(currentThemeId, { persist: true, toast: false });
   }
 
   function chestReadyToday() {
@@ -1302,6 +1334,7 @@
     const card = e.target.closest("[data-theme]");
     if (!card) return;
     const theme = getTheme(card.dataset.theme);
+    if (!theme) return;
     const purchase = tryBuyTheme(theme);
     if (!purchase.ok) {
       showToast(purchase.reason);
@@ -1312,11 +1345,7 @@
     applyTheme(theme.id, { toast: !purchase.bought });
     if (purchase.bought) {
       playSfx("levelup");
-      showToast(
-        purchase.currency === "gems"
-          ? `Unlocked ${theme.name} for ${purchase.amount} Gems`
-          : `Unlocked ${theme.name} for ${purchase.amount} Tokens`
-      );
+      showToast(`Unlocked ${theme.name} for ${purchase.amount} Tokens`);
     } else {
       playSfx("click");
     }
@@ -1431,31 +1460,62 @@
 
 
   window.addEventListener("arcane-game-reward", (event) => {
-    const tokens = Number(event.detail?.tokens) || 0;
-    if (tokens <= 0) return;
-    state.tokens = (state.tokens || 0) + tokens;
-    const game = event.detail?.game;
+    const game = event.detail?.game || "dash";
+    const win = !!event.detail?.win;
+    const points = Math.max(0, Number(event.detail?.points) || 0);
+    if (!win && points <= 0) return;
+
     const labels = {
       cowboy: "Quick Draw",
       bloons: "Balloon Defense",
       cuphead: "Ink Boss",
       royale: "Arena Clash",
+      dash: "Horizon Dash",
     };
-    const label = labels[game] || "Dash";
+    const label = labels[game] || "Game";
+
+    state.gameWinProgress = Math.max(0, Number(state.gameWinProgress) || 0) + (win ? 1 : 0);
+    state.gamePointProgress = Math.max(0, Number(state.gamePointProgress) || 0) + points;
+
+    let gained = 0;
+    const parts = [];
+    while (state.gameWinProgress >= GAME_WIN_GOAL) {
+      state.gameWinProgress -= GAME_WIN_GOAL;
+      gained += GAME_MILESTONE_TOKENS;
+      parts.push(`${GAME_WIN_GOAL} wins`);
+    }
+    while (state.gamePointProgress >= GAME_POINT_GOAL) {
+      state.gamePointProgress -= GAME_POINT_GOAL;
+      gained += GAME_MILESTONE_TOKENS;
+      parts.push(`${GAME_POINT_GOAL} pts`);
+    }
+
     const streakInfo = touchStreak();
-    addHistory({
-      type: "game",
-      text: `${label} reward`,
-      tokens,
-    });
+    if (gained > 0) {
+      state.tokens = (state.tokens || 0) + gained;
+      addHistory({
+        type: "game",
+        text: `${label} milestone (${parts.join(" + ")})`,
+        tokens: gained,
+      });
+    }
+
     saveState();
     renderWallet();
     renderVipToggle();
     renderStreak();
     renderHistory();
     renderLeaderboard();
+    renderThemeGrid();
+
     const streakText = streakInfo.grew ? ` · ${state.streak}-day streak` : "";
-    showToast(`${label} reward +${tokens} Tokens${streakText}`);
+    if (gained > 0) {
+      showToast(`${label}: +${gained} Tokens${streakText}`);
+    } else {
+      showToast(
+        `${label} progress · ${state.gameWinProgress}/${GAME_WIN_GOAL} wins · ${state.gamePointProgress}/${GAME_POINT_GOAL} pts`
+      );
+    }
   });
 
   els.historyClear?.addEventListener("click", () => {

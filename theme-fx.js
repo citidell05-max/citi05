@@ -15,6 +15,17 @@
   let reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
 
   const PRESETS = {
+    dark: {
+      label: "Theme Locked",
+      motto: "Earn Tokens to Unlock",
+      mote: "#5a4a78",
+      mote2: "#2a2038",
+      kind: "dust",
+      count: 18,
+      beams: false,
+      ornaments: ["◆", "◇", "✦", "✧", "◈"],
+      corners: ["◆", "◇", "◆", "◇"],
+    },
     sunrise: {
       label: "Arcane Sunrise",
       motto: "Rise & Focus",

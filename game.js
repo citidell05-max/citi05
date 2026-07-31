@@ -204,11 +204,10 @@
         metaEl.textContent = `Best: ${state.best}`;
       }
 
-      const reward = Math.floor(state.score / 5);
-      if (reward > 0) {
+      if (state.score > 0) {
         window.dispatchEvent(
           new CustomEvent("arcane-game-reward", {
-            detail: { tokens: reward, score: state.score },
+            detail: { game: "dash", win: false, points: state.score, score: state.score },
           })
         );
       }
