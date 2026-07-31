@@ -915,7 +915,8 @@
     saveState();
     renderWallet();
     renderVipToggle();
-    const label = event.detail?.game === "cowboy" ? "Quick Draw" : "Dash";
+    const game = event.detail?.game;
+    const label = game === "cowboy" ? "Quick Draw" : game === "bloons" ? "Balloon Defense" : "Dash";
     showToast(`${label} reward +${tokens} Tokens`);
   });
 

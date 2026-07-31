@@ -516,7 +516,8 @@ body {
     "quest timer"
     "xp xp"
     "game game"
-    "cowboy cowboy";
+    "cowboy cowboy"
+    "bloons bloons";
   gap: 1.25rem;
 }
 
@@ -525,6 +526,7 @@ body {
 .xp-panel { grid-area: xp; }
 .game-panel { grid-area: game; }
 .cowboy-panel { grid-area: cowboy; }
+.bloons-panel { grid-area: bloons; }
 
 .panel {
   background: rgba(255, 255, 255, 0.04);
@@ -541,7 +543,8 @@ body {
 .timer-panel,
 .xp-panel,
 .game-panel,
-.cowboy-panel {
+.cowboy-panel,
+.bloons-panel {
   background: rgba(12, 6, 24, 0.12);
 }
 
@@ -549,6 +552,7 @@ body {
 .xp-panel { animation-delay: 0.16s; }
 .game-panel { animation-delay: 0.22s; }
 .cowboy-panel { animation-delay: 0.28s; }
+.bloons-panel { animation-delay: 0.34s; }
 
 @keyframes rise-in {
   from {
@@ -1000,7 +1004,8 @@ body {
       "quest"
       "xp"
       "game"
-      "cowboy";
+      "cowboy"
+      "bloons";
   }
 
   .quest-list {
@@ -1074,12 +1079,79 @@ body {
 }
 
 #dash-canvas,
-#cowboy-canvas {
+#cowboy-canvas,
+#bloons-canvas {
   display: block;
   width: 100%;
   height: auto;
   cursor: pointer;
   touch-action: manipulation;
+}
+
+.bloons-wrap {
+  border-color: rgba(120, 220, 140, 0.35);
+}
+
+.bloons-status {
+  margin: -0.35rem 0 0.65rem;
+  font-family: var(--font-display);
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #9dff7a;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.75);
+}
+
+.bloons-shop {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin: 0 0 0.75rem;
+}
+
+.bloons-tower-btn {
+  appearance: none;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: rgba(8, 20, 12, 0.45);
+  color: #e8ffe8;
+  font-family: var(--font-display);
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.45rem 0.7rem;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, transform 0.15s;
+}
+
+.bloons-tower-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: rgba(184, 255, 60, 0.55);
+}
+
+.bloons-tower-btn.is-active {
+  border-color: var(--neon-lime);
+  background: rgba(184, 255, 60, 0.14);
+  color: #d8ff8a;
+}
+
+.bloons-tower-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.bloons-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+#bloons-hud {
+  font-family: var(--font-display);
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  color: #9dff7a;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
 }
 
 .cowboy-wrap {

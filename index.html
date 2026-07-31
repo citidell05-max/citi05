@@ -219,6 +219,31 @@
           </div>
         </div>
       </section>
+
+      <section class="panel bloons-panel" aria-labelledby="bloons-heading">
+        <div class="panel-head">
+          <h2 id="bloons-heading">Balloon Defense</h2>
+          <span class="panel-meta" id="bloons-meta">Best wave: 0</span>
+        </div>
+        <p class="game-help">Bloons-style tower defense — place towers off the track, pop layered balloons, clear waves.</p>
+        <p class="bloons-status" id="bloons-status">Press Start Defense, buy towers, then Send Wave</p>
+        <div class="bloons-shop" id="bloons-shop" role="toolbar" aria-label="Tower shop">
+          <button type="button" class="bloons-tower-btn is-active" data-tower="dart">Dart $50</button>
+          <button type="button" class="bloons-tower-btn" data-tower="ice">Ice $90</button>
+          <button type="button" class="bloons-tower-btn" data-tower="bomb">Bomb $120</button>
+          <button type="button" class="bloons-tower-btn" data-tower="sniper">Sniper $160</button>
+        </div>
+        <div class="game-wrap bloons-wrap">
+          <canvas id="bloons-canvas" width="960" height="480" aria-label="Balloon Defense game"></canvas>
+          <div class="game-hud">
+            <span id="bloons-hud">♥ 40  ·  $ 250  ·  Wave 0</span>
+            <div class="bloons-actions">
+              <button type="button" class="btn btn-ghost" id="bloons-wave" disabled>Send Wave</button>
+              <button type="button" class="btn btn-primary" id="bloons-start">Start Defense</button>
+            </div>
+          </div>
+        </div>
+      </section>
     </main>
   </div>
 
@@ -237,5 +262,6 @@
   <script src="birds.js"></script>
   <script src="game.js"></script>
   <script src="cowboy.js"></script>
+  <script src="bloons.js"></script>
 </body>
 </html>
