@@ -63,12 +63,143 @@ body {
   z-index: 1;
 }
 
+.theme-fx {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.theme-ornaments {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  overflow: hidden;
+}
+
+.theme-badge {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.45rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: rgba(10, 6, 20, 0.45);
+  color: #ffe6a8;
+  font-family: var(--font-display);
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(6px);
+  animation: ornament-fade 1.1s ease-out both;
+}
+
+.theme-badge span {
+  font-size: 0.9rem;
+}
+
+.theme-frame {
+  position: absolute;
+  inset: 0.7rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 18px;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.04),
+    inset 0 0 80px rgba(0, 0, 0, 0.12);
+  animation: ornament-fade 1.2s ease-out both;
+}
+
+.theme-frame::before,
+.theme-frame::after {
+  content: "";
+  position: absolute;
+  width: 42px;
+  height: 42px;
+  border: 2px solid rgba(255, 200, 120, 0.35);
+}
+
+.theme-frame::before {
+  top: 10px;
+  left: 10px;
+  border-right: 0;
+  border-bottom: 0;
+  border-radius: 8px 0 0 0;
+}
+
+.theme-frame::after {
+  right: 10px;
+  bottom: 10px;
+  border-left: 0;
+  border-top: 0;
+  border-radius: 0 0 8px 0;
+}
+
+.theme-float {
+  position: absolute;
+  font-size: 1.35rem;
+  opacity: 0.55;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.45));
+  animation: float-ornament 7s ease-in-out infinite;
+}
+
+.theme-float-1 { top: 18%; right: 6%; animation-delay: 0s; }
+.theme-float-2 { bottom: 22%; left: 5%; animation-delay: 1.4s; font-size: 1.1rem; }
+.theme-float-3 { top: 42%; right: 10%; animation-delay: 2.2s; font-size: 1rem; opacity: 0.4; }
+
+@keyframes float-ornament {
+  0%, 100% { transform: translateY(0) rotate(-4deg); }
+  50% { transform: translateY(-12px) rotate(4deg); }
+}
+
+@keyframes ornament-fade {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+body[data-theme="cyberpunk"] .theme-badge,
+body[data-theme="neonrain"] .theme-badge {
+  color: #f0c8ff;
+  border-color: rgba(209, 107, 255, 0.45);
+}
+
+body[data-theme="forest"] .theme-badge,
+body[data-theme="aurora"] .theme-badge {
+  color: #d8ffe0;
+  border-color: rgba(140, 255, 154, 0.4);
+}
+
+body[data-theme="ocean"] .theme-badge,
+body[data-theme="ice"] .theme-badge {
+  color: #d8f6ff;
+  border-color: rgba(79, 210, 255, 0.4);
+}
+
+body[data-theme="volcano"] .theme-badge,
+body[data-theme="desert"] .theme-badge,
+body[data-theme="sunset"] .theme-badge,
+body[data-theme="sunrise"] .theme-badge {
+  color: #ffe0a8;
+  border-color: rgba(255, 180, 70, 0.45);
+}
+
+body[data-theme="space"] .theme-badge {
+  color: #e0d0ff;
+  border-color: rgba(179, 136, 255, 0.45);
+}
+
 .bg-overlay {
   position: fixed;
   inset: 0;
   background: rgba(12, 4, 28, 0.12);
   pointer-events: none;
-  z-index: 2;
+  z-index: 3;
 }
 
 @keyframes city-drift {
