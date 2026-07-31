@@ -1171,6 +1171,7 @@
     if (!els.guideDrawer || !els.guideFab) return;
     els.guideDrawer.hidden = !open;
     els.guideFab.setAttribute("aria-expanded", String(open));
+    document.body.classList.toggle("eli-open", open);
     if (open) {
       renderDailyAttachment();
       window.setTimeout(() => els.guideInput?.focus(), 40);
@@ -1391,9 +1392,6 @@
       ensureAudio();
       setGuideOpen(false);
       playSfx("click");
-    });
-    els.guideDrawer?.addEventListener("click", (e) => {
-      if (e.target === els.guideDrawer) setGuideOpen(false);
     });
     window.addEventListener("keydown", (e) => {
       if (e.code === "Escape" && els.guideDrawer && !els.guideDrawer.hidden) {
