@@ -1130,6 +1130,7 @@ body[data-theme="vipcrystal"] .theme-orb-2 {
     "quest timer"
     "xp xp"
     "history history"
+    "leaderboard leaderboard"
     "game game"
     "cowboy cowboy"
     "bloons bloons"
@@ -1142,6 +1143,7 @@ body[data-theme="vipcrystal"] .theme-orb-2 {
 .timer-panel { grid-area: timer; }
 .xp-panel { grid-area: xp; }
 .history-panel { grid-area: history; }
+.leaderboard-panel { grid-area: leaderboard; }
 .game-panel { grid-area: game; }
 .cowboy-panel { grid-area: cowboy; }
 .bloons-panel { grid-area: bloons; }
@@ -1163,6 +1165,7 @@ body[data-theme="vipcrystal"] .theme-orb-2 {
 .timer-panel,
 .xp-panel,
 .history-panel,
+.leaderboard-panel,
 .game-panel,
 .cowboy-panel,
 .bloons-panel,
@@ -1174,11 +1177,109 @@ body[data-theme="vipcrystal"] .theme-orb-2 {
 .timer-panel { animation-delay: 0.08s; }
 .xp-panel { animation-delay: 0.16s; }
 .history-panel { animation-delay: 0.18s; }
+.leaderboard-panel { animation-delay: 0.2s; }
 .game-panel { animation-delay: 0.22s; }
 .cowboy-panel { animation-delay: 0.28s; }
 .bloons-panel { animation-delay: 0.34s; }
 .cup-panel { animation-delay: 0.4s; }
 .royale-panel { animation-delay: 0.46s; }
+
+.leaderboard-intro {
+  margin: -0.35rem 0 0.9rem;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+.leaderboard-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.leaderboard-row {
+  display: grid;
+  grid-template-columns: 2.6rem 1fr auto;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(8, 4, 18, 0.35);
+}
+
+.leaderboard-row.is-you {
+  border-color: rgba(122, 240, 255, 0.55);
+  background:
+    linear-gradient(90deg, rgba(122, 240, 255, 0.14), rgba(255, 113, 206, 0.08)),
+    rgba(8, 4, 18, 0.45);
+  box-shadow: 0 0 0 1px rgba(122, 240, 255, 0.12);
+}
+
+.leaderboard-row.is-top-1 {
+  border-color: rgba(255, 200, 87, 0.5);
+}
+
+.leaderboard-row.is-top-2 {
+  border-color: rgba(200, 220, 255, 0.35);
+}
+
+.leaderboard-row.is-top-3 {
+  border-color: rgba(255, 160, 100, 0.35);
+}
+
+.lb-rank {
+  font-family: var(--font-display);
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  color: #ffe0a8;
+}
+
+.lb-main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 0.1rem;
+}
+
+.lb-name {
+  font-family: var(--font-display);
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
+  color: #fff;
+}
+
+.lb-tag {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.lb-stats {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.12rem;
+}
+
+.lb-level {
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.lb-score {
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  color: var(--neon-magenta);
+}
+
+.leaderboard-row.is-you .lb-score {
+  color: var(--neon-cyan);
+}
 
 @keyframes rise-in {
   from {
@@ -1630,6 +1731,7 @@ body[data-theme="vipcrystal"] .theme-orb-2 {
       "quest"
       "xp"
       "history"
+      "leaderboard"
       "game"
       "cowboy"
       "bloons"

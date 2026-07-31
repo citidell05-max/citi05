@@ -106,7 +106,20 @@
     dailyChest: document.getElementById("daily-chest"),
     dailyChestLabel: document.getElementById("daily-chest-label"),
     dailyChestMeta: document.getElementById("daily-chest-meta"),
+    leaderboardList: document.getElementById("leaderboard-list"),
+    leaderboardMeta: document.getElementById("leaderboard-meta"),
   };
+
+  const AI_RIVALS = [
+    { id: "nova", name: "Nova Pulse", tag: "Focus AI", bias: 1.18 },
+    { id: "quill", name: "Quill Byte", tag: "Quest AI", bias: 1.05 },
+    { id: "ember", name: "Ember Core", tag: "Streak AI", bias: 0.92 },
+    { id: "luna", name: "Luna Circuit", tag: "Timer AI", bias: 1.12 },
+    { id: "hex", name: "Hex Ledger", tag: "Gem AI", bias: 0.88 },
+    { id: "orbit", name: "Orbit Mind", tag: "Rank AI", bias: 1.28 },
+    { id: "rift", name: "Rift Scholar", tag: "Grind AI", bias: 0.97 },
+    { id: "prism", name: "Prism Note", tag: "Study AI", bias: 1.08 },
+  ];
 
   const state = loadState();
   let currentThemeId = localStorage.getItem(THEME_STORAGE_KEY) || "sunrise";
@@ -481,12 +494,116 @@
     renderWallet();
     renderDailyChest();
     renderHistory();
+    renderLeaderboard();
     playSfx("levelup");
     showToast(
       isNewcomer
         ? `Welcome! Chest opened — +${DAILY_CHEST_GEMS} Gems`
         : `Daily chest opened — +${DAILY_CHEST_GEMS} Gems`
     );
+  }
+
+  function hashSeed(str) {
+    let h = 2166136261;
+    for (let i = 0; i < str.length; i += 1) {
+      h ^= str.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    return h >>> 0;
+  }
+
+  function seededUnit(seed) {
+    const x = Math.sin(seed * 12.9898 + 78.233) * 43758.5453;
+    return x - Math.floor(x);
+  }
+
+  function playerPowerScore() {
+    const level = Number(state.level) || 1;
+    const xp = Number(state.xp) || 0;
+    const streak = Number(state.streak) || 0;
+    const best = Number(state.bestStreak) || 0;
+    const tokens = Number(state.tokens) || 0;
+    const gems = Number(state.gems) || 0;
+    const chests = Number(state.chestClaims) || 0;
+    return (
+      level * 1200 +
+      xp * 2 +
+      streak * 85 +
+      best * 40 +
+      tokens * 3 +
+      gems * 8 +
+      chests * 40 +
+      sessionXp
+    );
+  }
+
+  function buildLeaderboard() {
+    const day = todayKey();
+    const youScore = playerPowerScore();
+    const rankIndex = Math.min(RANKS.length - 1, (state.level || 1) - 1);
+    const entries = [
+      {
+        id: "you",
+        name: "You",
+        tag: RANKS[rankIndex] || "Wanderer",
+        score: youScore,
+        level: state.level || 1,
+        isYou: true,
+        ai: false,
+      },
+    ];
+
+    AI_RIVALS.forEach((bot, i) => {
+      const seed = hashSeed(`${day}:${bot.id}:${i}`);
+      const wobble = 0.78 + seededUnit(seed) * 0.55;
+      const pace = 0.9 + seededUnit(seed + 17) * 0.45;
+      // Keep AI near the player so climbing feels real, with daily drift
+      const base = Math.max(400, Math.round(youScore * bot.bias * wobble * pace));
+      const floor = 900 + Math.round(seededUnit(seed + 3) * 4200);
+      const score = Math.max(floor, base);
+      const level = Math.max(1, Math.min(RANKS.length, Math.round(score / 1400)));
+      entries.push({
+        id: bot.id,
+        name: bot.name,
+        tag: bot.tag,
+        score,
+        level,
+        isYou: false,
+        ai: true,
+      });
+    });
+
+    entries.sort((a, b) => b.score - a.score || a.name.localeCompare(b.name));
+    return entries.map((entry, idx) => ({ ...entry, rank: idx + 1 }));
+  }
+
+  function renderLeaderboard() {
+    if (!els.leaderboardList) return;
+    const board = buildLeaderboard();
+    const you = board.find((e) => e.isYou);
+    if (els.leaderboardMeta) {
+      els.leaderboardMeta.textContent = you
+        ? `Your rank: #${you.rank} · ${you.score.toLocaleString()} pts`
+        : "Your rank: —";
+    }
+
+    els.leaderboardList.innerHTML = "";
+    board.forEach((entry) => {
+      const li = document.createElement("li");
+      li.className = `leaderboard-row${entry.isYou ? " is-you" : ""}${entry.rank <= 3 ? ` is-top-${entry.rank}` : ""}`;
+      li.innerHTML = `
+        <span class="lb-rank">#${entry.rank}</span>
+        <span class="lb-main">
+          <strong class="lb-name">${entry.name}</strong>
+          <span class="lb-tag">${entry.ai ? "AI · " : ""}${entry.tag}</span>
+        </span>
+        <span class="lb-stats">
+          <span class="lb-level">LVL ${entry.level}</span>
+          <strong class="lb-score">${entry.score.toLocaleString()}</strong>
+        </span>
+      `;
+      els.leaderboardList.appendChild(li);
+    });
   }
 
   function ensureAudio() {
@@ -922,6 +1039,7 @@
     renderVipToggle();
     renderStreak();
     renderHistory();
+    renderLeaderboard();
 
     if (leveled) {
       els.levelBadge.classList.remove("is-levelup");
@@ -1239,6 +1357,7 @@
     renderVipToggle();
     renderStreak();
     renderHistory();
+    renderLeaderboard();
     const streakText = streakInfo.grew ? ` · ${state.streak}-day streak` : "";
     showToast(`${label} reward +${tokens} Tokens${streakText}`);
   });
@@ -1282,6 +1401,7 @@
   renderDailyChest();
   renderStreak();
   renderHistory();
+  renderLeaderboard();
   // Keep trying to start music on first interactions
   if (musicEnabled) {
     showToast("Tap Music: Start if you don't hear the song");
