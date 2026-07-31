@@ -1183,7 +1183,7 @@
         : "No quests yet — add one tiny task in the Quest Log (like “read 2 pages”). Small quests are easier to finish and still pay XP + Tokens.";
     }
     if (/first|start|begin|what should i do/.test(msg)) {
-      return "Best first loop: open Daily Chest → open Theme Chest → add one quest → start Focus 25 → ask me for a tip if you stall.";
+      return "Best first loop: read today’s Positive Words → open Daily Chest → pick a free theme → add one quest → start Focus 25.";
     }
     if (/timer|focus timer|break/.test(msg)) {
       return "Use Focus 25 for deep work. Short Break 5 and Long Break 15 recharge you. Games lock only during Focus — breaks are open.";
