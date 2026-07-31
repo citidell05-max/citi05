@@ -1143,13 +1143,15 @@ body[data-theme="vipcrystal"] .theme-orb-2 {
 }
 
 .theme-card.is-locked {
-  cursor: pointer;
-  background: #0a0712;
+  cursor: not-allowed;
+  background: #07040f;
+  border-color: rgba(255, 80, 140, 0.45) !important;
+  opacity: 0.92;
 }
 
 .theme-card.is-locked img,
 .theme-card.is-locked .theme-fallback {
-  filter: grayscale(1) brightness(0.2);
+  filter: grayscale(1) brightness(0.12);
 }
 
 .theme-card.is-locked::before {
@@ -1157,20 +1159,40 @@ body[data-theme="vipcrystal"] .theme-orb-2 {
   position: absolute;
   inset: 0 0 2rem;
   background:
-    radial-gradient(circle at 50% 40%, rgba(255, 255, 255, 0.05), transparent 45%),
-    linear-gradient(180deg, #12101a 0%, #07040f 100%);
+    radial-gradient(circle at 50% 38%, rgba(255, 80, 160, 0.12), transparent 42%),
+    linear-gradient(180deg, #100818 0%, #05030a 100%);
   z-index: 1;
 }
 
 .theme-card.is-locked span,
-.theme-card.is-locked .theme-vip-badge {
+.theme-card.is-locked .theme-vip-badge,
+.theme-card.is-locked .theme-lock-mark {
   position: relative;
   z-index: 2;
 }
 
+.theme-lock-mark {
+  position: absolute;
+  left: 50%;
+  top: 38%;
+  transform: translate(-50%, -50%);
+  margin: 0;
+  padding: 0.35rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 140, 200, 0.55);
+  background: rgba(10, 4, 18, 0.88);
+  color: #ffb0e0;
+  font-family: var(--font-display);
+  font-size: 0.62rem;
+  font-style: normal;
+  letter-spacing: 0.16em;
+  z-index: 2;
+  pointer-events: none;
+}
+
 .theme-card.is-locked:hover {
-  transform: translateY(-2px);
-  border-color: rgba(122, 240, 255, 0.45);
+  transform: none;
+  border-color: rgba(255, 113, 206, 0.65) !important;
 }
 
 .theme-vip-badge {

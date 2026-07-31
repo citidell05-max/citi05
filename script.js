@@ -153,13 +153,32 @@
   if (!Array.isArray(state.ownedGames)) state.ownedGames = [];
   let currentThemeId = localStorage.getItem(THEME_STORAGE_KEY) || "";
   if (currentThemeId && !THEMES.some((t) => t.id === currentThemeId)) currentThemeId = "";
-  // Themes are free — unlock every theme (including VIP looks)
-  if (localStorage.getItem("arcane-horizon-theme-free-v1") !== "1") {
-    state.ownedThemes = THEMES.map((t) => t.id);
+  // Regular themes free; VIP themes stay locked until moderator VIP unlock
+  const FREE_THEME_IDS = THEMES.filter((t) => !t.vip).map((t) => t.id);
+  const VIP_THEME_IDS = THEMES.filter((t) => t.vip).map((t) => t.id);
+  if (localStorage.getItem("arcane-horizon-vip-theme-lock-v1") !== "1") {
+    const owned = new Set(Array.isArray(state.ownedThemes) ? state.ownedThemes : []);
+    FREE_THEME_IDS.forEach((id) => owned.add(id));
+    VIP_THEME_IDS.forEach((id) => owned.delete(id));
+    state.ownedThemes = [...owned];
+    if (VIP_THEME_IDS.includes(currentThemeId)) {
+      currentThemeId = "sunrise";
+      try {
+        localStorage.setItem(THEME_STORAGE_KEY, "sunrise");
+      } catch {
+        /* ignore */
+      }
+    }
+    localStorage.setItem("arcane-horizon-vip-theme-lock-v1", "1");
     localStorage.setItem("arcane-horizon-theme-free-v1", "1");
     localStorage.setItem("arcane-horizon-theme-shop-v2", "1");
-  } else if (!Array.isArray(state.ownedThemes) || state.ownedThemes.length < THEMES.length) {
-    state.ownedThemes = THEMES.map((t) => t.id);
+  } else if (!Array.isArray(state.ownedThemes) || state.ownedThemes.length < FREE_THEME_IDS.length) {
+    const owned = new Set(Array.isArray(state.ownedThemes) ? state.ownedThemes : []);
+    FREE_THEME_IDS.forEach((id) => owned.add(id));
+    if (!(state.vipUnlocked && state.vipUnlockSource === "moderator")) {
+      VIP_THEME_IDS.forEach((id) => owned.delete(id));
+    }
+    state.ownedThemes = [...owned];
   }
   // Lock all games behind Tokens until purchased
   if (localStorage.getItem("arcane-horizon-game-shop-v1") !== "1") {
@@ -364,18 +383,19 @@
   function ownsTheme(themeId) {
     const theme = getTheme(themeId);
     if (!theme) return false;
-    if (isVipTheme(theme)) return vipUnlocked;
+    if (isVipTheme(theme)) return !!vipUnlocked;
     return true;
   }
 
   function themePriceLabel(theme) {
     if (isVipTheme(theme) && !vipUnlocked) return "VIP Locked";
+    if (isVipTheme(theme)) return "VIP";
     return "Free";
   }
 
   function canUseTheme(theme) {
     if (!theme) return false;
-    if (isVipTheme(theme) && !vipUnlocked) return false;
+    if (isVipTheme(theme)) return !!vipUnlocked;
     return true;
   }
 
@@ -522,6 +542,19 @@
             img.alt = theme.name;
           }
         }
+      }
+
+      let lockMark = btn.querySelector(".theme-lock-mark");
+      if (locked) {
+        if (!lockMark) {
+          lockMark = document.createElement("i");
+          lockMark.className = "theme-lock-mark";
+          lockMark.setAttribute("aria-hidden", "true");
+          btn.appendChild(lockMark);
+        }
+        lockMark.textContent = "LOCKED";
+      } else if (lockMark) {
+        lockMark.remove();
       }
 
       let label = btn.querySelector("span");
@@ -1065,6 +1098,10 @@
     state.vipUnlocked = true;
     state.vipEnabled = true;
     state.vipUnlockSource = "moderator";
+    if (!Array.isArray(state.ownedThemes)) state.ownedThemes = [];
+    VIP_THEME_IDS.forEach((id) => {
+      if (!state.ownedThemes.includes(id)) state.ownedThemes.push(id);
+    });
     saveState();
     renderWallet();
     renderVipToggle();
