@@ -1642,6 +1642,16 @@ body.splash-active .guide-drawer {
   border-radius: 12px;
   font-size: 0.88rem;
   line-height: 1.4;
+  white-space: pre-wrap;
+}
+
+.guide-bubble.is-typing {
+  opacity: 0.75;
+  font-style: italic;
+}
+
+.guide-fab-label {
+  letter-spacing: 0.12em;
 }
 
 .guide-bubble.is-ai {

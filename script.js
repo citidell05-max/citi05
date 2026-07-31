@@ -1238,7 +1238,7 @@
     if (eq) expr = eq[1];
     else if (/^[\d+\-*/().,%\s×÷x]+$/.test(text)) expr = text;
     else {
-      const embedded = text.match(/([0-9]+(?:\.[0-9+])?(?:\s*[+\-*/×÷x]\s*[0-9]+(?:\.[0-9]+)?)+\s*(?:%?)?)/i);
+      const embedded = text.match(/([0-9]+(?:\.[0-9]+)?(?:\s*[+\-*/×÷x]\s*[0-9]+(?:\.[0-9]+)?)+\s*(?:%?)?)/i);
       if (embedded) expr = embedded[1];
     }
     if (!expr) return null;
