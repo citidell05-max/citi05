@@ -362,15 +362,21 @@
   }
 
   function ownsTheme(themeId) {
-    return !!themeId && THEMES.some((t) => t.id === themeId);
+    const theme = getTheme(themeId);
+    if (!theme) return false;
+    if (isVipTheme(theme)) return vipUnlocked;
+    return true;
   }
 
-  function themePriceLabel() {
+  function themePriceLabel(theme) {
+    if (isVipTheme(theme) && !vipUnlocked) return "VIP Locked";
     return "Free";
   }
 
   function canUseTheme(theme) {
-    return !!theme;
+    if (!theme) return false;
+    if (isVipTheme(theme) && !vipUnlocked) return false;
+    return true;
   }
 
   function applyDarkBackdrop() {
@@ -399,6 +405,9 @@
 
   function tryBuyTheme(theme) {
     if (!theme) return { ok: false, reason: "Theme not found" };
+    if (isVipTheme(theme) && !vipUnlocked) {
+      return { ok: false, reason: "VIP themes stay locked — enter the moderator code first" };
+    }
     if (!Array.isArray(state.ownedThemes)) state.ownedThemes = [];
     if (!state.ownedThemes.includes(theme.id)) {
       state.ownedThemes.push(theme.id);
@@ -420,7 +429,11 @@
       return;
     }
     if (!canUseTheme(theme)) {
-      showToast("Theme unavailable");
+      showToast(
+        isVipTheme(theme)
+          ? "VIP themes stay locked — enter the moderator code first"
+          : "Theme unavailable"
+      );
       playSfx("click");
       return;
     }
@@ -484,21 +497,30 @@
 
     const syncCard = (btn, theme) => {
       if (!theme) return;
-      const active = theme.id === currentThemeId;
+      const active = theme.id === currentThemeId && canUseTheme(theme);
+      const locked = isVipTheme(theme) && !vipUnlocked;
       btn.classList.toggle("is-active", active);
       btn.classList.toggle("is-vip", isVipTheme(theme));
-      btn.classList.remove("is-locked");
+      btn.classList.toggle("is-locked", locked);
       btn.setAttribute("aria-selected", String(active));
-      btn.setAttribute("aria-disabled", "false");
+      btn.setAttribute("aria-disabled", String(locked));
       btn.setAttribute("role", "option");
-      btn.title = theme.name;
+      btn.title = locked
+        ? `${theme.name} — VIP Locked (moderator code)`
+        : theme.name;
 
       const img = btn.querySelector("img");
       if (img) {
-        img.hidden = false;
-        if (img.getAttribute("src") !== theme.src) {
-          img.src = theme.src;
-          img.alt = theme.name;
+        if (locked) {
+          img.hidden = true;
+          img.removeAttribute("src");
+          img.alt = "";
+        } else {
+          img.hidden = false;
+          if (img.getAttribute("src") !== theme.src) {
+            img.src = theme.src;
+            img.alt = theme.name;
+          }
         }
       }
 
@@ -507,7 +529,11 @@
         label = document.createElement("span");
         btn.appendChild(label);
       }
-      label.textContent = isVipTheme(theme) ? `${theme.name} · VIP` : theme.name;
+      label.textContent = locked
+        ? `${theme.name} · VIP Locked`
+        : isVipTheme(theme)
+          ? `${theme.name} · VIP`
+          : theme.name;
 
       let badge = btn.querySelector(".theme-vip-badge");
       if (!badge) {
@@ -515,9 +541,8 @@
         badge.className = "theme-vip-badge";
         btn.appendChild(badge);
       }
-      badge.textContent = active ? "ACTIVE" : "FREE";
-      badge.classList.toggle("is-price", false);
-      void themePriceLabel;
+      badge.textContent = locked ? "VIP LOCKED" : active ? "ACTIVE" : themePriceLabel(theme).toUpperCase();
+      badge.classList.toggle("is-price", locked);
     };
 
     // Prefer the pictures already in HTML — sync active state + fresh URLs
@@ -549,7 +574,8 @@
   }
 
   function applyBackgroundFromStorage() {
-    if (!currentThemeId || !getTheme(currentThemeId)) {
+    const saved = getTheme(currentThemeId);
+    if (!saved || !canUseTheme(saved)) {
       currentThemeId = "sunrise";
     }
     applyTheme(currentThemeId, { persist: true, toast: false });
@@ -1160,7 +1186,7 @@
       return "The purple Theme Chest is a one-time bonus: +50 Tokens and it equips a random theme for you.";
     }
     if (/theme|background/.test(msg)) {
-      return "All themes are free now — open Themes and tap any look to equip it instantly. No locks, no Token cost.";
+      return "Regular themes are free — tap any look to equip. VIP themes stay locked until you enter the moderator code.";
     }
     if (/positive|affirmation|daily attachment|daily note/.test(msg)) {
       return `Today’s positive words: “${dailyAffirmationFor()}” A new note appears every day at the top of the app.`;
@@ -1678,7 +1704,13 @@
     if (!card) return;
     const theme = getTheme(card.dataset.theme);
     if (!theme) return;
-    tryBuyTheme(theme);
+    const purchase = tryBuyTheme(theme);
+    if (!purchase.ok) {
+      showToast(purchase.reason);
+      playSfx("click");
+      renderThemeGrid();
+      return;
+    }
     applyTheme(theme.id, { toast: true });
     playSfx("click");
     renderThemeGrid();
