@@ -124,9 +124,12 @@
     leaderboardList: document.getElementById("leaderboard-list"),
     leaderboardMeta: document.getElementById("leaderboard-meta"),
     dailyAttachment: document.getElementById("daily-attachment"),
-    dailyNoteDate: document.getElementById("daily-note-date"),
     dailyNoteText: document.getElementById("daily-note-text"),
     dailyNoteDismiss: document.getElementById("daily-note-dismiss"),
+    guideFab: document.getElementById("guide-fab"),
+    guideDrawer: document.getElementById("guide-drawer"),
+    guideClose: document.getElementById("guide-close"),
+    guideDailyText: document.getElementById("guide-daily-text"),
     guideChat: document.getElementById("guide-chat"),
     guideForm: document.getElementById("guide-form"),
     guideInput: document.getElementById("guide-input"),
@@ -1156,19 +1159,22 @@
   }
 
   function renderDailyAttachment() {
+    const note = dailyAffirmationFor();
+    if (els.dailyNoteText) els.dailyNoteText.textContent = note;
+    if (els.guideDailyText) els.guideDailyText.textContent = note;
     if (!els.dailyAttachment) return;
     const today = todayKey();
     const hidden = localStorage.getItem("arcane-horizon-daily-note-hide") === today;
     els.dailyAttachment.hidden = hidden;
-    if (els.dailyNoteDate) {
-      els.dailyNoteDate.textContent = new Date().toLocaleDateString(undefined, {
-        weekday: "long",
-        month: "short",
-        day: "numeric",
-      });
-    }
-    if (els.dailyNoteText) {
-      els.dailyNoteText.textContent = dailyAffirmationFor();
+  }
+
+  function setGuideOpen(open) {
+    if (!els.guideDrawer || !els.guideFab) return;
+    els.guideDrawer.hidden = !open;
+    els.guideFab.setAttribute("aria-expanded", String(open));
+    if (open) {
+      renderDailyAttachment();
+      window.setTimeout(() => els.guideInput?.focus(), 40);
     }
   }
 
@@ -1269,9 +1275,28 @@
     if (els.guideChat && !els.guideChat.childElementCount) {
       appendGuideBubble(
         "ai",
-        `Welcome. I’m Horizon Guide. Today’s note: “${dailyAffirmationFor()}” Ask me for study tips, motivation, or how the app works.`
+        "Hey — I’m Horizon Guide, your helping AI. Check today’s positive attachment above, or ask me for study tips, motivation, or how Arcane Horizon works."
       );
     }
+    els.guideFab?.addEventListener("click", () => {
+      ensureAudio();
+      const open = els.guideDrawer?.hidden !== false;
+      setGuideOpen(open);
+      playSfx("click");
+    });
+    els.guideClose?.addEventListener("click", () => {
+      ensureAudio();
+      setGuideOpen(false);
+      playSfx("click");
+    });
+    els.guideDrawer?.addEventListener("click", (e) => {
+      if (e.target === els.guideDrawer) setGuideOpen(false);
+    });
+    window.addEventListener("keydown", (e) => {
+      if (e.code === "Escape" && els.guideDrawer && !els.guideDrawer.hidden) {
+        setGuideOpen(false);
+      }
+    });
     els.guideForm?.addEventListener("submit", (e) => {
       e.preventDefault();
       ensureAudio();
@@ -1975,7 +2000,6 @@
     localStorage.setItem("arcane-horizon-daily-note-hide", todayKey());
     if (els.dailyAttachment) els.dailyAttachment.hidden = true;
     playSfx("click");
-    showToast("Daily attachment pinned closed for today");
   });
 
   function runSplashScreen() {
@@ -2031,9 +2055,6 @@
         splash.setAttribute("hidden", "");
         splash.remove();
         renderDailyAttachment();
-        if (els.dailyAttachment && !els.dailyAttachment.hidden) {
-          showToast(`Daily attachment: ${dailyAffirmationFor()}`);
-        }
       }, 700);
     }
 

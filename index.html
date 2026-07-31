@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;800&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=guide1" />
+  <link rel="stylesheet" href="style.css?v=guide2" />
   <link rel="preload" as="image" href="assets/arcane-horizon-splash.jpg?v=3" />
   <style>
     :root { --bg-image: none; }
@@ -15,6 +15,8 @@
     body.splash-active { overflow: hidden !important; }
     body.splash-active .app,
     body.splash-active .daily-attachment,
+    body.splash-active .guide-fab,
+    body.splash-active .guide-drawer,
     body.splash-active .music-credit,
     body.splash-active .theme-fx,
     body.splash-active .theme-ornaments,
@@ -302,44 +304,16 @@
       </form>
     </header>
 
-    <aside class="daily-attachment" id="daily-attachment" aria-labelledby="daily-note-heading">
-      <div class="daily-attachment-clip" aria-hidden="true"></div>
-      <div class="daily-attachment-card">
-        <p class="daily-attachment-label" id="daily-note-heading">Daily Attachment</p>
-        <p class="daily-attachment-date" id="daily-note-date">Today</p>
+    <div class="daily-attachment" id="daily-attachment" role="status" aria-labelledby="daily-note-heading">
+      <div class="daily-attachment-file" aria-hidden="true"></div>
+      <div class="daily-attachment-body">
+        <p class="daily-attachment-label" id="daily-note-heading">Daily Attachment · Positive Note</p>
         <p class="daily-attachment-text" id="daily-note-text">Loading today’s positive note…</p>
-        <button type="button" class="daily-attachment-dismiss" id="daily-note-dismiss" title="Hide for today">Pin closed</button>
       </div>
-    </aside>
+      <button type="button" class="daily-attachment-dismiss" id="daily-note-dismiss" aria-label="Hide daily attachment for today">×</button>
+    </div>
 
     <main class="layout">
-      <section class="panel guide-panel" aria-labelledby="guide-heading">
-        <div class="panel-head">
-          <h2 id="guide-heading">Horizon Guide</h2>
-          <span class="panel-meta" id="guide-meta">Helping AI</span>
-        </div>
-        <p class="guide-intro">Your study companion AI — ask for focus tips, quest ideas, or how Arcane Horizon works.</p>
-        <div class="guide-chips" id="guide-chips" role="toolbar" aria-label="Quick asks">
-          <button type="button" class="guide-chip" data-ask="Give me a study tip">Study tip</button>
-          <button type="button" class="guide-chip" data-ask="Motivate me">Motivate me</button>
-          <button type="button" class="guide-chip" data-ask="How do Tokens work?">Tokens</button>
-          <button type="button" class="guide-chip" data-ask="Make me a focus plan">Focus plan</button>
-          <button type="button" class="guide-chip" data-ask="What should I do first?">What first?</button>
-        </div>
-        <div class="guide-chat" id="guide-chat" aria-live="polite"></div>
-        <form class="guide-form" id="guide-form" autocomplete="off">
-          <input
-            type="text"
-            id="guide-input"
-            class="guide-input"
-            placeholder="Ask the helping AI…"
-            maxlength="200"
-            aria-label="Message for Horizon Guide"
-          />
-          <button type="submit" class="btn btn-primary">Ask</button>
-        </form>
-      </section>
-
       <section class="panel quest-panel" aria-labelledby="quest-heading">
         <div class="panel-head">
           <h2 id="quest-heading">Quest Log</h2>
@@ -565,6 +539,45 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
+  <button type="button" class="guide-fab" id="guide-fab" aria-expanded="false" aria-controls="guide-drawer" title="Open helping AI">
+    <span class="guide-fab-label">AI</span>
+    <span class="guide-fab-sub">Help</span>
+  </button>
+
+  <div class="guide-drawer" id="guide-drawer" hidden>
+    <div class="guide-drawer-panel" role="dialog" aria-modal="true" aria-labelledby="guide-heading">
+      <div class="guide-drawer-head">
+        <div>
+          <h2 id="guide-heading">Horizon Guide</h2>
+          <p class="guide-drawer-sub">Helping AI · study companion</p>
+        </div>
+        <button type="button" class="guide-drawer-close" id="guide-close" aria-label="Close helping AI">×</button>
+      </div>
+      <div class="guide-daily-attach" id="guide-daily-attach">
+        <span class="guide-daily-attach-tag">Today’s attachment</span>
+        <p id="guide-daily-text"></p>
+      </div>
+      <div class="guide-chips" id="guide-chips" role="toolbar" aria-label="Quick asks">
+        <button type="button" class="guide-chip" data-ask="Give me a study tip">Study tip</button>
+        <button type="button" class="guide-chip" data-ask="Motivate me">Motivate me</button>
+        <button type="button" class="guide-chip" data-ask="How do Tokens work?">Tokens</button>
+        <button type="button" class="guide-chip" data-ask="Make me a focus plan">Focus plan</button>
+      </div>
+      <div class="guide-chat" id="guide-chat" aria-live="polite"></div>
+      <form class="guide-form" id="guide-form" autocomplete="off">
+        <input
+          type="text"
+          id="guide-input"
+          class="guide-input"
+          placeholder="Ask the helping AI…"
+          maxlength="200"
+          aria-label="Message for Horizon Guide"
+        />
+        <button type="submit" class="btn btn-primary">Ask</button>
+      </form>
+    </div>
+  </div>
+
   <p class="music-credit">
     Music: <a href="https://youtu.be/K4DyBUG242c" target="_blank" rel="noopener noreferrer">On &amp; On (feat. Daniel Levi)</a>
     by Cartoon, Jéja · provided by <a href="https://ncs.io/OnandOn" target="_blank" rel="noopener noreferrer">NCS</a>
@@ -574,12 +587,12 @@
     <source src="sounds/on-and-on.mp3" type="audio/mpeg" />
   </audio>
 
-  <script src="script.js?v=guide1"></script>
-  <script src="theme-fx.js?v=guide1"></script>
-  <script src="game.js?v=guide1"></script>
-  <script src="cowboy.js?v=guide1"></script>
-  <script src="bloons.js?v=guide1"></script>
-  <script src="cuphead.js?v=guide1"></script>
-  <script src="royale.js?v=guide1"></script>
+  <script src="script.js?v=guide2"></script>
+  <script src="theme-fx.js?v=guide2"></script>
+  <script src="game.js?v=guide2"></script>
+  <script src="cowboy.js?v=guide2"></script>
+  <script src="bloons.js?v=guide2"></script>
+  <script src="cuphead.js?v=guide2"></script>
+  <script src="royale.js?v=guide2"></script>
 </body>
 </html>

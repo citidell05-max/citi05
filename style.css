@@ -1350,106 +1350,95 @@ body[data-theme="vipcrystal"] .theme-orb-2 {
 }
 
 .daily-attachment {
-  position: relative;
+  display: flex;
+  align-items: stretch;
+  gap: 0.75rem;
   width: min(920px, calc(100% - 2rem));
-  margin: 0.35rem auto 1.1rem;
+  margin: 0.15rem auto 1rem;
+  padding: 0.7rem 0.75rem;
+  border-radius: 14px;
+  border: 1px solid rgba(122, 240, 255, 0.28);
+  background:
+    linear-gradient(135deg, rgba(122, 240, 255, 0.1), rgba(255, 79, 216, 0.1)),
+    rgba(8, 4, 18, 0.82);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
   z-index: 3;
+  animation: attachment-in 0.55s ease-out both;
 }
 
 .daily-attachment[hidden] {
   display: none !important;
 }
 
-.daily-attachment-clip {
-  position: absolute;
-  top: -10px;
-  left: 1.4rem;
-  width: 18px;
-  height: 34px;
-  border-radius: 4px;
-  background: linear-gradient(180deg, #cfd8e6, #8a93a5);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.35);
-  transform: rotate(-8deg);
-  z-index: 2;
+.daily-attachment-file {
+  flex: 0 0 44px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02)),
+    rgba(20, 10, 40, 0.9);
+  position: relative;
 }
 
-.daily-attachment-clip::after {
+.daily-attachment-file::before {
   content: "";
   position: absolute;
-  inset: 7px 4px auto;
-  height: 10px;
-  border-radius: 999px;
-  border: 2px solid rgba(40, 44, 56, 0.55);
+  inset: 12px 16px auto 12px;
+  height: 14px;
+  border: 2px solid rgba(122, 240, 255, 0.75);
+  border-bottom: 0;
+  border-radius: 10px 10px 0 0;
+  transform: rotate(-28deg);
 }
 
-.daily-attachment-card {
-  position: relative;
-  padding: 1.15rem 1.25rem 1.05rem;
-  border-radius: 4px 14px 14px 14px;
-  border: 1px solid rgba(255, 214, 170, 0.45);
-  background:
-    linear-gradient(135deg, rgba(255, 236, 200, 0.96), rgba(255, 214, 170, 0.92));
-  color: #3a2412;
-  box-shadow:
-    0 10px 28px rgba(0, 0, 0, 0.28),
-    inset 0 1px 0 rgba(255, 255, 255, 0.65);
-  transform: rotate(-0.6deg);
-  animation: attachment-drop 0.7s ease-out both;
+.daily-attachment-body {
+  flex: 1;
+  min-width: 0;
 }
 
 .daily-attachment-label {
-  margin: 0;
+  margin: 0 0 0.25rem;
   font-family: var(--font-display);
   font-size: 0.62rem;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: rgba(90, 48, 18, 0.7);
-}
-
-.daily-attachment-date {
-  margin: 0.2rem 0 0.55rem;
-  font-size: 0.78rem;
-  font-weight: 700;
-  color: rgba(70, 40, 16, 0.75);
+  color: rgba(180, 240, 255, 0.72);
 }
 
 .daily-attachment-text {
   margin: 0;
-  font-family: var(--font-body, Rajdhani, sans-serif);
-  font-size: clamp(1.05rem, 2.4vw, 1.28rem);
+  font-size: 0.98rem;
   line-height: 1.35;
-  font-weight: 600;
-  color: #2c180c;
+  color: #f2e9ff;
 }
 
 .daily-attachment-dismiss {
   appearance: none;
-  margin-top: 0.75rem;
-  padding: 0.35rem 0.7rem;
+  align-self: flex-start;
+  width: 2rem;
+  height: 2rem;
   border-radius: 999px;
-  border: 1px solid rgba(90, 48, 18, 0.28);
-  background: rgba(255, 255, 255, 0.45);
-  color: #5a3012;
-  font-size: 0.72rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.06);
+  color: #ffe6ff;
+  font-size: 1.1rem;
+  line-height: 1;
   cursor: pointer;
 }
 
 .daily-attachment-dismiss:hover {
-  background: rgba(255, 255, 255, 0.7);
+  border-color: rgba(255, 150, 220, 0.55);
 }
 
-@keyframes attachment-drop {
-  from { opacity: 0; transform: translateY(-16px) rotate(-2deg); }
-  to { opacity: 1; transform: translateY(0) rotate(-0.6deg); }
+@keyframes attachment-in {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .layout {
   display: grid;
   grid-template-columns: 1.15fr 0.95fr;
   grid-template-areas:
-    "guide guide"
     "quest timer"
     "xp xp"
     "history history"
@@ -1462,7 +1451,6 @@ body[data-theme="vipcrystal"] .theme-orb-2 {
   gap: 1.25rem;
 }
 
-.guide-panel { grid-area: guide; }
 .quest-panel { grid-area: quest; }
 .timer-panel { grid-area: timer; }
 .xp-panel { grid-area: xp; }
@@ -1474,27 +1462,151 @@ body[data-theme="vipcrystal"] .theme-orb-2 {
 .cup-panel { grid-area: cup; }
 .royale-panel { grid-area: royale; }
 
-.guide-intro {
-  margin: 0 0 0.75rem;
-  color: var(--text-muted);
+.guide-fab {
+  position: fixed;
+  right: 1.1rem;
+  bottom: 1.1rem;
+  z-index: 40;
+  appearance: none;
+  width: 4.4rem;
+  height: 4.4rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 113, 206, 0.55);
+  background:
+    radial-gradient(circle at 30% 30%, rgba(122, 240, 255, 0.35), transparent 45%),
+    linear-gradient(145deg, rgba(255, 79, 216, 0.45), rgba(40, 12, 70, 0.95));
+  color: #fff;
+  cursor: pointer;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+  display: grid;
+  place-content: center;
+  gap: 0.05rem;
+}
+
+.guide-fab-label {
+  font-family: var(--font-display);
   font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.guide-fab-sub {
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
+.guide-fab:hover {
+  border-color: rgba(180, 240, 255, 0.8);
+}
+
+body.splash-active .guide-fab,
+body.splash-active .guide-drawer {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.guide-drawer {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: end;
+  padding: 1rem;
+  background: rgba(4, 2, 12, 0.55);
+}
+
+.guide-drawer[hidden] {
+  display: none !important;
+}
+
+.guide-drawer-panel {
+  width: min(100%, 420px);
+  max-height: min(82vh, 640px);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem 1rem 1.1rem;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 113, 206, 0.35);
+  background:
+    linear-gradient(180deg, rgba(28, 12, 48, 0.96), rgba(8, 4, 18, 0.98));
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+  animation: attachment-in 0.35s ease-out both;
+}
+
+.guide-drawer-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.guide-drawer-head h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.guide-drawer-sub {
+  margin: 0.2rem 0 0;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+}
+
+.guide-drawer-close {
+  appearance: none;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.06);
+  color: #ffe6ff;
+  font-size: 1.15rem;
+  cursor: pointer;
+}
+
+.guide-daily-attach {
+  padding: 0.7rem 0.8rem;
+  border-radius: 12px;
+  border: 1px dashed rgba(122, 240, 255, 0.35);
+  background: rgba(122, 240, 255, 0.08);
+}
+
+.guide-daily-attach-tag {
+  display: block;
+  margin-bottom: 0.3rem;
+  font-family: var(--font-display);
+  font-size: 0.58rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(180, 240, 255, 0.75);
+}
+
+.guide-daily-attach p {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.35;
+  color: #eaf7ff;
 }
 
 .guide-chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.45rem;
-  margin-bottom: 0.85rem;
+  gap: 0.4rem;
 }
 
 .guide-chip {
   appearance: none;
-  padding: 0.4rem 0.7rem;
+  padding: 0.38rem 0.65rem;
   border-radius: 999px;
   border: 1px solid rgba(122, 240, 255, 0.35);
   background: rgba(122, 240, 255, 0.1);
   color: #d8f7ff;
-  font-size: 0.78rem;
+  font-size: 0.75rem;
   letter-spacing: 0.04em;
   cursor: pointer;
 }
@@ -1506,21 +1618,22 @@ body[data-theme="vipcrystal"] .theme-orb-2 {
 
 .guide-chat {
   display: grid;
-  gap: 0.55rem;
-  max-height: 260px;
+  gap: 0.5rem;
+  flex: 1;
+  min-height: 160px;
+  max-height: 280px;
   overflow: auto;
-  padding: 0.75rem;
-  margin-bottom: 0.85rem;
+  padding: 0.7rem;
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(6, 4, 14, 0.45);
+  background: rgba(6, 4, 14, 0.55);
 }
 
 .guide-bubble {
   max-width: 92%;
-  padding: 0.65rem 0.8rem;
+  padding: 0.6rem 0.75rem;
   border-radius: 12px;
-  font-size: 0.92rem;
+  font-size: 0.88rem;
   line-height: 1.4;
 }
 
@@ -1542,7 +1655,7 @@ body[data-theme="vipcrystal"] .theme-orb-2 {
   display: block;
   margin-bottom: 0.2rem;
   font-family: var(--font-display);
-  font-size: 0.62rem;
+  font-size: 0.58rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   opacity: 0.75;
@@ -1550,13 +1663,13 @@ body[data-theme="vipcrystal"] .theme-orb-2 {
 
 .guide-form {
   display: flex;
-  gap: 0.55rem;
+  gap: 0.5rem;
 }
 
 .guide-input {
   flex: 1;
   min-width: 0;
-  padding: 0.7rem 0.85rem;
+  padding: 0.65rem 0.8rem;
   border-radius: 10px;
   border: 1px solid rgba(255, 255, 255, 0.18);
   background: rgba(8, 6, 18, 0.65);
@@ -1580,7 +1693,6 @@ body[data-theme="vipcrystal"] .theme-orb-2 {
   animation: rise-in 0.75s ease-out both;
 }
 
-.guide-panel,
 .quest-panel,
 .timer-panel,
 .xp-panel,
@@ -1594,7 +1706,6 @@ body[data-theme="vipcrystal"] .theme-orb-2 {
   background: rgba(12, 6, 24, 0.12);
 }
 
-.guide-panel { animation-delay: 0.04s; }
 .timer-panel { animation-delay: 0.08s; }
 .xp-panel { animation-delay: 0.16s; }
 .history-panel { animation-delay: 0.18s; }
@@ -2216,7 +2327,6 @@ body.is-study-lock .royale-panel.is-game-owned::after {
   .layout {
     grid-template-columns: 1fr;
     grid-template-areas:
-      "guide"
       "timer"
       "quest"
       "xp"
