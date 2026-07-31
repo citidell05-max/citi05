@@ -127,10 +127,10 @@
   let sfxEnabled = state.sfxEnabled;
   // Force music available; users can still turn it off
   let musicEnabled = state.musicEnabled !== false;
-  if (localStorage.getItem("arcane-horizon-music-v2") !== "1") {
+  if (localStorage.getItem("arcane-horizon-music-v3") !== "1") {
     musicEnabled = true;
     state.musicEnabled = true;
-    localStorage.setItem("arcane-horizon-music-v2", "1");
+    localStorage.setItem("arcane-horizon-music-v3", "1");
   }
   let vipEnabled = !!state.vipEnabled && state.vipUnlockSource === "moderator";
   let vipUnlocked = !!state.vipUnlocked && state.vipUnlockSource === "moderator";
@@ -581,7 +581,7 @@
     els.sfxToggle.setAttribute("aria-pressed", String(sfxEnabled));
   }
 
-  const bgMusic = els.bgMusic || new Audio("sounds/speed-song.mp3");
+  const bgMusic = els.bgMusic || new Audio("sounds/on-and-on.mp3");
   bgMusic.loop = true;
   bgMusic.preload = "auto";
   bgMusic.volume = 0.85;
@@ -620,7 +620,7 @@
         .then(() => {
           musicStarted = true;
           renderMusicToggle();
-          if (fromGesture) showToast("Speed song playing");
+          if (fromGesture) showToast("On & On playing");
           return true;
         })
         .catch((err) => {
