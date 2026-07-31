@@ -27,6 +27,9 @@
   const QUEST_GEMS = 2;
   const FOCUS_GEMS = 3;
   const DAILY_CHEST_GEMS = 100;
+  const THEME_TOKEN_COST = 100;
+  const VIP_THEME_GEM_COST = 10;
+  const FREE_THEME_ID = "sunrise";
   const VIP_COST = 25000;
   const MOD_VIP_CODE = "ONLY4VIP";
   const CIRCUMFERENCE = 552.92;
@@ -111,23 +114,33 @@
   };
 
   const AI_RIVALS = [
-    { id: "nova", name: "Nova Pulse", tag: "Focus AI", bias: 1.18 },
-    { id: "quill", name: "Quill Byte", tag: "Quest AI", bias: 1.05 },
-    { id: "ember", name: "Ember Core", tag: "Streak AI", bias: 0.92 },
-    { id: "luna", name: "Luna Circuit", tag: "Timer AI", bias: 1.12 },
-    { id: "hex", name: "Hex Ledger", tag: "Gem AI", bias: 0.88 },
-    { id: "orbit", name: "Orbit Mind", tag: "Rank AI", bias: 1.28 },
-    { id: "rift", name: "Rift Scholar", tag: "Grind AI", bias: 0.97 },
-    { id: "prism", name: "Prism Note", tag: "Study AI", bias: 1.08 },
+    { id: "nova", name: "shadowfox92", tag: "Player", bias: 1.18 },
+    { id: "quill", name: "StudyQueen", tag: "Player", bias: 1.05 },
+    { id: "ember", name: "nightowl_x", tag: "Player", bias: 0.92 },
+    { id: "luna", name: "KaiZen7", tag: "Player", bias: 1.12 },
+    { id: "hex", name: "PixelPanda", tag: "Player", bias: 0.88 },
+    { id: "orbit", name: "arcane_mike", tag: "Player", bias: 1.28 },
+    { id: "rift", name: "LunaBytes", tag: "Player", bias: 0.97 },
+    { id: "prism", name: "QuestHunter", tag: "Player", bias: 1.08 },
+    { id: "blaze", name: "FocusFrog", tag: "Player", bias: 1.15 },
+    { id: "volt", name: "xXTokenKingXx", tag: "Player", bias: 0.94 },
   ];
 
   const state = loadState();
+  if (!Array.isArray(state.ownedThemes) || !state.ownedThemes.length) {
+    state.ownedThemes = [FREE_THEME_ID];
+  }
+  if (!state.ownedThemes.includes(FREE_THEME_ID)) state.ownedThemes.push(FREE_THEME_ID);
   let currentThemeId = localStorage.getItem(THEME_STORAGE_KEY) || "sunrise";
   if (!THEMES.some((t) => t.id === currentThemeId)) currentThemeId = "sunrise";
   // One-time refresh: apply the new branded Arcane Sunrise background
   if (localStorage.getItem("arcane-horizon-sunrise-v5") !== "1") {
     currentThemeId = "sunrise";
     localStorage.setItem("arcane-horizon-sunrise-v5", "1");
+  }
+  // Keep currently equipped theme usable after shop pricing was added
+  if (currentThemeId && !state.ownedThemes.includes(currentThemeId)) {
+    state.ownedThemes.push(currentThemeId);
   }
   let sessionXp = Number(state.sessionXp) || 0;
   let timerId = null;
@@ -177,6 +190,7 @@
       lastActiveDate: null,
       lastChestDate: null,
       chestClaims: 0,
+      ownedThemes: [FREE_THEME_ID],
       history: [],
       vipEnabled: false,
       vipUnlocked: false,
@@ -210,6 +224,9 @@
           lastActiveDate: typeof parsed.lastActiveDate === "string" ? parsed.lastActiveDate : null,
           lastChestDate: typeof parsed.lastChestDate === "string" ? parsed.lastChestDate : null,
           chestClaims: Math.max(0, Number(parsed.chestClaims) || 0),
+          ownedThemes: Array.isArray(parsed.ownedThemes)
+            ? parsed.ownedThemes.filter((id) => typeof id === "string")
+            : [FREE_THEME_ID],
           history: Array.isArray(parsed.history) ? parsed.history.slice(0, HISTORY_LIMIT) : [],
           vipEnabled: !!parsed.vipEnabled && parsed.vipUnlockSource === "moderator",
           vipUnlocked: !!parsed.vipUnlocked && parsed.vipUnlockSource === "moderator",
@@ -251,6 +268,7 @@
         lastActiveDate: state.lastActiveDate || null,
         lastChestDate: state.lastChestDate || null,
         chestClaims: state.chestClaims || 0,
+        ownedThemes: Array.isArray(state.ownedThemes) ? state.ownedThemes : [FREE_THEME_ID],
         history: Array.isArray(state.history) ? state.history.slice(0, HISTORY_LIMIT) : [],
         vipEnabled,
         vipUnlocked,
@@ -298,15 +316,70 @@
     return !!theme?.vip;
   }
 
+  function ownsTheme(themeId) {
+    if (!Array.isArray(state.ownedThemes)) state.ownedThemes = [FREE_THEME_ID];
+    return state.ownedThemes.includes(themeId) || themeId === FREE_THEME_ID;
+  }
+
+  function themePriceLabel(theme) {
+    if (theme.id === FREE_THEME_ID || ownsTheme(theme.id)) return "Owned";
+    if (isVipTheme(theme)) return `${VIP_THEME_GEM_COST} Gems`;
+    return `${THEME_TOKEN_COST} Tokens`;
+  }
+
   function canUseTheme(theme) {
-    if (!isVipTheme(theme)) return true;
-    return !!vipUnlocked;
+    return ownsTheme(theme.id);
+  }
+
+  function tryBuyTheme(theme) {
+    if (ownsTheme(theme.id)) return { ok: true, bought: false };
+
+    if (isVipTheme(theme)) {
+      if (!vipUnlocked) {
+        return { ok: false, reason: "VIP gem themes need VIP unlock first" };
+      }
+      if ((state.gems || 0) < VIP_THEME_GEM_COST) {
+        return { ok: false, reason: `Need ${VIP_THEME_GEM_COST} Gems to unlock ${theme.name}` };
+      }
+      state.gems -= VIP_THEME_GEM_COST;
+      state.ownedThemes.push(theme.id);
+      addHistory({
+        type: "theme",
+        text: `Unlocked VIP theme: ${theme.name}`,
+        gems: -VIP_THEME_GEM_COST,
+      });
+      saveState();
+      renderWallet();
+      renderHistory();
+      renderLeaderboard();
+      return { ok: true, bought: true, currency: "gems", amount: VIP_THEME_GEM_COST };
+    }
+
+    if ((state.tokens || 0) < THEME_TOKEN_COST) {
+      return { ok: false, reason: `Need ${THEME_TOKEN_COST} Tokens to unlock ${theme.name}` };
+    }
+    state.tokens -= THEME_TOKEN_COST;
+    state.ownedThemes.push(theme.id);
+    addHistory({
+      type: "theme",
+      text: `Unlocked theme: ${theme.name}`,
+      tokens: -THEME_TOKEN_COST,
+    });
+    saveState();
+    renderWallet();
+    renderHistory();
+    renderLeaderboard();
+    return { ok: true, bought: true, currency: "tokens", amount: THEME_TOKEN_COST };
   }
 
   function applyTheme(id, { persist = true, toast = false } = {}) {
     const theme = getTheme(id);
     if (!canUseTheme(theme)) {
-      showToast("VIP theme locked — unlock VIP to use gem themes");
+      showToast(
+        isVipTheme(theme)
+          ? `VIP theme costs ${VIP_THEME_GEM_COST} Gems`
+          : `Theme costs ${THEME_TOKEN_COST} Tokens`
+      );
       playSfx("click");
       return;
     }
@@ -369,51 +442,69 @@
   function renderThemeGrid() {
     if (!els.themeGrid) return;
 
+    const syncCard = (btn, theme) => {
+      const active = theme.id === currentThemeId;
+      const owned = ownsTheme(theme.id);
+      const locked = !owned;
+      const price = themePriceLabel(theme);
+      btn.classList.toggle("is-active", active);
+      btn.classList.toggle("is-vip", isVipTheme(theme));
+      btn.classList.toggle("is-locked", locked);
+      btn.setAttribute("aria-selected", String(active));
+      btn.setAttribute("aria-disabled", "false");
+      btn.setAttribute("role", "option");
+      btn.title = owned
+        ? theme.name
+        : isVipTheme(theme)
+          ? `${theme.name} — ${VIP_THEME_GEM_COST} Gems (VIP)`
+          : `${theme.name} — ${THEME_TOKEN_COST} Tokens`;
+
+      const img = btn.querySelector("img");
+      if (img && img.getAttribute("src") !== theme.src) {
+        img.src = theme.src;
+        img.alt = theme.name;
+      }
+
+      let label = btn.querySelector("span");
+      if (!label) {
+        label = document.createElement("span");
+        btn.appendChild(label);
+      }
+      if (theme.id === FREE_THEME_ID) label.textContent = `${theme.name} · Free`;
+      else if (isVipTheme(theme)) label.textContent = owned ? `${theme.name} · VIP` : `${theme.name} · ${VIP_THEME_GEM_COST} Gems`;
+      else label.textContent = owned ? theme.name : `${theme.name} · ${THEME_TOKEN_COST} Tokens`;
+
+      let badge = btn.querySelector(".theme-vip-badge");
+      if (!badge) {
+        badge = document.createElement("em");
+        badge.className = "theme-vip-badge";
+        btn.appendChild(badge);
+      }
+      if (owned) {
+        badge.textContent = active ? "ACTIVE" : "OWNED";
+        badge.classList.toggle("is-price", false);
+      } else if (isVipTheme(theme)) {
+        badge.textContent = vipUnlocked ? `${VIP_THEME_GEM_COST} GEMS` : "VIP · 10 GEMS";
+        badge.classList.toggle("is-price", true);
+      } else {
+        badge.textContent = `${THEME_TOKEN_COST} TOKENS`;
+        badge.classList.toggle("is-price", true);
+      }
+      void price;
+    };
+
     // Prefer the pictures already in HTML — sync active state + fresh URLs
     const existing = els.themeGrid.querySelectorAll("[data-theme]");
     if (existing.length) {
-      existing.forEach((btn) => {
-        const theme = getTheme(btn.dataset.theme);
-        const active = theme.id === currentThemeId;
-        const locked = !canUseTheme(theme);
-        btn.classList.toggle("is-active", active);
-        btn.classList.toggle("is-vip", isVipTheme(theme));
-        btn.classList.toggle("is-locked", locked);
-        btn.setAttribute("aria-selected", String(active));
-        btn.setAttribute("aria-disabled", String(locked));
-        btn.setAttribute("role", "option");
-        btn.title = locked ? `${theme.name} — VIP gem theme (locked)` : theme.name;
-        const img = btn.querySelector("img");
-        if (img && img.getAttribute("src") !== theme.src) {
-          img.src = theme.src;
-          img.alt = theme.name;
-        }
-        let badge = btn.querySelector(".theme-vip-badge");
-        if (isVipTheme(theme)) {
-          if (!badge) {
-            badge = document.createElement("em");
-            badge.className = "theme-vip-badge";
-            btn.appendChild(badge);
-          }
-          badge.textContent = locked ? "VIP LOCK" : "VIP";
-        } else if (badge) {
-          badge.remove();
-        }
-      });
+      existing.forEach((btn) => syncCard(btn, getTheme(btn.dataset.theme)));
       return;
     }
 
     els.themeGrid.innerHTML = "";
     THEMES.forEach((theme) => {
-      const locked = !canUseTheme(theme);
       const btn = document.createElement("button");
       btn.type = "button";
-      btn.className = `theme-card${theme.id === currentThemeId ? " is-active" : ""}${isVipTheme(theme) ? " is-vip" : ""}${locked ? " is-locked" : ""}`;
-      btn.setAttribute("role", "option");
-      btn.setAttribute("aria-selected", String(theme.id === currentThemeId));
-      btn.setAttribute("aria-disabled", String(locked));
       btn.dataset.theme = theme.id;
-      btn.title = locked ? `${theme.name} — VIP gem theme (locked)` : theme.name;
       const img = document.createElement("img");
       img.src = theme.src;
       img.alt = theme.name;
@@ -424,24 +515,17 @@
           textContent: theme.name,
         }));
       };
-      const label = document.createElement("span");
-      label.textContent = isVipTheme(theme) ? `${theme.name} · VIP` : theme.name;
-      btn.append(img, label);
-      if (isVipTheme(theme)) {
-        const badge = document.createElement("em");
-        badge.className = "theme-vip-badge";
-        badge.textContent = locked ? "VIP LOCK" : "VIP";
-        btn.appendChild(badge);
-      }
+      btn.append(img, document.createElement("span"));
       els.themeGrid.appendChild(btn);
+      syncCard(btn, theme);
     });
   }
 
   function applyBackgroundFromStorage() {
     let theme = getTheme(currentThemeId);
     if (!canUseTheme(theme)) {
-      currentThemeId = "sunrise";
-      theme = getTheme("sunrise");
+      currentThemeId = FREE_THEME_ID;
+      theme = getTheme(FREE_THEME_ID);
     }
     applyTheme(theme.id, { persist: true, toast: false });
   }
@@ -595,7 +679,7 @@
         <span class="lb-rank">#${entry.rank}</span>
         <span class="lb-main">
           <strong class="lb-name">${entry.name}</strong>
-          <span class="lb-tag">${entry.ai ? "AI · " : ""}${entry.tag}</span>
+          <span class="lb-tag">${entry.isYou ? entry.tag : `AI rival · ${entry.tag}`}</span>
         </span>
         <span class="lb-stats">
           <span class="lb-level">LVL ${entry.level}</span>
@@ -1218,13 +1302,25 @@
     const card = e.target.closest("[data-theme]");
     if (!card) return;
     const theme = getTheme(card.dataset.theme);
-    if (!canUseTheme(theme)) {
-      showToast("VIP gem theme locked — unlock VIP first");
+    const purchase = tryBuyTheme(theme);
+    if (!purchase.ok) {
+      showToast(purchase.reason);
       playSfx("click");
+      renderThemeGrid();
       return;
     }
-    applyTheme(theme.id, { toast: true });
-    playSfx("click");
+    applyTheme(theme.id, { toast: !purchase.bought });
+    if (purchase.bought) {
+      playSfx("levelup");
+      showToast(
+        purchase.currency === "gems"
+          ? `Unlocked ${theme.name} for ${purchase.amount} Gems`
+          : `Unlocked ${theme.name} for ${purchase.amount} Tokens`
+      );
+    } else {
+      playSfx("click");
+    }
+    renderThemeGrid();
   });
 
   els.dailyChest?.addEventListener("click", () => {
