@@ -2019,19 +2019,26 @@
     const duration = 4500;
 
     // Keep splash on top until the player enters — never auto-dismiss.
+    // Splash art is assets/arcane-horizon-splash.jpg
     document.body.classList.add("splash-active");
     splash.removeAttribute("hidden");
     splash.classList.remove("is-done");
+    splash.classList.add("splash-has-art");
 
     const artImg = splash.querySelector(".splash-art img");
     if (artImg) {
-      const markArt = () => splash.classList.add("splash-has-art");
-      const markMissing = () => splash.classList.remove("splash-has-art");
-      if (artImg.complete && artImg.naturalWidth > 0) markArt();
-      else {
-        artImg.addEventListener("load", markArt, { once: true });
-        artImg.addEventListener("error", markMissing, { once: true });
+      const splashSrc = "assets/arcane-horizon-splash.jpg?v=4";
+      if (!artImg.getAttribute("src") || !artImg.getAttribute("src").includes("arcane-horizon-splash.jpg")) {
+        artImg.src = splashSrc;
       }
+      artImg.addEventListener(
+        "error",
+        () => {
+          // Keep CSS background fallback on #splash-screen / .splash-art
+          console.warn("Splash image failed to load:", splashSrc);
+        },
+        { once: true }
+      );
     }
 
     function finishSplash() {
