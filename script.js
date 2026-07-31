@@ -1370,6 +1370,7 @@
     saveState();
     renderHistory();
     renderStreak();
+    renderLeaderboard();
     playSfx("click");
     showToast("History & streak reset");
   });
