@@ -40,7 +40,7 @@
       streak: 0,
       wins: Number(localStorage.getItem(STORAGE_WINS)) || 0,
       bestMs: Number(localStorage.getItem(STORAGE_BEST)) || 0,
-      lastMsg: "Wait for SHOOT — then click fast!",
+      lastMsg: "Wait for SHOOT — then click EXTRA FAST!",
       bangX: 0,
       bangY: 0,
       bangLife: 0,
@@ -69,9 +69,9 @@
     }
 
     function banditReaction() {
-      // Gets a bit faster as streak grows, but stays beatable
-      const base = 280 - Math.min(90, state.streak * 12);
-      return base + Math.random() * 120;
+      // Extra-fast bandit — lightning draws, gets even meaner on streaks
+      const base = 145 - Math.min(45, state.streak * 8);
+      return Math.max(95, base + Math.random() * 55);
     }
 
     function setBusy(on) {
@@ -166,17 +166,18 @@
 
       if (state.mode === "countdown") {
         const elapsed = now - state.countAt;
+        const beat = 480; // snappy 1-2-3
         const next = state.countStep + 1;
-        if (elapsed >= next * 700 && state.countStep < 3) {
+        if (elapsed >= next * beat && state.countStep < 3) {
           state.countStep = next;
           if (state.countStep === 1) setStatus("1…");
           if (state.countStep === 2) setStatus("2…");
           if (state.countStep === 3) setStatus("3…");
         }
-        if (state.countStep >= 3 && elapsed >= 3 * 700 + 250) {
+        if (state.countStep >= 3 && elapsed >= 3 * beat + 120) {
           state.mode = "wait";
-          // Random pause so you can't guess the beat
-          state.waitUntil = now + 350 + Math.random() * 1400;
+          // Short random pause — stay sharp
+          state.waitUntil = now + 180 + Math.random() * 700;
           setStatus("…");
         }
       } else if (state.mode === "wait") {
@@ -383,7 +384,7 @@
         ctx.fillText("COWBOY QUICK DRAW", W / 2, 58);
         ctx.fillStyle = "#ffd27a";
         ctx.font = "16px Rajdhani, sans-serif";
-        ctx.fillText("1 · 2 · 3 · SHOOT — click as fast as you can", W / 2, 82);
+        ctx.fillText("EXTRA FAST bandit — click the instant you see SHOOT!", W / 2, 82);
       } else if (state.mode === "countdown" || state.mode === "wait") {
         const label = state.countStep === 0 ? "READY" : String(state.countStep);
         ctx.fillStyle = "rgba(0,0,0,0.45)";

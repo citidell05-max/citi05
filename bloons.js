@@ -94,20 +94,21 @@
     const LAYER_MAP = Object.fromEntries(LAYERS.map((l) => [l.name, l]));
 
     const TOWER_TYPES = {
-      dart: {
-        id: "dart",
-        name: "Dart",
+      bow: {
+        id: "bow",
+        name: "Bow Monkey",
         cost: 50,
-        range: 110,
-        fireRate: 28,
+        range: 115,
+        fireRate: 26,
         damage: 1,
         pierce: 1,
         color: "#8b5a2b",
-        tip: "Cheap single-target pops",
+        fur: "#c48a4a",
+        tip: "Monkey with a bow — quick single pops",
       },
       bomb: {
         id: "bomb",
-        name: "Bomb",
+        name: "Bomb Monkey",
         cost: 120,
         range: 95,
         fireRate: 55,
@@ -115,31 +116,20 @@
         pierce: 1,
         splash: 42,
         color: "#5a2a8b",
-        tip: "AoE blast — good for clumps",
-      },
-      ice: {
-        id: "ice",
-        name: "Ice",
-        cost: 90,
-        range: 85,
-        fireRate: 48,
-        damage: 0,
-        pierce: 99,
-        slow: 0.45,
-        slowTime: 90,
-        color: "#3aa8d8",
-        tip: "Slows balloons in range",
+        fur: "#9a6a3a",
+        tip: "Monkey with bombs — AoE blasts",
       },
       sniper: {
         id: "sniper",
-        name: "Sniper",
+        name: "Sniper Monkey",
         cost: 160,
         range: 260,
         fireRate: 70,
         damage: 3,
         pierce: 1,
         color: "#2f6b3a",
-        tip: "Long range, hard pops",
+        fur: "#b07a40",
+        tip: "Monkey with a sniper — long range lead pops",
         canLead: true,
       },
     };
@@ -150,7 +140,7 @@
       cash: 250,
       wave: 0,
       bestWave: Number(localStorage.getItem(STORAGE_WAVE)) || 0,
-      selected: "dart",
+      selected: "bow",
       towers: [],
       balloons: [],
       shots: [],
@@ -325,32 +315,21 @@
       tower.cooldown = type.fireRate;
       tower.angle = Math.atan2(nowTarget.y - tower.y, nowTarget.x - tower.x);
 
-      if (type.slow) {
-        // ice pulse — no projectile
-        state.balloons.forEach((b) => {
-          if (b.dead) return;
-          const p = pointOnPath(b.dist);
-          if (Math.hypot(p.x - tower.x, p.y - tower.y) <= type.range) {
-            b.slow = type.slowTime;
-            b.slowMul = type.slow;
-          }
-        });
-        state.pops.push({ x: tower.x, y: tower.y, life: 12, ring: type.range, color: "rgba(100,210,255,0.35)" });
-        return;
-      }
-
+      const speed = type.id === "sniper" ? 12 : type.id === "bow" ? 9 : 7.2;
       state.shots.push({
         x: tower.x,
         y: tower.y,
-        vx: Math.cos(tower.angle) * (type.id === "sniper" ? 11 : 7.5),
-        vy: Math.sin(tower.angle) * (type.id === "sniper" ? 11 : 7.5),
+        vx: Math.cos(tower.angle) * speed,
+        vy: Math.sin(tower.angle) * speed,
         damage: type.damage,
         pierce: type.pierce,
         splash: type.splash || 0,
         canLead: !!type.canLead,
         life: 70,
-        color: type.id === "bomb" ? "#ff8a3d" : type.id === "sniper" ? "#9dff7a" : "#fff1c9",
-        r: type.id === "bomb" ? 5 : 3,
+        color: type.id === "bomb" ? "#ff8a3d" : type.id === "sniper" ? "#9dff7a" : "#e8c27a",
+        r: type.id === "bomb" ? 5 : type.id === "bow" ? 2.5 : 3,
+        arrow: type.id === "bow",
+        angle: tower.angle,
       });
     }
 
@@ -553,48 +532,151 @@
       ctx.restore();
     }
 
-    function drawTower(tower) {
-      const type = TOWER_TYPES[tower.type];
+    function drawMonkey(x, y, typeId, angle, ghost) {
+      const type = TOWER_TYPES[typeId];
+      if (!type) return;
+      const a = typeof ctx.globalAlpha === "number" ? ctx.globalAlpha : 1;
       ctx.save();
-      ctx.translate(tower.x, tower.y);
+      ctx.translate(x, y);
+      if (ghost) ctx.globalAlpha = 0.55;
 
-      // range when selected type matches and pointer near? show always faint for selected
-      if (state.selected === tower.type && state.pointer.inside) {
-        // skip
-      }
-
-      ctx.fillStyle = "rgba(0,0,0,0.25)";
+      // shadow
+      ctx.fillStyle = "rgba(0,0,0,0.28)";
       ctx.beginPath();
-      ctx.ellipse(0, 10, 16, 6, 0, 0, Math.PI * 2);
+      ctx.ellipse(0, 16, 16, 5, 0, 0, Math.PI * 2);
       ctx.fill();
 
-      ctx.fillStyle = type.color;
-      ctx.beginPath();
-      ctx.arc(0, 0, 14, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.strokeStyle = "rgba(255,255,255,0.35)";
-      ctx.lineWidth = 2;
-      ctx.stroke();
+      // legs
+      ctx.fillStyle = type.fur;
+      ctx.fillRect(-8, 6, 6, 10);
+      ctx.fillRect(2, 6, 6, 10);
 
-      ctx.rotate(tower.angle || 0);
-      ctx.fillStyle = "#ddd";
-      ctx.fillRect(6, -3, 16, 6);
-      if (type.id === "bomb") {
-        ctx.fillStyle = "#333";
+      // body
+      ctx.beginPath();
+      ctx.ellipse(0, 2, 11, 12, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#f0d2a8";
+      ctx.beginPath();
+      ctx.ellipse(0, 5, 7, 7, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // head
+      ctx.fillStyle = type.fur;
+      ctx.beginPath();
+      ctx.arc(0, -12, 11, 0, Math.PI * 2);
+      ctx.fill();
+      // ears
+      ctx.beginPath();
+      ctx.arc(-11, -16, 5, 0, Math.PI * 2);
+      ctx.arc(11, -16, 5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#e8b890";
+      ctx.beginPath();
+      ctx.arc(-11, -16, 2.5, 0, Math.PI * 2);
+      ctx.arc(11, -16, 2.5, 0, Math.PI * 2);
+      ctx.fill();
+      // face
+      ctx.fillStyle = "#ffe0c0";
+      ctx.beginPath();
+      ctx.ellipse(0, -10, 7, 6.5, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#1a120c";
+      ctx.beginPath();
+      ctx.arc(-3.2, -11, 1.4, 0, Math.PI * 2);
+      ctx.arc(3.2, -11, 1.4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#5a2e18";
+      ctx.beginPath();
+      ctx.ellipse(0, -7.5, 2.2, 1.4, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // hat / gear by type
+      if (typeId === "sniper") {
+        ctx.fillStyle = "#2f6b3a";
+        ctx.fillRect(-9, -24, 18, 5);
+        ctx.fillRect(-5, -30, 10, 7);
+        ctx.fillStyle = "#1e4a28";
+        ctx.fillRect(4, -28, 10, 3);
+      } else if (typeId === "bomb") {
+        ctx.fillStyle = "#3a2048";
         ctx.beginPath();
-        ctx.arc(18, 0, 5, 0, Math.PI * 2);
+        ctx.arc(0, -22, 7, 0, Math.PI * 2);
         ctx.fill();
-      }
-      if (type.id === "ice") {
-        ctx.strokeStyle = "#baf3ff";
+        ctx.strokeStyle = "#ffb347";
         ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.moveTo(8, -8);
-        ctx.lineTo(18, 0);
-        ctx.lineTo(8, 8);
+        ctx.moveTo(4, -27);
+        ctx.quadraticCurveTo(10, -32, 8, -36);
+        ctx.stroke();
+        ctx.fillStyle = "#ff6b3a";
+        ctx.beginPath();
+        ctx.arc(8, -36, 2, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        // bow monkey bandana
+        ctx.fillStyle = "#c0392b";
+        ctx.fillRect(-9, -18, 18, 3);
+      }
+
+      // weapon aimed at target
+      ctx.save();
+      ctx.rotate(angle || 0);
+      if (typeId === "bow") {
+        ctx.strokeStyle = "#5a3418";
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.arc(14, 0, 10, -1.1, 1.1);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(14, -9);
+        ctx.lineTo(14, 9);
+        ctx.stroke();
+        ctx.strokeStyle = "#e8c27a";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(8, 0);
+        ctx.lineTo(26, 0);
+        ctx.stroke();
+        ctx.fillStyle = "#ddd";
+        ctx.beginPath();
+        ctx.moveTo(26, 0);
+        ctx.lineTo(22, -3);
+        ctx.lineTo(22, 3);
+        ctx.fill();
+      } else if (typeId === "sniper") {
+        ctx.fillStyle = "#2a2a2a";
+        ctx.fillRect(8, -2.5, 28, 5);
+        ctx.fillStyle = "#1a1a1a";
+        ctx.fillRect(30, -1.5, 10, 3);
+        ctx.fillStyle = "#4a7a4a";
+        ctx.fillRect(14, -6, 8, 3);
+        ctx.strokeStyle = "#888";
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.arc(18, -7, 3, 0, Math.PI * 2);
+        ctx.stroke();
+      } else if (typeId === "bomb") {
+        ctx.fillStyle = "#222";
+        ctx.beginPath();
+        ctx.arc(18, 2, 7, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#444";
+        ctx.fillRect(15, -8, 4, 6);
+        ctx.strokeStyle = "#ffb347";
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(17, -8);
+        ctx.lineTo(22, -14);
         ctx.stroke();
       }
       ctx.restore();
+
+      ctx.globalAlpha = a;
+      ctx.restore();
+    }
+
+    function drawTower(tower) {
+      drawMonkey(tower.x, tower.y, tower.type, tower.angle, false);
     }
 
     function draw() {
@@ -627,20 +709,46 @@
         ctx.fill();
         ctx.strokeStyle = ok ? "rgba(184,255,60,0.55)" : "rgba(255,80,80,0.55)";
         ctx.stroke();
-        ctx.fillStyle = ok ? type.color : "#663";
-        ctx.beginPath();
-        ctx.arc(state.pointer.x, state.pointer.y, 12, 0, Math.PI * 2);
-        ctx.fill();
+        drawMonkey(state.pointer.x, state.pointer.y, state.selected, 0, true);
+        if (!ok) {
+          ctx.strokeStyle = "rgba(255,80,80,0.8)";
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.moveTo(state.pointer.x - 12, state.pointer.y - 12);
+          ctx.lineTo(state.pointer.x + 12, state.pointer.y + 12);
+          ctx.moveTo(state.pointer.x + 12, state.pointer.y - 12);
+          ctx.lineTo(state.pointer.x - 12, state.pointer.y + 12);
+          ctx.stroke();
+        }
       }
 
       state.towers.forEach(drawTower);
       state.balloons.forEach(drawBalloon);
 
       for (const s of state.shots) {
-        ctx.fillStyle = s.color;
-        ctx.beginPath();
-        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-        ctx.fill();
+        if (s.arrow) {
+          ctx.save();
+          ctx.translate(s.x, s.y);
+          ctx.rotate(s.angle || 0);
+          ctx.strokeStyle = s.color;
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(-6, 0);
+          ctx.lineTo(6, 0);
+          ctx.stroke();
+          ctx.fillStyle = "#ddd";
+          ctx.beginPath();
+          ctx.moveTo(8, 0);
+          ctx.lineTo(3, -2.5);
+          ctx.lineTo(3, 2.5);
+          ctx.fill();
+          ctx.restore();
+        } else {
+          ctx.fillStyle = s.color;
+          ctx.beginPath();
+          ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+          ctx.fill();
+        }
       }
 
       for (const p of state.pops) {
@@ -668,7 +776,7 @@
         ctx.fillText("BALLOON DEFENSE", W / 2, H / 2 - 18);
         ctx.fillStyle = "#dfffd0";
         ctx.font = "18px Rajdhani, sans-serif";
-        ctx.fillText("Bloons-style TD · place towers · pop the waves", W / 2, H / 2 + 14);
+        ctx.fillText("Bow · Bomb · Sniper monkeys — hold the track!", W / 2, H / 2 + 14);
       } else if (state.mode === "lost" || state.mode === "won") {
         ctx.fillStyle = "rgba(0,0,0,0.5)";
         ctx.fillRect(0, 0, W, H);
