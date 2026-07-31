@@ -1736,7 +1736,12 @@
     ];
 
     const started = performance.now();
-    const duration = 3200;
+    const duration = 4500;
+
+    // Keep splash on top until the player enters — never auto-dismiss.
+    document.body.classList.add("splash-active");
+    splash.removeAttribute("hidden");
+    splash.classList.remove("is-done");
 
     function finishSplash() {
       if (entered || !ready) return;
@@ -1748,7 +1753,7 @@
       window.setTimeout(() => {
         splash.setAttribute("hidden", "");
         splash.remove();
-      }, 750);
+      }, 700);
     }
 
     function tickSplash(now) {
