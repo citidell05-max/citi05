@@ -679,7 +679,7 @@
         <span class="lb-rank">#${entry.rank}</span>
         <span class="lb-main">
           <strong class="lb-name">${entry.name}</strong>
-          <span class="lb-tag">${entry.isYou ? entry.tag : `AI rival · ${entry.tag}`}</span>
+          <span class="lb-tag">${entry.tag}</span>
         </span>
         <span class="lb-stats">
           <span class="lb-level">LVL ${entry.level}</span>
