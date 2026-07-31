@@ -2589,6 +2589,18 @@
     saveState();
   }
 
+  // One-time +1000 Tokens grant
+  if (localStorage.getItem("arcane-horizon-token-boost-1000-v1") !== "1") {
+    state.tokens = (Number(state.tokens) || 0) + 1000;
+    addHistory({
+      type: "bonus",
+      text: "Token boost — +1000 Tokens",
+      tokens: 1000,
+    });
+    localStorage.setItem("arcane-horizon-token-boost-1000-v1", "1");
+    saveState();
+  }
+
   renderSfxToggle();
   renderMusicToggle();
   renderVipToggle();
