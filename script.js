@@ -276,6 +276,19 @@
 
   function renderThemeGrid() {
     if (!els.themeGrid) return;
+
+    // Prefer the pictures already in HTML — only sync active state
+    const existing = els.themeGrid.querySelectorAll("[data-theme]");
+    if (existing.length) {
+      existing.forEach((btn) => {
+        const active = btn.dataset.theme === currentThemeId;
+        btn.classList.toggle("is-active", active);
+        btn.setAttribute("aria-selected", String(active));
+        btn.setAttribute("role", "option");
+      });
+      return;
+    }
+
     els.themeGrid.innerHTML = "";
     THEMES.forEach((theme) => {
       const btn = document.createElement("button");
@@ -283,6 +296,7 @@
       btn.className = `theme-card${theme.id === currentThemeId ? " is-active" : ""}`;
       btn.setAttribute("role", "option");
       btn.setAttribute("aria-selected", String(theme.id === currentThemeId));
+      btn.dataset.theme = theme.id;
       btn.title = theme.name;
       const img = document.createElement("img");
       img.src = theme.src;
@@ -297,10 +311,6 @@
       const label = document.createElement("span");
       label.textContent = theme.name;
       btn.append(img, label);
-      btn.addEventListener("click", () => {
-        applyTheme(theme.id, { toast: true });
-        playSfx("click");
-      });
       els.themeGrid.appendChild(btn);
     });
   }
