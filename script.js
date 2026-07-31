@@ -465,6 +465,7 @@
     if (!els.themeGrid) return;
 
     const syncCard = (btn, theme) => {
+      if (!theme) return;
       const active = theme.id === currentThemeId;
       const owned = ownsTheme(theme.id);
       const locked = !owned;
