@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;800&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=curacao1" />
+  <link rel="stylesheet" href="style.css?v=clock1" />
   <link rel="preload" as="image" href="assets/arcane-horizon-splash.jpg?v=3" />
   <style>
     :root { --bg-image: none; }
@@ -191,6 +191,12 @@
         <h1 class="brand-title">Arcane Horizon</h1>
       </div>
       <p class="tagline">Gamified Study Companion</p>
+
+      <div class="live-clock" id="live-clock" aria-live="polite" aria-atomic="true" title="Current local time">
+        <span class="live-clock-label">Local Time</span>
+        <time class="live-clock-time" id="live-clock-time">--:--:--</time>
+        <span class="live-clock-date" id="live-clock-date">—</span>
+      </div>
 
       <div class="wallet" aria-label="Currency wallet">
         <div class="wallet-chip streak-chip" title="Daily activity streak">
